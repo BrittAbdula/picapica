@@ -1,0 +1,3 @@
+# 添加到项目根目录 - _redirects
+/api/*  https://api.picapica.app/:splat   200
+/*      /index.html                                 200

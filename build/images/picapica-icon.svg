@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景圆形 -->
+  <circle cx="256" cy="256" r="248" fill="#fff" stroke="#ff69b4" stroke-width="16" />
+  
+  <!-- 相机简化形状 -->
+  <rect x="128" y="176" width="256" height="160" rx="24" ry="24" fill="#ff69b4" />
+  
+  <!-- 相机镜头 -->
+  <circle cx="256" cy="256" r="64" fill="#fff" stroke="#ff69b4" stroke-width="8" />
+  <circle cx="256" cy="256" r="40" fill="#ff9dbb" />
+  <circle cx="256" cy="256" r="20" fill="#fff" />
+  
+  <!-- 闪光灯 -->
+  <rect x="320" y="192" width="32" height="16" rx="8" ry="8" fill="#fff" />
+  
+  <!-- 字母P标志 -->
+  <text x="176" y="256" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="#fff">P</text>
+</svg> 
