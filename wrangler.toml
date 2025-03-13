@@ -1,0 +1,16 @@
+[build]
+  base = "frontend"
+  publish = "build"
+  command = "npm install && npm run build"
+
+[site]
+bucket = "build"  # React 应用的构建输出目录
+entry-point = "workers-site"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build.environment]
+  NODE_VERSION = "18"

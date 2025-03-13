@@ -5,7 +5,7 @@ const Welcome = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="welcome-container">
+    <div className="welcome-container flex flex-col items-center justify-center h-screen text-left">
       <h1>Welcome to Pica Pica Photo Booth!</h1>
       <p>
         Experience the fun of a vintage photo booth right on picapica.app!

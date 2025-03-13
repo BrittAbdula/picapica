@@ -95,10 +95,25 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					setImages([...newCapturedImages]);
 
 					stopCamera();
+					
+					// 使用英文提示，不需要用户确认的方式
+					const notification = document.createElement('div');
+					notification.textContent = 'Photos captured! Redirecting to preview...';
+					notification.style.position = 'fixed';
+					notification.style.top = '20px';
+					notification.style.left = '50%';
+					notification.style.transform = 'translateX(-50%)';
+					notification.style.padding = '10px 20px';
+					notification.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+					notification.style.color = 'white';
+					notification.style.borderRadius = '5px';
+					notification.style.zIndex = '1000';
+					document.body.appendChild(notification);
 
 					setTimeout(() => {
 						navigate("/preview");
-					}, 200);
+						document.body.removeChild(notification);
+					}, 2000);
 				} catch (error) {
 					console.error("Error navigating to preview:", error);
 				}
