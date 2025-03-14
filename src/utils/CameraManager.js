@@ -10,7 +10,7 @@ let activeStreams = [];
  * 停止所有活跃的摄像头流
  */
 const stopAllCameras = () => {
-  console.log('Stopping all camera streams:', activeStreams.length);
+  // console.log('Stopping all camera streams:', activeStreams.length);
   
   activeStreams.forEach(stream => {
     const tracks = stream.getTracks();
@@ -20,7 +20,7 @@ const stopAllCameras = () => {
   });
   
   activeStreams = [];
-  console.log('All camera streams stopped');
+  // console.log('All camera streams stopped');
 };
 
 /**
@@ -30,7 +30,7 @@ const stopAllCameras = () => {
 const registerStream = (stream) => {
   if (stream && !activeStreams.includes(stream)) {
     activeStreams.push(stream);
-    console.log('Camera stream registered, total active streams:', activeStreams.length);
+    // console.log('Camera stream registered, total active streams:', activeStreams.length);
   }
 };
 
@@ -43,7 +43,7 @@ const unregisterStream = (stream) => {
     const index = activeStreams.indexOf(stream);
     if (index !== -1) {
       activeStreams.splice(index, 1);
-      console.log('Camera stream unregistered, remaining active streams:', activeStreams.length);
+      // console.log('Camera stream unregistered, remaining active streams:', activeStreams.length);
     }
   }
 };
@@ -67,9 +67,9 @@ const getCamera = async (constraints = {
     return stream;
   } catch (error) {
     if (error.name === "NotAllowedError") {
-      console.error("用户拒绝了摄像头访问权限");
+      console.error("user denied camera access");
     } else {
-      console.error("访问摄像头时出错:", error);
+      console.error("error accessing camera:", error);
     }
     throw error;
   }
@@ -86,7 +86,7 @@ const stopCamera = (stream) => {
       track.stop();
     });
     unregisterStream(stream);
-    console.log('Camera stream stopped');
+    // console.log('Camera stream stopped');
   }
 };
 

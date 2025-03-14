@@ -6,6 +6,7 @@ const Meta = ({
   description, 
   canonicalUrl, 
   ogImage = 'https://picapica.app/images/og-image.jpg',
+  keywords = ''
 }) => {
   // 构建完整的标题，确保包含品牌名
   const fullTitle = title ? `${title} | Picapica Photo Booth` : 'Picapica Photo Booth - Create and Share Photo Strips Online';
@@ -15,13 +16,6 @@ const Meta = ({
     ? canonicalUrl 
     : `https://picapica.app${canonicalUrl.startsWith('/') ? '' : '/'}${canonicalUrl}`;
 
-  // 调试信息
-  console.log('Meta Component:', {
-    title: fullTitle,
-    description,
-    canonicalUrl: fullCanonicalUrl,
-    ogImage
-  });
 
   // 直接修改文档头部
   useEffect(() => {
@@ -93,7 +87,6 @@ const Meta = ({
       metaTag.setAttribute('content', content);
     });
 
-    console.log('Meta tags updated directly');
   }, [fullTitle, description, keywords, fullCanonicalUrl, ogImage]);
 
   return (
