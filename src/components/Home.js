@@ -1,10 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 import Meta from "./Meta";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // 调试信息
+    console.log('Home Component Mounted');
+    
+    // 检查 meta 标签
+    setTimeout(() => {
+      const canonicalLink = document.querySelector('link[rel="canonical"]');
+      const metaDescription = document.querySelector('meta[name="description"]');
+      
+      console.log('Meta Tags Check:', {
+        canonicalLink: canonicalLink ? canonicalLink.getAttribute('href') : 'Not found',
+        metaDescription: metaDescription ? metaDescription.getAttribute('content') : 'Not found'
+      });
+    }, 1000);
+  }, []);
 
   return (
     <>

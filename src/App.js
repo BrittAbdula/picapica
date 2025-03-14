@@ -38,6 +38,7 @@ function App() {
 				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
 					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
 					<Link to="/welcome" onClick={() => setMenuOpen(false)}>Welcome</Link>
+					<Link to="/test-meta" onClick={() => setMenuOpen(false)}>Test Meta</Link>
 				</div>
 			</nav>
 

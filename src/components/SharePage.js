@@ -47,6 +47,7 @@ const SharePage = () => {
   let metaTitle = 'Share Your Photo Strip';
   let metaDescription = 'Share your Picapica photo strip with friends and family. Create beautiful photo strips with our free online photo booth app.';
   let metaImage = decodedUrl || 'https://picapica.app/images/og-image.jpg';
+  let canonicalPath = location.pathname + location.search;
 
   if (loading) {
     metaTitle = 'Loading Shared Photo';
@@ -59,159 +60,193 @@ const SharePage = () => {
     metaDescription = 'Create and share beautiful photo strips with Picapica - your free online photo booth app.';
   }
 
+  // 调试信息
+  console.log('SharePage State:', {
+    loading,
+    error,
+    decodedUrl,
+    metaTitle,
+    metaDescription,
+    canonicalPath
+  });
+
   if (loading) {
     return (
-      <div className="share-page" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f9f9f9'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Loading shared photo...</h2>
-          <div className="loading-spinner" style={{
-            width: '50px',
-            height: '50px',
-            border: '5px solid #f3f3f3',
-            borderTop: '5px solid #FF69B4',
-            borderRadius: '50%',
-            margin: '20px auto',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+      <>
+        <Meta 
+          title={metaTitle}
+          description={metaDescription}
+          canonicalUrl={canonicalPath}
+          ogImage={metaImage}
+        />
+        <div className="share-page" style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          height: '100vh',
+          backgroundColor: '#f9f9f9'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <h2>Loading shared photo...</h2>
+            <div className="loading-spinner" style={{
+              width: '50px',
+              height: '50px',
+              border: '5px solid #f3f3f3',
+              borderTop: '5px solid #FF69B4',
+              borderRadius: '50%',
+              margin: '20px auto',
+              animation: 'spin 1s linear infinite'
+            }}></div>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="share-page error" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f9f9f9'
-      }}>
-        <div style={{ textAlign: 'center', maxWidth: '600px', padding: '20px' }}>
-          <h2 style={{ color: '#d32f2f' }}>Error Loading Photo</h2>
-          <p>{error}</p>
-          <button 
-            onClick={() => navigate('/')}
-            style={{
-              backgroundColor: '#FF69B4',
-              color: 'white',
-              border: 'none',
-              padding: '10px 20px',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              marginTop: '20px'
-            }}
-          >
-            Go to Home
-          </button>
+      <>
+        <Meta 
+          title={metaTitle}
+          description={metaDescription}
+          canonicalUrl={canonicalPath}
+          ogImage={metaImage}
+        />
+        <div className="share-page error" style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          height: '100vh',
+          backgroundColor: '#f9f9f9'
+        }}>
+          <div style={{ textAlign: 'center', maxWidth: '600px', padding: '20px' }}>
+            <h2 style={{ color: '#d32f2f' }}>Error Loading Photo</h2>
+            <p>{error}</p>
+            <button 
+              onClick={() => navigate('/')}
+              style={{
+                backgroundColor: '#FF69B4',
+                color: 'white',
+                border: 'none',
+                padding: '10px 20px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                marginTop: '20px'
+              }}
+            >
+              Go to Home
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // Default page when no imageUrl is provided
   if (!decodedUrl) {
     return (
-      <div className="share-page" style={{ 
-        padding: '20px',
-        maxWidth: '800px',
-        margin: '0 auto',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        marginTop: '40px'
-      }}>
-        <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
-          Create and Share Your Photo Strips
-        </h1>
-        
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <img 
-            src="/images/picapica-icon.svg" 
-            alt="Picapica Logo" 
-            style={{ width: '120px', marginBottom: '20px' }}
-          />
-          <p style={{ fontSize: '18px', color: '#666', lineHeight: '1.6' }}>
-            Picapica is your free online photo booth app. Create beautiful photo strips, 
-            add fun stickers, and share your memories with friends and family.
-          </p>
-        </div>
-
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '20px',
-          marginBottom: '30px'
+      <>
+        <Meta 
+          title={metaTitle}
+          description={metaDescription}
+          canonicalUrl={canonicalPath}
+          ogImage={metaImage}
+        />
+        <div className="share-page" style={{ 
+          padding: '20px',
+          maxWidth: '800px',
+          margin: '0 auto',
+          backgroundColor: '#fff',
+          borderRadius: '8px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          marginTop: '40px'
         }}>
-          <div style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
-            <h3 style={{ color: '#333', marginBottom: '10px' }}>📸 Take Photos</h3>
-            <p style={{ color: '#666' }}>Use your camera to capture 4 photos in different poses</p>
+          <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
+            Create and Share Your Photo Strips
+          </h1>
+          
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <img 
+              src="/images/picapica-icon.svg" 
+              alt="Picapica Logo" 
+              style={{ width: '120px', marginBottom: '20px' }}
+            />
+            <p style={{ fontSize: '18px', color: '#666', lineHeight: '1.6' }}>
+              Picapica is your free online photo booth app. Create beautiful photo strips, 
+              add fun stickers, and share your memories with friends and family.
+            </p>
           </div>
-          <div style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
-            <h3 style={{ color: '#333', marginBottom: '10px' }}>🎨 Customize</h3>
-            <p style={{ color: '#666' }}>Add stickers, change colors, and make it your own</p>
-          </div>
-          <div style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
-            <h3 style={{ color: '#333', marginBottom: '10px' }}>🔗 Share</h3>
-            <p style={{ color: '#666' }}>Share your photo strip with friends and family</p>
-          </div>
-        </div>
 
-        <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-          <button 
-            onClick={() => navigate('/photobooth')}
-            style={{
-              backgroundColor: '#FF69B4',
-              color: 'white',
-              border: 'none',
-              padding: '15px 30px',
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '18px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              margin: '0 auto'
-            }}
-          >
-            <span>📸</span> Start Creating Your Photo Strip
-          </button>
-        </div>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '20px',
+            marginBottom: '30px'
+          }}>
+            <div style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
+              <h3 style={{ color: '#333', marginBottom: '10px' }}>📸 Take Photos</h3>
+              <p style={{ color: '#666' }}>Use your camera to capture 4 photos in different poses</p>
+            </div>
+            <div style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
+              <h3 style={{ color: '#333', marginBottom: '10px' }}>🎨 Customize</h3>
+              <p style={{ color: '#666' }}>Add stickers, change colors, and make it your own</p>
+            </div>
+            <div style={{ padding: '20px', backgroundColor: '#f8f8f8', borderRadius: '8px' }}>
+              <h3 style={{ color: '#333', marginBottom: '10px' }}>🔗 Share</h3>
+              <p style={{ color: '#666' }}>Share your photo strip with friends and family</p>
+            </div>
+          </div>
 
-        <div className="footer" style={{ 
-          marginTop: '40px',
-          textAlign: 'center',
-          color: '#777',
-          fontSize: '14px'
-        }}>
-          <p>© 2025 Picapica - Create your own photo strip memories!</p>
-          <button 
-            onClick={() => navigate('/')}
-            style={{
-              backgroundColor: 'transparent',
-              color: '#FF69B4',
-              border: 'none',
-              padding: '5px 10px',
-              cursor: 'pointer',
-              textDecoration: 'underline'
-            }}
-          >
-            Back to Home
-          </button>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <button 
+              onClick={() => navigate('/photobooth')}
+              style={{
+                backgroundColor: '#FF69B4',
+                color: 'white',
+                border: 'none',
+                padding: '15px 30px',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                margin: '0 auto'
+              }}
+            >
+              <span>📸</span> Start Creating Your Photo Strip
+            </button>
+          </div>
+
+          <div className="footer" style={{ 
+            marginTop: '40px',
+            textAlign: 'center',
+            color: '#777',
+            fontSize: '14px'
+          }}>
+            <p>© 2025 Picapica - Create your own photo strip memories!</p>
+            <button 
+              onClick={() => navigate('/')}
+              style={{
+                backgroundColor: 'transparent',
+                color: '#FF69B4',
+                border: 'none',
+                padding: '5px 10px',
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
+            >
+              Back to Home
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -221,7 +256,7 @@ const SharePage = () => {
       <Meta 
         title={metaTitle}
         description={metaDescription}
-        canonicalUrl={location.pathname + location.search}
+        canonicalUrl={canonicalPath}
         ogImage={metaImage}
       />
       
@@ -292,7 +327,7 @@ const SharePage = () => {
               gap: '8px'
             }}
           >
-            <span>��</span> Create Your Own
+            <span>📸</span> Create Your Own
           </button>
           
           <a 
