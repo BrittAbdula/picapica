@@ -6,7 +6,6 @@ const Meta = ({
   description, 
   canonicalUrl, 
   ogImage = 'https://picapica.app/images/og-image.jpg',
-  keywords = 'picapica, picapica photo booth, Pica Pica Photo Booth, photo booth, online photo booth, photo strip'
 }) => {
   // 构建完整的标题，确保包含品牌名
   const fullTitle = title ? `${title} | Picapica Photo Booth` : 'Picapica Photo Booth - Create and Share Photo Strips Online';
