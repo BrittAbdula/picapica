@@ -8,10 +8,14 @@ import PhotoPreview from "./components/PhotoPreview";
 import SharePage from "./components/SharePage";
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
+import RouteGuard from './utils/RouteGuard';
 
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
 	const [menuOpen, setMenuOpen] = useState(false);
+
+	// 定义使用摄像头的路由
+	const cameraRoutes = ['/photobooth'];
 
 	const toggleMenu = () => {
 		setMenuOpen(!menuOpen);
@@ -38,19 +42,22 @@ function App() {
 				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
 					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
 					<Link to="/welcome" onClick={() => setMenuOpen(false)}>Welcome</Link>
-					<Link to="/test-meta" onClick={() => setMenuOpen(false)}>Test Meta</Link>
+					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
 				</div>
 			</nav>
 
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/welcome" element={<Welcome />} />
-				<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
-				<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
-				<Route path="/share" element={<SharePage />} />
-				<Route path="/privacy-policy" element={<PrivacyPolicy />} />
-				<Route path="/terms-of-service" element={<TermsOfService />} />
-			</Routes>
+			{/* 使用RouteGuard包裹Routes，实现路由层面的摄像头管理 */}
+			<RouteGuard cameraRoutes={cameraRoutes}>
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/welcome" element={<Welcome />} />
+					<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
+					<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
+					<Route path="/share" element={<SharePage />} />
+					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
+					<Route path="/terms-of-service" element={<TermsOfService />} />
+				</Routes>
+			</RouteGuard>
 
 			<footer className="mt-8 text-sm text-gray-600">
 				<p>© 2025 picapica.app - The Web Photo Booth App</p>

@@ -1,9 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Meta from "./Meta";
+import CameraManager from "../utils/CameraManager";
 
 const PhotoBooth = ({ setCapturedImages }) => {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const videoRef = useRef(null);
 	const canvasRef = useRef(null);
 	const [capturedImages, setImages] = useState([]);
@@ -14,6 +16,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 	const [backgroundColor, setBackgroundColor] = useState("#FFF0F5"); // Default light pink background
 	const [showColorPicker, setShowColorPicker] = useState(false); // Control color picker display
 	const [soundEnabled, setSoundEnabled] = useState(true); // Sound enabled by default
+	const [currentStream, setCurrentStream] = useState(null); // 存储当前摄像头流的引用
 
 	// Website theme colors
 	const themeColors = {
@@ -56,7 +59,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
 		return () => {
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
-			stopCamera();
+			// 不需要在这里手动停止摄像头，由RouteGuard处理
 			// Reset navigation bar color when component unmounts
 			resetNavBarColor();
 		};
@@ -123,6 +126,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 			if (videoRef.current && videoRef.current.srcObject) {
 				return;
 			}
+			
 			const constraints = {
 				video: {
 					facingMode: "user",
@@ -132,7 +136,9 @@ const PhotoBooth = ({ setCapturedImages }) => {
 				},
 			};
 
-			const stream = await navigator.mediaDevices.getUserMedia(constraints);
+			// 使用CameraManager获取摄像头流
+			const stream = await CameraManager.getCamera(constraints);
+			setCurrentStream(stream);
 
 			if (videoRef.current) {
 				videoRef.current.srcObject = stream;
@@ -156,19 +162,22 @@ const PhotoBooth = ({ setCapturedImages }) => {
 		}
 	};
 
-	// Stop Camera
+	// Stop Camera - 保留此方法用于组件内部需要停止摄像头的场景
 	const stopCamera = () => {
-		if (videoRef.current && videoRef.current.srcObject) {
-			const stream = videoRef.current.srcObject;
-			const tracks = stream.getTracks();
-			
-			tracks.forEach(track => {
-				track.stop();
-			});
-			
-			videoRef.current.srcObject = null;
-			console.log("Camera stopped");
+		if (currentStream) {
+			CameraManager.stopCamera(currentStream);
+			setCurrentStream(null);
+			if (videoRef.current) {
+				videoRef.current.srcObject = null;
+			}
+			console.log("Camera stopped from PhotoBooth component");
 		}
+	};
+
+	// 导航函数 - 简化为普通导航，摄像头管理由RouteGuard处理
+	const navigateTo = (path) => {
+		console.log('Navigating to', path);
+		navigate(path);
 	};
 
 	// Countdown to take 4 pictures automatically
@@ -188,8 +197,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
 				try {
 					setCapturedImages([...newCapturedImages]);
 					setImages([...newCapturedImages]);
-
-					stopCamera();
 					
 					const notification = document.createElement('div');
 					notification.textContent = 'Photos captured! Redirecting to preview...';
@@ -205,7 +212,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					document.body.appendChild(notification);
 
 					setTimeout(() => {
-						navigate("/preview");
+						navigateTo("/preview");
 						document.body.removeChild(notification);
 					}, 2000);
 				} catch (error) {
