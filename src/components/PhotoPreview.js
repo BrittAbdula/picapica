@@ -6,6 +6,9 @@ const PhotoPreview = ({ capturedImages }) => {
 	const navigate = useNavigate();
 	const [stripColor, setStripColor] = useState("white");
 	const [selectedFrame, setSelectedFrame] = useState("none");
+	const [shareLink, setShareLink] = useState("");
+	const [isGeneratingLink, setIsGeneratingLink] = useState(false);
+	const [linkCopied, setLinkCopied] = useState(false);
 
 	const generatePhotoStrip = useCallback(() => {
 		const canvas = stripCanvasRef.current;
@@ -130,6 +133,66 @@ const PhotoPreview = ({ capturedImages }) => {
 		link.click();
 	};
 
+	const getShareableLink = async () => {
+		if (!stripCanvasRef.current) return;
+		
+		try {
+			setIsGeneratingLink(true);
+			setLinkCopied(false);
+			
+			// Convert canvas to blob
+			const blob = await new Promise(resolve => {
+				stripCanvasRef.current.toBlob(resolve, 'image/png');
+			});
+			
+			// Create form data
+			const formData = new FormData();
+			formData.append('image', blob, 'photostrip.png');
+			
+			// Upload to server
+			const response = await fetch('https://api.picapica.app/api/upload', {
+				method: 'POST',
+				body: formData
+			});
+			
+			if (!response.ok) {
+				throw new Error('Failed to upload image');
+			}
+			
+			const data = await response.json();
+			
+			// Generate shareable link
+			const shareableLink = `${window.location.origin}/share/${encodeURIComponent(data.imageUrl)}`;
+			setShareLink(shareableLink);
+			
+		} catch (error) {
+			console.error('Error generating link:', error);
+			alert('Failed to generate shareable link. Please try again.');
+		} finally {
+			setIsGeneratingLink(false);
+		}
+	};
+	
+	const copyLinkToClipboard = () => {
+		if (!shareLink) return;
+		
+		navigator.clipboard.writeText(shareLink)
+			.then(() => {
+				setLinkCopied(true);
+				setTimeout(() => setLinkCopied(false), 3000);
+			})
+			.catch(err => {
+				console.error('Failed to copy link:', err);
+			});
+	};
+	
+	const navigateToShare = () => {
+		if (!shareLink) return;
+		
+		const imageUrl = shareLink.split('/share/')[1];
+		navigate(`/share/${imageUrl}`);
+	};
+
 	return (
 		<div className="photo-preview">
 			<h2>Photo Strip Preview</h2>
@@ -156,7 +219,78 @@ const PhotoPreview = ({ capturedImages }) => {
 				<button onClick={() => navigate("/photobooth")}>
 					🔄 Take New Photos
 				</button>
+				<button 
+					onClick={getShareableLink} 
+					disabled={isGeneratingLink}
+					style={{
+						backgroundColor: "#FF69B4",
+						color: "white",
+						border: "none",
+						padding: "10px 15px",
+						borderRadius: "5px",
+						cursor: isGeneratingLink ? "wait" : "pointer",
+						marginLeft: "10px"
+					}}
+				>
+					{isGeneratingLink ? "Generating..." : "🔗 Get Shareable Link"}
+				</button>
 			</div>
+			
+			{shareLink && (
+				<div className="share-link-container" style={{
+					marginTop: "20px",
+					padding: "15px",
+					backgroundColor: "#f8f8f8",
+					borderRadius: "5px",
+					border: "1px solid #ddd"
+				}}>
+					<h3>Shareable Link:</h3>
+					<div style={{
+						display: "flex",
+						alignItems: "center",
+						marginBottom: "10px"
+					}}>
+						<input 
+							type="text" 
+							value={shareLink} 
+							readOnly 
+							style={{
+								flex: 1,
+								padding: "8px",
+								borderRadius: "4px",
+								border: "1px solid #ccc",
+								marginRight: "10px"
+							}}
+						/>
+						<button 
+							onClick={copyLinkToClipboard}
+							style={{
+								backgroundColor: linkCopied ? "#4CAF50" : "#FF69B4",
+								color: "white",
+								border: "none",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer"
+							}}
+						>
+							{linkCopied ? "✓ Copied!" : "Copy"}
+						</button>
+					</div>
+					<button 
+						onClick={navigateToShare}
+						style={{
+							backgroundColor: "#FF69B4",
+							color: "white",
+							border: "none",
+							padding: "8px 12px",
+							borderRadius: "4px",
+							cursor: "pointer"
+						}}
+					>
+						🔍 View Shared Page
+					</button>
+				</div>
+			)}
 		</div>
 	);
 };

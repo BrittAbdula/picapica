@@ -8,7 +8,6 @@
     <title>Pica Pica Photo Booth | Fun Web-based Photo Booth | picapica.app</title>
     <meta name="title" content="Pica Pica Photo Booth | Fun Web-based Photo Booth | picapica.app">
     <meta name="description" content="Capture fun moments with Pica Pica Photo Booth - a web-based photo booth that lets you take photos, apply vintage film effects, and create beautiful photo strips instantly. Try it now at picapica.app!">
-    <meta name="author" content="Agnes Wei">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://picapica.app/">
     
@@ -32,6 +31,42 @@
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo/logo192.png">
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     
+    <!-- Dynamic Meta Tags -->
+    <script>
+      function updateMetaTags() {
+        const path = window.location.pathname;
+        const isSharePage = path.startsWith('/share/');
+        
+        if (isSharePage) {
+          const imageUrl = path.split('/share/')[1];
+          if (imageUrl) {
+            // Update meta tags for shared photo
+            document.title = 'Shared Photo Strip - Picapica';
+            document.querySelector('meta[name="description"]').content = 'View this shared photo strip created with Picapica. Create your own photo strips and share your memories.';
+            document.querySelector('meta[property="og:title"]').content = 'Shared Photo Strip - Picapica';
+            document.querySelector('meta[property="og:description"]').content = 'View this shared photo strip created with Picapica.';
+            document.querySelector('meta[property="og:image"]').content = decodeURIComponent(imageUrl);
+            document.querySelector('meta[property="twitter:title"]').content = 'Shared Photo Strip - Picapica';
+            document.querySelector('meta[property="twitter:description"]').content = 'View this shared photo strip created with Picapica.';
+            document.querySelector('meta[property="twitter:image"]').content = decodeURIComponent(imageUrl);
+          } else {
+            // Update meta tags for share page without image
+            document.title = 'Create and Share Photo Strips - Picapica';
+            document.querySelector('meta[name="description"]').content = 'Create beautiful photo strips with Picapica. Share your memories with friends and family. Free online photo booth app.';
+            document.querySelector('meta[property="og:title"]').content = 'Create and Share Photo Strips - Picapica';
+            document.querySelector('meta[property="og:description"]').content = 'Create beautiful photo strips with Picapica. Share your memories with friends and family.';
+            document.querySelector('meta[property="twitter:title"]').content = 'Create and Share Photo Strips - Picapica';
+            document.querySelector('meta[property="twitter:description"]').content = 'Create beautiful photo strips with Picapica. Share your memories with friends and family.';
+          }
+        }
+      }
+
+      // Update meta tags when the page loads
+      window.addEventListener('load', updateMetaTags);
+      
+      // Update meta tags when the route changes
+      window.addEventListener('popstate', updateMetaTags);
+    </script>
     
     <!-- Structured Data for Rich Snippets -->
     <script type="application/ld+json">
@@ -50,10 +85,6 @@
       },
       "screenshot": "%PUBLIC_URL%/picapica-preview.jpg",
       "featureList": "Automatic Photo Capture, Vintage Film Effects, Photo Strip Generation, Downloadable Images",
-      "author": {
-        "@type": "Person",
-        "name": "Agnes Wei"
-      },
       "logo": "%PUBLIC_URL%/images/picapica-logo.svg"
     }
     </script>
