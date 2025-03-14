@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import Meta from "./Meta";
 
 const PhotoPreview = ({ capturedImages }) => {
 	const stripCanvasRef = useRef(null);
@@ -195,78 +196,98 @@ const PhotoPreview = ({ capturedImages }) => {
 	};
 
 	return (
-		<div className="photo-preview">
-			<h2>Photo Strip Preview</h2>
+		<>
+			<Meta 
+				title="Customize Your Photo Strip"
+				description="Customize your Picapica photo strip with different colors, frames, and stickers. Download or share your photo strip with friends and family."
+				canonicalUrl="/preview"
+			/>
+			<div className="photo-preview">
+				<h2>Photo Strip Preview</h2>
 
-      <div className="color-options">
-        <button onClick={() => setStripColor("white")}>White</button>
-        <button onClick={() => setStripColor("black")}>Black</button>
-        <button onClick={() => setStripColor("#f6d5da")}>Pink</button>
-        <button onClick={() => setStripColor("#dde6d5")}>Green</button>
-        <button onClick={() => setStripColor("#adc3e5")}>Blue</button>
-        <button onClick={() => setStripColor("#FFF2CC")}>Yellow</button>
-        <button onClick={() => setStripColor("#dbcfff")}>Purple</button>
-      </div>
+				<div className="color-options">
+					<button onClick={() => setStripColor("white")}>White</button>
+					<button onClick={() => setStripColor("black")}>Black</button>
+					<button onClick={() => setStripColor("#f6d5da")}>Pink</button>
+					<button onClick={() => setStripColor("#dde6d5")}>Green</button>
+					<button onClick={() => setStripColor("#adc3e5")}>Blue</button>
+					<button onClick={() => setStripColor("#FFF2CC")}>Yellow</button>
+					<button onClick={() => setStripColor("#dbcfff")}>Purple</button>
+				</div>
 
-      <div className="frame-options">
-        <button onClick={() => setSelectedFrame("pastel")}>Girlypop Stickers</button>
-        <button onClick={() => setSelectedFrame("cute")}>Cute Stickers</button>
-      </div>
+				<div className="frame-options">
+					<button onClick={() => setSelectedFrame("pastel")}>Girlypop Stickers</button>
+					<button onClick={() => setSelectedFrame("cute")}>Cute Stickers</button>
+				</div>
 
-			<canvas ref={stripCanvasRef} className="photo-strip" />
+				<canvas ref={stripCanvasRef} className="photo-strip" />
 
-			<div className="strip-buttons">
-				<button onClick={downloadPhotoStrip}>📥 Download Photo Strip</button>
-				<button onClick={() => navigate("/photobooth")}>
-					🔄 Take New Photos
-				</button>
-				<button 
-					onClick={getShareableLink} 
-					disabled={isGeneratingLink}
-					style={{
-						backgroundColor: "#FF69B4",
-						color: "white",
-						border: "none",
-						padding: "10px 15px",
+				<div className="strip-buttons">
+					<button onClick={downloadPhotoStrip}>📥 Download Photo Strip</button>
+					<button onClick={() => navigate("/photobooth")}>
+						🔄 Take New Photos
+					</button>
+					<button 
+						onClick={getShareableLink} 
+						disabled={isGeneratingLink}
+						style={{
+							backgroundColor: "#FF69B4",
+							color: "white",
+							border: "none",
+							padding: "10px 15px",
+							borderRadius: "5px",
+							cursor: isGeneratingLink ? "wait" : "pointer",
+							marginLeft: "10px"
+						}}
+					>
+						{isGeneratingLink ? "Generating..." : "🔗 Get Shareable Link"}
+					</button>
+				</div>
+				
+				{shareLink && (
+					<div className="share-link-container" style={{
+						marginTop: "20px",
+						padding: "15px",
+						backgroundColor: "#f8f8f8",
 						borderRadius: "5px",
-						cursor: isGeneratingLink ? "wait" : "pointer",
-						marginLeft: "10px"
-					}}
-				>
-					{isGeneratingLink ? "Generating..." : "🔗 Get Shareable Link"}
-				</button>
-			</div>
-			
-			{shareLink && (
-				<div className="share-link-container" style={{
-					marginTop: "20px",
-					padding: "15px",
-					backgroundColor: "#f8f8f8",
-					borderRadius: "5px",
-					border: "1px solid #ddd"
-				}}>
-					<h3>Shareable Link:</h3>
-					<div style={{
-						display: "flex",
-						alignItems: "center",
-						marginBottom: "10px"
+						border: "1px solid #ddd"
 					}}>
-						<input 
-							type="text" 
-							value={shareLink} 
-							readOnly 
-							style={{
-								flex: 1,
-								padding: "8px",
-								borderRadius: "4px",
-								border: "1px solid #ccc",
-								marginRight: "10px"
-							}}
-						/>
+						<h3>Shareable Link:</h3>
+						<div style={{
+							display: "flex",
+							alignItems: "center",
+							marginBottom: "10px"
+						}}>
+							<input 
+								type="text" 
+								value={shareLink} 
+								readOnly 
+								style={{
+									flex: 1,
+									padding: "8px",
+									borderRadius: "4px",
+									border: "1px solid #ccc",
+									marginRight: "10px"
+								}}
+							/>
+							<button 
+								onClick={copyLinkToClipboard}
+								style={{
+									backgroundColor: linkCopied ? "#4CAF50" : "#FF69B4",
+									color: "white",
+									border: "none",
+									padding: "8px 12px",
+									borderRadius: "4px",
+									cursor: "pointer"
+								}}
+							>
+								{linkCopied ? "✓ Copied!" : "Copy"}
+							</button>
+						</div>
 						<button 
-							onClick={copyLinkToClipboard}
+							onClick={navigateToShare}
 							style={{
-								backgroundColor: linkCopied ? "#4CAF50" : "#FF69B4",
+								backgroundColor: "#FF69B4",
 								color: "white",
 								border: "none",
 								padding: "8px 12px",
@@ -274,25 +295,12 @@ const PhotoPreview = ({ capturedImages }) => {
 								cursor: "pointer"
 							}}
 						>
-							{linkCopied ? "✓ Copied!" : "Copy"}
+							🔍 View Shared Page
 						</button>
 					</div>
-					<button 
-						onClick={navigateToShare}
-						style={{
-							backgroundColor: "#FF69B4",
-							color: "white",
-							border: "none",
-							padding: "8px 12px",
-							borderRadius: "4px",
-							cursor: "pointer"
-						}}
-					>
-						🔍 View Shared Page
-					</button>
-				</div>
-			)}
-		</div>
+				)}
+			</div>
+		</>
 	);
 };
 

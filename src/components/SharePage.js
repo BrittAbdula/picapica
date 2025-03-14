@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import Meta from './Meta';
 
 const SharePage = () => {
   const navigate = useNavigate();
@@ -41,6 +42,22 @@ const SharePage = () => {
         alert('Failed to copy link. Please try manually copying the URL.');
       });
   };
+
+  // 为不同状态设置不同的元数据
+  let metaTitle = 'Share Your Photo Strip';
+  let metaDescription = 'Share your Picapica photo strip with friends and family. Create beautiful photo strips with our free online photo booth app.';
+  let metaImage = decodedUrl || 'https://picapica.app/images/og-image.jpg';
+
+  if (loading) {
+    metaTitle = 'Loading Shared Photo';
+    metaDescription = 'Loading a shared Picapica photo strip. Please wait a moment.';
+  } else if (error) {
+    metaTitle = 'Error Loading Photo';
+    metaDescription = 'There was an error loading the shared Picapica photo strip.';
+  } else if (!decodedUrl) {
+    metaTitle = 'Share Your Photo Strip';
+    metaDescription = 'Create and share beautiful photo strips with Picapica - your free online photo booth app.';
+  }
 
   if (loading) {
     return (
@@ -200,170 +217,179 @@ const SharePage = () => {
 
   // Shared photo page
   return (
-    <div className="share-page" style={{ 
-      padding: '20px',
-      maxWidth: '800px',
-      margin: '0 auto',
-      backgroundColor: '#fff',
-      borderRadius: '8px',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-      marginTop: '40px'
-    }}>
-      <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
-        Shared Picapica Photo Strip
-      </h1>
+    <>
+      <Meta 
+        title={metaTitle}
+        description={metaDescription}
+        canonicalUrl={location.pathname + location.search}
+        ogImage={metaImage}
+      />
       
-      <div className="image-container" style={{ 
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: '30px'
+      <div className="share-page" style={{ 
+        padding: '20px',
+        maxWidth: '800px',
+        margin: '0 auto',
+        backgroundColor: '#fff',
+        borderRadius: '8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        marginTop: '40px'
       }}>
-        <img 
-          src={decodedUrl} 
-          alt="Shared photo strip" 
-          style={{
-            maxWidth: '100%',
-            height: 'auto',
-            borderRadius: '8px',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-          }}
-        />
-      </div>
-      
-      <div className="share-actions" style={{ 
-        display: 'flex',
-        justifyContent: 'center',
-        gap: '15px',
-        flexWrap: 'wrap'
-      }}>
-        <button 
-          onClick={handleCopyLink}
-          style={{
-            backgroundColor: '#FF69B4',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <span>📋</span> Copy Link
-        </button>
+        <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
+          Shared Picapica Photo Strip
+        </h1>
         
-        <button 
-          onClick={() => navigate('/photobooth')}
-          style={{
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <span>📸</span> Create Your Own
-        </button>
-        
-        <a 
-          href={decodedUrl} 
-          download="photostrip.png"
-          style={{
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            textDecoration: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-        >
-          <span>💾</span> Download
-        </a>
-      </div>
-      
-      <div className="social-share" style={{ 
-        marginTop: '30px',
-        textAlign: 'center'
-      }}>
-        <h3 style={{ color: '#555', marginBottom: '15px' }}>Share on Social Media</h3>
-        <div style={{ 
+        <div className="image-container" style={{ 
           display: 'flex',
           justifyContent: 'center',
-          gap: '15px'
+          marginBottom: '30px'
+        }}>
+          <img 
+            src={decodedUrl} 
+            alt="Shared photo strip" 
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+              borderRadius: '8px',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+            }}
+          />
+        </div>
+        
+        <div className="share-actions" style={{ 
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '15px',
+          flexWrap: 'wrap'
         }}>
           <button 
-            onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+            onClick={handleCopyLink}
             style={{
-              backgroundColor: '#3b5998',
+              backgroundColor: '#FF69B4',
               color: 'white',
               border: 'none',
-              padding: '10px 15px',
+              padding: '10px 20px',
               borderRadius: '5px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            Facebook
+            <span>📋</span> Copy Link
           </button>
+          
           <button 
-            onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Check out my photo strip!`, '_blank')}
+            onClick={() => navigate('/photobooth')}
             style={{
-              backgroundColor: '#1DA1F2',
+              backgroundColor: '#4CAF50',
               color: 'white',
               border: 'none',
-              padding: '10px 15px',
+              padding: '10px 20px',
               borderRadius: '5px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            Twitter
+            <span>��</span> Create Your Own
           </button>
-          <button 
-            onClick={() => window.open(`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&media=${encodeURIComponent(decodedUrl)}&description=My photo strip`, '_blank')}
+          
+          <a 
+            href={decodedUrl} 
+            download="photostrip.png"
             style={{
-              backgroundColor: '#E60023',
+              backgroundColor: '#2196F3',
               color: 'white',
               border: 'none',
-              padding: '10px 15px',
+              padding: '10px 20px',
               borderRadius: '5px',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}
           >
-            Pinterest
+            <span>💾</span> Download
+          </a>
+        </div>
+        
+        <div className="social-share" style={{ 
+          marginTop: '30px',
+          textAlign: 'center'
+        }}>
+          <h3 style={{ color: '#555', marginBottom: '15px' }}>Share on Social Media</h3>
+          <div style={{ 
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '15px'
+          }}>
+            <button 
+              onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank')}
+              style={{
+                backgroundColor: '#3b5998',
+                color: 'white',
+                border: 'none',
+                padding: '10px 15px',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              Facebook
+            </button>
+            <button 
+              onClick={() => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=Check out my photo strip!`, '_blank')}
+              style={{
+                backgroundColor: '#1DA1F2',
+                color: 'white',
+                border: 'none',
+                padding: '10px 15px',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              Twitter
+            </button>
+            <button 
+              onClick={() => window.open(`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(window.location.href)}&media=${encodeURIComponent(decodedUrl)}&description=My photo strip`, '_blank')}
+              style={{
+                backgroundColor: '#E60023',
+                color: 'white',
+                border: 'none',
+                padding: '10px 15px',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
+              Pinterest
+            </button>
+          </div>
+        </div>
+        
+        <div className="footer" style={{ 
+          marginTop: '40px',
+          textAlign: 'center',
+          color: '#777',
+          fontSize: '14px'
+        }}>
+          <p>© 2025 Picapica - Create your own photo strip memories!</p>
+          <button 
+            onClick={() => navigate('/')}
+            style={{
+              backgroundColor: 'transparent',
+              color: '#FF69B4',
+              border: 'none',
+              padding: '5px 10px',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            Back to Home
           </button>
         </div>
       </div>
-      
-      <div className="footer" style={{ 
-        marginTop: '40px',
-        textAlign: 'center',
-        color: '#777',
-        fontSize: '14px'
-      }}>
-        <p>© 2025 Picapica - Create your own photo strip memories!</p>
-        <button 
-          onClick={() => navigate('/')}
-          style={{
-            backgroundColor: 'transparent',
-            color: '#FF69B4',
-            border: 'none',
-            padding: '5px 10px',
-            cursor: 'pointer',
-            textDecoration: 'underline'
-          }}
-        >
-          Back to Home
-        </button>
-      </div>
-    </div>
+    </>
   );
 };
 

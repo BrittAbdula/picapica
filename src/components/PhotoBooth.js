@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import Meta from "./Meta";
 
 const PhotoBooth = ({ setCapturedImages }) => {
 	const navigate = useNavigate();
@@ -305,229 +306,236 @@ const PhotoBooth = ({ setCapturedImages }) => {
 	};
 
 	return (
-		<div className="photo-booth" style={{ backgroundColor }}>
-			{countdown !== null && <h2 className="countdown animate">{countdown}</h2>}
+		<>
+			<Meta 
+				title="Take Photos in Our Online Photo Booth"
+				description="Use Picapica Photo Booth to capture fun moments, apply filters, and create beautiful photo strips. Our free online photo booth lets you take 4 photos and customize them."
+				canonicalUrl="/photobooth"
+			/>
+			<div className="photo-booth" style={{ backgroundColor }}>
+				{countdown !== null && <h2 className="countdown animate">{countdown}</h2>}
 
-			<div className="photo-container">
-				<div className="camera-container">
-					<video
-						ref={videoRef}
-						autoPlay
-						className="video-feed"
-						style={{ filter }}
-					/>
-					<canvas ref={canvasRef} className="hidden" />
-				</div>
-
-				<div className="preview-side" style={{ 
-					marginLeft: "-15px", // Shift preview images to the left
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "flex-start",
-					justifyContent: "center",
-					gap: "10px"
-				}}>
-					{capturedImages.map((image, index) => (
-						<img
-							key={index}
-							src={image}
-							alt={`Captured ${index + 1}`}
-							className="side-preview"
-							style={{
-								maxWidth: "100%",
-								height: "auto",
-								borderRadius: "4px",
-								border: `2px solid ${themeColors.mainPink}`,
-								boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-							}}
+				<div className="photo-container">
+					<div className="camera-container">
+						<video
+							ref={videoRef}
+							autoPlay
+							className="video-feed"
+							style={{ filter }}
 						/>
-					))}
-				</div>
-			</div>
+						<canvas ref={canvasRef} className="hidden" />
+					</div>
 
-			<div className="controls">
-				<button 
-					onClick={startCountdown} 
-					disabled={capturing}
-					style={{
-						backgroundColor: themeColors.mainPink,
-						color: "#000000",
-						border: "none",
-						padding: "10px 20px",
-						borderRadius: "5px",
-						cursor: capturing ? "not-allowed" : "pointer",
-						fontWeight: "bold"
-					}}
-				>
-					{capturing ? "Capturing..." : "Start Capture :)"}
-				</button>
-				
-				{/* Sound toggle switch - Fixed clickable version */}
-				<div className="sound-toggle" style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
-					<label style={{ marginRight: "10px", userSelect: "none", cursor: "pointer" }} onClick={toggleSound}>
-						Camera Sound: {soundEnabled ? "On" : "Off"}
-					</label>
-					<div 
-						className="switch-container" 
-						style={{ position: "relative", display: "inline-block", width: "60px", height: "30px", cursor: "pointer" }}
-						onClick={toggleSound}
-					>
-						<div
-							className="slider"
-							style={{
-								position: "absolute",
-								top: 0,
-								left: 0,
-								right: 0,
-								bottom: 0,
-								backgroundColor: soundEnabled ? themeColors.accentColor : "#ccc",
-								borderRadius: "34px",
-								transition: "0.4s",
-							}}
-						>
-							<div 
-								className="slider-button"
+					<div className="preview-side" style={{ 
+						marginLeft: "-15px", // Shift preview images to the left
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "flex-start",
+						justifyContent: "center",
+						gap: "10px"
+					}}>
+						{capturedImages.map((image, index) => (
+							<img
+								key={index}
+								src={image}
+								alt={`Captured ${index + 1}`}
+								className="side-preview"
 								style={{
-									position: "absolute",
-									height: "22px",
-									width: "22px",
-									left: soundEnabled ? "34px" : "4px",
-									bottom: "4px",
-									backgroundColor: "white",
-									borderRadius: "50%",
-									transition: "0.4s",
+									maxWidth: "100%",
+									height: "auto",
+									borderRadius: "4px",
+									border: `2px solid ${themeColors.mainPink}`,
+									boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
 								}}
 							/>
+						))}
+					</div>
+				</div>
+
+				<div className="controls">
+					<button 
+						onClick={startCountdown} 
+						disabled={capturing}
+						style={{
+							backgroundColor: themeColors.mainPink,
+							color: "#000000",
+							border: "none",
+							padding: "10px 20px",
+							borderRadius: "5px",
+							cursor: capturing ? "not-allowed" : "pointer",
+							fontWeight: "bold"
+						}}
+					>
+						{capturing ? "Capturing..." : "Start Capture :)"}
+					</button>
+					
+					{/* Sound toggle switch - Fixed clickable version */}
+					<div className="sound-toggle" style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
+						<label style={{ marginRight: "10px", userSelect: "none", cursor: "pointer" }} onClick={toggleSound}>
+							Camera Sound: {soundEnabled ? "On" : "Off"}
+						</label>
+						<div 
+							className="switch-container" 
+							style={{ position: "relative", display: "inline-block", width: "60px", height: "30px", cursor: "pointer" }}
+							onClick={toggleSound}
+						>
+							<div
+								className="slider"
+								style={{
+									position: "absolute",
+									top: 0,
+									left: 0,
+									right: 0,
+									bottom: 0,
+									backgroundColor: soundEnabled ? themeColors.accentColor : "#ccc",
+									borderRadius: "34px",
+									transition: "0.4s",
+								}}
+							>
+								<div 
+									className="slider-button"
+									style={{
+										position: "absolute",
+										height: "22px",
+										width: "22px",
+										left: soundEnabled ? "34px" : "4px",
+										bottom: "4px",
+										backgroundColor: "white",
+										borderRadius: "50%",
+										transition: "0.4s",
+									}}
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			<div className="filters" style={{ marginTop: "20px" }}>
-				<button 
-					onClick={() => setFilter("none")}
-					style={{
-						backgroundColor: filter === "none" ? themeColors.mainPink : "#f0f0f0",
-						margin: "5px",
-						padding: "8px 12px",
-						borderRadius: "4px",
-						cursor: "pointer",
-						border: filter === "none" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-					}}
-				>
-					No Filter
-				</button>
-				<button 
-					onClick={() => setFilter("grayscale(100%)")}
-					style={{
-						backgroundColor: filter === "grayscale(100%)" ? themeColors.mainPink : "#f0f0f0",
-						margin: "5px",
-						padding: "8px 12px",
-						borderRadius: "4px",
-						cursor: "pointer",
-						border: filter === "grayscale(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-					}}
-				>
-					Grayscale
-				</button>
-				<button 
-					onClick={() => setFilter("sepia(100%)")}
-					style={{
-						backgroundColor: filter === "sepia(100%)" ? themeColors.mainPink : "#f0f0f0",
-						margin: "5px",
-						padding: "8px 12px",
-						borderRadius: "4px",
-						cursor: "pointer",
-						border: filter === "sepia(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-					}}
-				>
-					Sepia
-				</button>
-				<button
-					onClick={() =>
-						setFilter(
-							"grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)"
-						)
-					}
-					style={{
-						backgroundColor: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? themeColors.mainPink : "#f0f0f0",
-						margin: "5px",
-						padding: "8px 12px",
-						borderRadius: "4px",
-						cursor: "pointer",
-						border: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-					}}
-				>
-					Vintage
-				</button>
-				<button
-					onClick={() =>
-						setFilter(
-							"brightness(130%) contrast(105%) saturate(80%) blur(0.3px)"
-						)
-					}
-					style={{
-						backgroundColor: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? themeColors.mainPink : "#f0f0f0",
-						margin: "5px",
-						padding: "8px 12px",
-						borderRadius: "4px",
-						cursor: "pointer",
-						border: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-					}}
-				>
-					Soft
-				</button>
-			</div>
-
-			{/* Background Lighting Section */}
-			<div className="lighting-section" style={{ marginTop: "20px" }}>
-				<h3 style={{ color: "#333", marginBottom: "10px" }}>Background Lighting</h3>
-				<div className="lighting-presets">
-					{lightingPresets.map((preset, index) => (
-						<button
-							key={index}
-							onClick={() => setBackgroundColor(preset.color)}
-							style={{
-								backgroundColor: preset.color,
-								color: preset.color === "#FFFFFF" || preset.color === "#F5F5DC" || preset.color === "#FFD580" || preset.color === "#ADD8E6" || preset.color === "#FFC0CB" || preset.color === "#FFF0F5" || preset.color === "#E6E6FA" ? "#000000" : "#FFFFFF",
-								border: backgroundColor === preset.color ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
-								margin: "5px",
-								padding: "8px 12px",
-								borderRadius: "4px",
-								cursor: "pointer"
-							}}
-						>
-							{preset.name}
-						</button>
-					))}
+				<div className="filters" style={{ marginTop: "20px" }}>
 					<button 
-						onClick={toggleColorPicker}
+						onClick={() => setFilter("none")}
 						style={{
+							backgroundColor: filter === "none" ? themeColors.mainPink : "#f0f0f0",
 							margin: "5px",
 							padding: "8px 12px",
 							borderRadius: "4px",
 							cursor: "pointer",
-							backgroundColor: themeColors.lightPink,
-							border: "1px solid #ccc"
+							border: filter === "none" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
 						}}
 					>
-						Custom Color
+						No Filter
+					</button>
+					<button 
+						onClick={() => setFilter("grayscale(100%)")}
+						style={{
+							backgroundColor: filter === "grayscale(100%)" ? themeColors.mainPink : "#f0f0f0",
+							margin: "5px",
+							padding: "8px 12px",
+							borderRadius: "4px",
+							cursor: "pointer",
+							border: filter === "grayscale(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
+						}}
+					>
+						Grayscale
+					</button>
+					<button 
+						onClick={() => setFilter("sepia(100%)")}
+						style={{
+							backgroundColor: filter === "sepia(100%)" ? themeColors.mainPink : "#f0f0f0",
+							margin: "5px",
+							padding: "8px 12px",
+							borderRadius: "4px",
+							cursor: "pointer",
+							border: filter === "sepia(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
+						}}
+					>
+						Sepia
+					</button>
+					<button
+						onClick={() =>
+							setFilter(
+								"grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)"
+							)
+						}
+						style={{
+							backgroundColor: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? themeColors.mainPink : "#f0f0f0",
+							margin: "5px",
+							padding: "8px 12px",
+							borderRadius: "4px",
+							cursor: "pointer",
+							border: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
+						}}
+					>
+						Vintage
+					</button>
+					<button
+						onClick={() =>
+							setFilter(
+								"brightness(130%) contrast(105%) saturate(80%) blur(0.3px)"
+							)
+						}
+						style={{
+							backgroundColor: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? themeColors.mainPink : "#f0f0f0",
+							margin: "5px",
+							padding: "8px 12px",
+							borderRadius: "4px",
+							cursor: "pointer",
+							border: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
+						}}
+					>
+						Soft
 					</button>
 				</div>
-				
-				{showColorPicker && (
-					<div className="color-picker-container" style={{ margin: "10px 0" }}>
-						<input
-							type="color"
-							value={backgroundColor}
-							onChange={handleColorChange}
-							style={{ width: "50px", height: "50px" }}
-						/>
-						<span style={{ marginLeft: "10px" }}>{backgroundColor}</span>
+
+				{/* Background Lighting Section */}
+				<div className="lighting-section" style={{ marginTop: "20px" }}>
+					<h3 style={{ color: "#333", marginBottom: "10px" }}>Background Lighting</h3>
+					<div className="lighting-presets">
+						{lightingPresets.map((preset, index) => (
+							<button
+								key={index}
+								onClick={() => setBackgroundColor(preset.color)}
+								style={{
+									backgroundColor: preset.color,
+									color: preset.color === "#FFFFFF" || preset.color === "#F5F5DC" || preset.color === "#FFD580" || preset.color === "#ADD8E6" || preset.color === "#FFC0CB" || preset.color === "#FFF0F5" || preset.color === "#E6E6FA" ? "#000000" : "#FFFFFF",
+									border: backgroundColor === preset.color ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+									margin: "5px",
+									padding: "8px 12px",
+									borderRadius: "4px",
+									cursor: "pointer"
+								}}
+							>
+								{preset.name}
+							</button>
+						))}
+						<button 
+							onClick={toggleColorPicker}
+							style={{
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								backgroundColor: themeColors.lightPink,
+								border: "1px solid #ccc"
+							}}
+						>
+							Custom Color
+						</button>
 					</div>
-				)}
+					
+					{showColorPicker && (
+						<div className="color-picker-container" style={{ margin: "10px 0" }}>
+							<input
+								type="color"
+								value={backgroundColor}
+								onChange={handleColorChange}
+								style={{ width: "50px", height: "50px" }}
+							/>
+							<span style={{ marginLeft: "10px" }}>{backgroundColor}</span>
+						</div>
+					)}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 };
 

@@ -1,12 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
+import Meta from "./Meta";
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    // <div className="background-gradient flex flex-col justify-center items-center text-center">
+    <>
+      <Meta 
+        title="Create Photo Strips Online"
+        description="Picapica Photo Booth - Create beautiful photo strips online, add fun stickers, and share your memories with friends and family. Free web-based photo booth app."
+        canonicalUrl="/"
+      />
       <div className="home-container bg-white bg-opacity-60">
         <h1 className="text-5xl font-bold text-pink-600 mb-4">Pica Pica Photo Booth</h1>
         <p className="text-lg text-gray-700 mb-6">
@@ -95,7 +101,7 @@ const Home = () => {
         </div>
       </section>
       </div>
-    // </div>
+    </>
     );
   };
 
