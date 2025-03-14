@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SharePage = () => {
-  const { imageUrl } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [decodedUrl, setDecodedUrl] = useState('');
 
   useEffect(() => {
+    // Get imageurl from query parameters
+    const queryParams = new URLSearchParams(location.search);
+    const imageUrl = queryParams.get('imageurl');
+
     if (!imageUrl) {
       setLoading(false);
       return;
@@ -24,7 +28,7 @@ const SharePage = () => {
       setError('Invalid image URL');
       setLoading(false);
     }
-  }, [imageUrl]);
+  }, [location.search]);
 
   const handleCopyLink = () => {
     const shareUrl = window.location.href;
@@ -101,7 +105,7 @@ const SharePage = () => {
   }
 
   // Default page when no imageUrl is provided
-  if (!imageUrl) {
+  if (!decodedUrl) {
     return (
       <div className="share-page" style={{ 
         padding: '20px',

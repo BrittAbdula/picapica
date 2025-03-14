@@ -46,7 +46,7 @@ function App() {
 				<Route path="/welcome" element={<Welcome />} />
 				<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
 				<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
-				<Route path="/share/:imageUrl" element={<SharePage />} />
+				<Route path="/share" element={<SharePage />} />
 				<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 				<Route path="/terms-of-service" element={<TermsOfService />} />
 			</Routes>

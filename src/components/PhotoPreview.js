@@ -162,7 +162,7 @@ const PhotoPreview = ({ capturedImages }) => {
 			const data = await response.json();
 			
 			// Generate shareable link
-			const shareableLink = `${window.location.origin}/share/${encodeURIComponent(data.imageUrl)}`;
+			const shareableLink = `${window.location.origin}/share?imageurl=${encodeURIComponent(data.imageUrl)}`;
 			setShareLink(shareableLink);
 			
 		} catch (error) {
@@ -189,8 +189,9 @@ const PhotoPreview = ({ capturedImages }) => {
 	const navigateToShare = () => {
 		if (!shareLink) return;
 		
-		const imageUrl = shareLink.split('/share/')[1];
-		navigate(`/share/${imageUrl}`);
+		// Extract the query parameter
+		const imageUrl = new URL(shareLink).searchParams.get('imageurl');
+		navigate(`/share?imageurl=${imageUrl}`);
 	};
 
 	return (
