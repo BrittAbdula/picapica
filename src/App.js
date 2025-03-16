@@ -6,6 +6,8 @@ import Welcome from "./components/Welcome";
 import PhotoBooth from "./components/PhotoBooth";
 import PhotoPreview from "./components/PhotoPreview";
 import SharePage from "./components/SharePage";
+import GalleryPage from "./components/GalleryPage";
+import GoogleAnalytics from "./components/GoogleAnalytics";
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import RouteGuard from './utils/RouteGuard';
@@ -23,6 +25,9 @@ function App() {
 
 	return (
 		<div className="App">
+			{/* 添加 Google Analytics */}
+			<GoogleAnalytics />
+			
 			<nav className="navbar">
 				<Link to="/" className="logo-link">
 					<img
@@ -53,6 +58,7 @@ function App() {
 					<Route path="/welcome" element={<Welcome />} />
 					<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
 					<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
+					<Route path="/gallery" element={<GalleryPage />} />
 					<Route path="/share" element={<SharePage />} />
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
