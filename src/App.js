@@ -48,7 +48,7 @@ function App() {
 						alt="Pica Pica"
 						className="navbar-logo"
 					/>
-					<span className="site-name">picapica.app</span>
+					<span className="site-name">Picapica.app</span>
 				</Link>
 
 				<div className="hamburger-menu" onClick={toggleMenu}>

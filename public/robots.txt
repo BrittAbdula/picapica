@@ -7,4 +7,8 @@ Sitemap: https://picapica.app/sitemap.xml
 
 # Disallow access to any API endpoints
 User-agent: *
-Disallow: /api/ 
+Disallow: /api/
+
+# Disallow access to share pages with parameters
+User-agent: *
+Disallow: /share? 
