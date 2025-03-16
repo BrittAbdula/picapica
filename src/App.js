@@ -60,7 +60,6 @@ function App() {
 				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
 					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
 					<Link to="/welcome" onClick={() => setMenuOpen(false)}>Welcome</Link>
-					<Link to="/gallery" onClick={() => setMenuOpen(false)}>Gallery</Link>
 					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
 				</div>
 			</nav>
@@ -72,7 +71,7 @@ function App() {
 					<Route path="/welcome" element={<Welcome />} />
 					<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
 					<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
-					<Route path="/gallery" element={<GalleryPage />} />
+					<Route path="/g" element={<GalleryPage />} />
 					<Route path="/share" element={<SharePage />} />
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
