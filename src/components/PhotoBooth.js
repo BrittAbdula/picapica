@@ -11,6 +11,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 	const [capturedImages, setImages] = useState([]);
 	const [filter, setFilter] = useState("none");
 	const [countdown, setCountdown] = useState(null);
+	const [countdownDuration, setCountdownDuration] = useState(3); // Default countdown duration
 	const [capturing, setCapturing] = useState(false);
 	const cameraShutterRef = useRef(new Audio('/camera-shutter.mp3'));
 	const [backgroundColor, setBackgroundColor] = useState("#FFF0F5"); // Default light pink background
@@ -25,6 +26,144 @@ const PhotoBooth = ({ setCapturedImages }) => {
 		darkPink: "#FF69B4", // Hot pink
 		accentColor: "#FF1493" // Deep pink
 	};
+
+	// CSS for animations
+	const pulseKeyframes = `
+		@keyframes pulse {
+			0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+			50% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.9; }
+			100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+		}
+		
+		@keyframes countdownEnter {
+			from { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+			to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+		}
+		
+		@keyframes countdownExit {
+			from { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+			to { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+		}
+		
+		@keyframes flash {
+			0% { opacity: 0; }
+			25% { opacity: 1; }
+			50% { opacity: 0.8; }
+			75% { opacity: 0.6; }
+			100% { opacity: 0; }
+		}
+		
+		/* 超大屏幕样式 */
+		@media (min-width: 1600px) {
+			.photo-booth {
+				padding-top: 80px !important; /* 大屏幕顶部空间更大 */
+			}
+			
+			.photo-container {
+				max-width: 1400px !important;
+			}
+			
+			.camera-container {
+				max-width: 65% !important;
+			}
+			
+			.preview-side {
+				max-width: 250px !important;
+			}
+		}
+
+		@media (max-width: 768px) {
+			.countdown-display-overlay {
+				font-size: 80px !important;
+				width: 120px !important;
+				height: 120px !important;
+			}
+
+			.controls {
+				padding: 10px 5px !important;
+			}
+			
+			.filters button, .lighting-presets button {
+				padding: 6px 10px !important;
+				margin: 3px !important;
+				font-size: 12px !important;
+			}
+			
+			.photo-container {
+				flex-direction: column !important;
+				align-items: center !important;
+				padding: 0 10px !important;
+			}
+			
+			.camera-container {
+				max-width: 100% !important;
+				width: 100% !important;
+			}
+			
+			.preview-side {
+				flex-direction: row !important;
+				width: 100% !important;
+				max-width: 100% !important;
+				margin-left: 0 !important;
+				margin-top: 10px !important;
+				overflow-x: auto !important;
+				padding-bottom: 5px !important;
+				justify-content: center !important;
+			}
+			
+			.side-preview, .preview-side > div {
+				width: 120px !important;
+				min-width: 120px !important;
+				max-width: 120px !important;
+			}
+			
+			.photo-booth {
+				padding-top: 20px !important; /* 移动端顶部空间稍小 */
+			}
+		}
+
+		@media (max-width: 480px) {
+			.countdown-display-overlay {
+				font-size: 60px !important;
+				width: 100px !important;
+				height: 100px !important;
+			}
+
+			.controls {
+				flex-direction: column !important;
+				padding: 10px 0 !important;
+			}
+
+			.countdown-setting {
+				margin-right: 0 !important;
+				margin-bottom: 15px !important;
+			}
+
+			.sound-toggle {
+				margin-top: 15px !important;
+			}
+			
+			.filters button, .lighting-presets button {
+				padding: 5px 8px !important;
+				margin: 2px !important;
+				font-size: 11px !important;
+			}
+			
+			.lighting-section h3 {
+				font-size: 14px !important;
+			}
+			
+			.side-preview, .preview-side > div {
+				width: 100px !important;
+				min-width: 100px !important;
+				max-width: 100px !important;
+			}
+			
+			.photo-booth {
+				padding-top: 30px !important; /* 小屏幕顶部空间更小 */
+			}
+		}
+	`;
 
 	// Preset lighting colors for makeup
 	const lightingPresets = [
@@ -221,23 +360,28 @@ const PhotoBooth = ({ setCapturedImages }) => {
 				return;
 			}
 
-			let timeLeft = 3;
-			setCountdown(timeLeft);
-
-			const timer = setInterval(() => {
-				timeLeft -= 1;
+			
+			
+			// 延迟1秒后开始倒计时
+			setTimeout(() => {
+				let timeLeft = countdownDuration; // Use the selected countdown duration
 				setCountdown(timeLeft);
 
-				if (timeLeft === 0) {
-					clearInterval(timer);
-					const imageUrl = capturePhoto();
-					if (imageUrl) {
-						newCapturedImages.push(imageUrl);
-						setImages((prevImages) => [...prevImages, imageUrl]);
+				const timer = setInterval(() => {
+					timeLeft -= 1;
+					setCountdown(timeLeft);
+
+					if (timeLeft === 0) {
+						clearInterval(timer);
+						const imageUrl = capturePhoto();
+						if (imageUrl) {
+							newCapturedImages.push(imageUrl);
+							setImages((prevImages) => [...prevImages, imageUrl]);
+						}
+						photosTaken += 1;
+						setTimeout(captureSequence, 1000);
 					}
-					photosTaken += 1;
-					setTimeout(captureSequence, 1000);
-				}
+				}, 1000);
 			}, 1000);
 		};
 
@@ -250,6 +394,29 @@ const PhotoBooth = ({ setCapturedImages }) => {
 		const canvas = canvasRef.current;
 
 		if (video && canvas) {
+			// 创建闪光效果
+			const flash = document.createElement('div');
+			flash.style.position = 'absolute';
+			flash.style.top = '0';
+			flash.style.left = '0';
+			flash.style.width = '100%';
+			flash.style.height = '100%';
+			flash.style.backgroundColor = 'white';
+			flash.style.opacity = '0';
+			flash.style.animation = 'flash 0.5s ease-out';
+			flash.style.zIndex = '99';
+			flash.style.pointerEvents = 'none';
+			flash.style.borderRadius = '8px';
+			
+			// 添加闪光效果到视频容器
+			const container = video.parentElement;
+			container.appendChild(flash);
+			
+			// 移除闪光效果
+			setTimeout(() => {
+				container.removeChild(flash);
+			}, 500);
+			
 			// Play camera shutter sound if enabled
 			if (soundEnabled) {
 				cameraShutterRef.current.play().catch(err => console.error("Error playing sound:", err));
@@ -319,47 +486,221 @@ const PhotoBooth = ({ setCapturedImages }) => {
 				description="Use Picapica Photo Booth to capture fun moments, apply filters, and create beautiful photo strips. Our free online photo booth lets you take 4 photos and customize them."
 				canonicalUrl="/photobooth"
 			/>
-			<div className="photo-booth" style={{ backgroundColor }}>
-				{countdown !== null && <h2 className="countdown animate">{countdown}</h2>}
+			<style>{pulseKeyframes}</style>
+			<div className="photo-booth" style={{ 
+				backgroundColor,
+				paddingTop: "80px", // 增加顶部空间，避免被header遮挡
+				overflow: "hidden", // 防止内容溢出
+				width: "100%",
+				maxWidth: "100vw", // 确保不超过视口宽度
+				boxSizing: "border-box", // 确保padding不会增加宽度
+				minHeight: "100vh" // 确保至少占满整个视口高度
+			}}>
+				{/* 添加提示信息 */}
+				<div style={{
+					textAlign: "center",
+					marginBottom: "15px",
+					color: "#333",
+					fontSize: "14px",
+					padding: "0 20px",
+					maxWidth: "800px", // 限制最大宽度
+					margin: "0 auto 15px" // 居中并保持下边距
+				}}>
+					<p>Choose countdown time, click "Start Capture" to take photos</p>
+				</div>
 
-				<div className="photo-container">
-					<div className="camera-container">
+				<div className="photo-container" style={{
+					display: "flex",
+					justifyContent: "center",
+					alignItems: "flex-start",
+					gap: "15px",
+					marginBottom: "20px",
+					padding: "0 15px",
+					boxSizing: "border-box", // 确保padding不会增加宽度
+					maxWidth: "1200px", // 限制最大宽度
+					margin: "0 auto" // 居中
+				}}>
+					<div className="camera-container" style={{ 
+						position: "relative",
+						maxWidth: "70%",
+						flexGrow: 1,
+						width: "100%", // 确保填充可用空间
+						boxSizing: "border-box" // 确保边框不会增加宽度
+					}}>
 						<video
 							ref={videoRef}
 							autoPlay
 							className="video-feed"
-							style={{ filter }}
+							style={{ 
+								filter,
+								borderRadius: "8px",
+								border: "2px solid #000",
+								boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+								width: "100%",
+								height: "auto",
+								maxHeight: "70vh", // 限制最大高度
+								objectFit: "cover", // 确保视频填充容器
+								boxSizing: "border-box" // 确保边框不会增加宽度
+							}}
 						/>
 						<canvas ref={canvasRef} className="hidden" />
+						
+						{/* 将倒计时放在视频流内部 */}
+						{countdown !== null && (
+							<div className="countdown-display-overlay" style={{
+								position: "absolute",
+								top: "50%",
+								left: "50%",
+								transform: "translate(-50%, -50%)",
+								fontSize: typeof countdown === "string" ? "40px" : "120px", // 如果是文字提示，使用较小的字体
+								fontWeight: "bold",
+								color: "rgba(255, 255, 255, 0.8)",
+								textShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
+								zIndex: 100,
+								animation: `countdownEnter 0.3s ease-out, pulse 1s infinite`,
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								width: "150px",
+								height: "150px",
+								borderRadius: "50%",
+								backgroundColor: "rgba(0, 0, 0, 0.3)",
+								pointerEvents: "none" // 确保不会阻挡用户交互
+							}}>
+								{countdown}
+							</div>
+						)}
 					</div>
 
 					<div className="preview-side" style={{ 
-						marginLeft: "-15px", // Shift preview images to the left
+						marginLeft: "10px", // 调整间距
 						display: "flex",
 						flexDirection: "column",
-						alignItems: "flex-start",
-						justifyContent: "center",
-						gap: "10px"
+						alignItems: "center",
+						justifyContent: "flex-start",
+						gap: "10px",
+						width: "25%", // 固定宽度比例
+						maxWidth: "200px", // 最大宽度限制
+						minWidth: "120px", // 最小宽度限制
+						boxSizing: "border-box" // 确保边框不会增加宽度
 					}}>
-						{capturedImages.map((image, index) => (
-							<img
-								key={index}
-								src={image}
-								alt={`Captured ${index + 1}`}
-								className="side-preview"
-								style={{
-									maxWidth: "100%",
-									height: "auto",
-									borderRadius: "4px",
-									border: `2px solid ${themeColors.mainPink}`,
-									boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-								}}
-							/>
-						))}
+						{capturedImages.length === 0 ? (
+							<div style={{
+								width: "100%",
+								aspectRatio: "16/9",
+								borderRadius: "8px",
+								border: "2px solid #000",
+								boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+								backgroundColor: "rgba(0,0,0,0.1)",
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								color: "#666",
+								fontSize: "12px",
+								textAlign: "center",
+								padding: "10px",
+								boxSizing: "border-box" // 确保边框不会增加宽度
+							}}>
+								photos will show here
+							</div>
+						) : (
+							capturedImages.map((image, index) => (
+								<img
+									key={index}
+									src={image}
+									alt={`Captured ${index + 1}`}
+									className="side-preview"
+									style={{
+										width: "100%",
+										height: "auto",
+										borderRadius: "8px",
+										border: "2px solid #000", // 使用与视频流相同的黑色边框
+										boxShadow: "0 4px 8px rgba(0,0,0,0.2)", // 与视频流相同的阴影效果
+										objectFit: "cover", // 确保图片填充容器
+										aspectRatio: "16/9", // 保持与视频相同的宽高比
+										boxSizing: "border-box" // 确保边框不会增加宽度
+									}}
+								/>
+							))
+						)}
 					</div>
 				</div>
 
-				<div className="controls">
+				<div className="controls" style={{ 
+					display: "flex", 
+					flexDirection: "row", 
+					alignItems: "center", 
+					justifyContent: "center",
+					flexWrap: "wrap", // Allow wrapping on small screens
+					gap: "15px", // Add gap between elements
+					maxWidth: "1000px", // 限制最大宽度
+					margin: "0 auto", // 居中
+					padding: "0 15px", // 添加水平内边距
+					boxSizing: "border-box" // 确保padding不会增加宽度
+				}}>
+					{/* Countdown Duration Setting */}
+					<div className="countdown-setting" style={{ 
+						display: "flex", 
+						flexDirection: "column", 
+						alignItems: "center", 
+						marginRight: "20px",
+						minWidth: "120px",
+						maxWidth: "150px",
+						flex: "1 1 auto" // Allow flexible sizing
+					}}>
+						<label style={{ 
+							marginBottom: "8px", 
+							fontWeight: "bold", 
+							color: "#333",
+							fontSize: "14px",
+							textAlign: "center"
+						}}>
+							Countdown: {countdownDuration}s
+						</label>
+						<div style={{ 
+							display: "flex", 
+							alignItems: "flex-end", 
+							height: "40px", 
+							width: "100%", 
+							justifyContent: "space-between",
+							maxWidth: "120px", // Limit maximum width
+							padding: "0 5px" // Add padding for better spacing
+						}}>
+							{[1, 2, 3, 4, 5].map((value) => (
+								<div 
+									key={value} 
+									onClick={() => !capturing && setCountdownDuration(value)}
+									style={{
+										width: "18px", // Slightly narrower for better mobile spacing
+										height: `${value * 20}%`,
+										backgroundColor: value === countdownDuration 
+											? themeColors.accentColor 
+											: themeColors.mainPink,
+										borderRadius: "3px 3px 0 0",
+										cursor: capturing ? "not-allowed" : "pointer",
+										transition: "all 0.3s ease",
+										opacity: capturing ? 0.6 : 1,
+										position: "relative",
+										boxShadow: value === countdownDuration ? "0 0 5px rgba(0,0,0,0.2)" : "none", // Add shadow to selected bar
+										WebkitTapHighlightColor: "transparent" // Remove default mobile tap highlight
+									}}
+								>
+									<span style={{
+										position: "absolute",
+										bottom: "-20px",
+										left: "50%",
+										transform: "translateX(-50%)",
+										fontSize: "12px",
+										fontWeight: value === countdownDuration ? "bold" : "normal",
+										color: value === countdownDuration ? themeColors.accentColor : "#333"
+									}}>
+										{value}
+									</span>
+								</div>
+							))}
+						</div>
+					</div>
+
 					<button 
 						onClick={startCountdown} 
 						disabled={capturing}
@@ -377,8 +718,20 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					</button>
 					
 					{/* Sound toggle switch - Fixed clickable version */}
-					<div className="sound-toggle" style={{ marginTop: "15px", display: "flex", alignItems: "center" }}>
-						<label style={{ marginRight: "10px", userSelect: "none", cursor: "pointer" }} onClick={toggleSound}>
+					<div className="sound-toggle" style={{ 
+						display: "flex", 
+						flexDirection: "column", 
+						alignItems: "center",
+						minWidth: "150px"
+					}}>
+						<label style={{ 
+							marginBottom: "8px", 
+							fontWeight: "bold", 
+							color: "#333",
+							fontSize: "14px",
+							userSelect: "none", 
+							cursor: "pointer" 
+						}} onClick={toggleSound}>
 							Camera Sound: {soundEnabled ? "On" : "Off"}
 						</label>
 						<div 
@@ -417,7 +770,17 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					</div>
 				</div>
 
-				<div className="filters" style={{ marginTop: "20px" }}>
+				<div className="filters" style={{ 
+					marginTop: "20px",
+					display: "flex",
+					flexWrap: "wrap",
+					justifyContent: "center",
+					gap: "8px",
+					maxWidth: "1000px", // 限制最大宽度
+					margin: "20px auto 0", // 居中并设置上边距
+					padding: "0 15px", // 添加水平内边距
+					boxSizing: "border-box" // 确保padding不会增加宽度
+				}}>
 					<button 
 						onClick={() => setFilter("none")}
 						style={{
@@ -494,9 +857,27 @@ const PhotoBooth = ({ setCapturedImages }) => {
 				</div>
 
 				{/* Background Lighting Section */}
-				<div className="lighting-section" style={{ marginTop: "20px" }}>
-					<h3 style={{ color: "#333", marginBottom: "10px" }}>Background Lighting</h3>
-					<div className="lighting-presets">
+				<div className="lighting-section" style={{ 
+					marginTop: "20px",
+					padding: "0 15px",
+					maxWidth: "1000px", // 限制最大宽度
+					margin: "20px auto 0", // 居中并设置上边距
+					boxSizing: "border-box" // 确保padding不会增加宽度
+				}}>
+					<h3 style={{ 
+						color: "#333", 
+						marginBottom: "10px",
+						textAlign: "center",
+						fontSize: "16px"
+					}}>
+						Background Lighting
+					</h3>
+					<div className="lighting-presets" style={{
+						display: "flex",
+						flexWrap: "wrap",
+						justifyContent: "center",
+						gap: "8px"
+					}}>
 						{lightingPresets.map((preset, index) => (
 							<button
 								key={index}
@@ -508,7 +889,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
 									margin: "5px",
 									padding: "8px 12px",
 									borderRadius: "4px",
-									cursor: "pointer"
+									cursor: "pointer",
+									fontSize: "12px"
 								}}
 							>
 								{preset.name}
@@ -522,7 +904,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
 								borderRadius: "4px",
 								cursor: "pointer",
 								backgroundColor: themeColors.lightPink,
-								border: "1px solid #ccc"
+								border: "1px solid #ccc",
+								fontSize: "12px"
 							}}
 						>
 							Custom Color
@@ -530,14 +913,27 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					</div>
 					
 					{showColorPicker && (
-						<div className="color-picker-container" style={{ margin: "10px 0" }}>
+						<div className="color-picker-container" style={{ 
+							margin: "15px 0",
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+							flexWrap: "wrap",
+							gap: "10px"
+						}}>
 							<input
 								type="color"
 								value={backgroundColor}
 								onChange={handleColorChange}
-								style={{ width: "50px", height: "50px" }}
+								style={{ width: "50px", height: "50px", cursor: "pointer" }}
 							/>
-							<span style={{ marginLeft: "10px" }}>{backgroundColor}</span>
+							<span style={{ 
+								fontSize: "14px",
+								fontWeight: "bold",
+								color: "#333"
+							}}>
+								{backgroundColor}
+							</span>
 						</div>
 					)}
 				</div>

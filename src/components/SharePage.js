@@ -46,7 +46,7 @@ const SharePage = () => {
   // 为不同状态设置不同的元数据
   let metaTitle = 'Share Your Photo Strip';
   let metaDescription = 'Share your Picapica photo strip with friends and family. Create beautiful photo strips with our free online photo booth app.';
-  let metaImage = decodedUrl || 'https://picapica.app/images/og-image.jpg';
+  let metaImage = decodedUrl || 'https://picapica.app/images/og-image.png';
   let canonicalPath = location.pathname + location.search;
 
   if (loading) {
@@ -284,7 +284,7 @@ const SharePage = () => {
             style={{
               maxWidth: '100%',
               height: 'auto',
-              borderRadius: '8px',
+              borderRadius: '0px',
               boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
             }}
           />
@@ -393,7 +393,7 @@ const SharePage = () => {
                 color: 'white',
                 border: 'none',
                 padding: '10px 15px',
-                borderRadius: '5px',
+                borderRadius: '0px',
                 cursor: 'pointer'
               }}
             >

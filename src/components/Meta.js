@@ -5,7 +5,7 @@ const Meta = ({
   title, 
   description, 
   canonicalUrl, 
-  ogImage = 'https://picapica.app/images/og-image.jpg',
+  ogImage = 'https://picapica.app/images/og-image.png',
   keywords = ''
 }) => {
   // 构建完整的标题，确保包含品牌名

@@ -110,7 +110,7 @@ const PhotoPreview = ({ capturedImages }) => {
 					ctx.textAlign = "center";
 
 					ctx.fillText(
-						"© 2025 AW",
+						"pica pica.app   ",
 						canvas.width - borderSize,
 						totalHeight - borderSize / 2
 					);
