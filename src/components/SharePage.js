@@ -33,14 +33,26 @@ const SharePage = () => {
 
   const handleCopyLink = () => {
     const shareUrl = window.location.href;
-    navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        alert('Link copied to clipboard!');
-      })
-      .catch(err => {
-        console.error('Failed to copy link:', err);
-        alert('Failed to copy link. Please try manually copying the URL.');
-      });
+        if (!shareUrl) return;
+      
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(shareUrl)
+            .catch(err => {
+              console.error('Failed to copy link:', err);
+            });
+        } else {
+          // 回退方案
+          const textArea = document.createElement('textarea');
+          textArea.value = shareUrl;
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+          } catch (err) {
+            console.error('Fallback copy failed:', err);
+          }
+          document.body.removeChild(textArea);
+        }
   };
 
   // 为不同状态设置不同的元数据
@@ -83,8 +95,7 @@ const SharePage = () => {
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center',
-          height: '100vh',
-          backgroundColor: '#f9f9f9'
+          height: '100vh'
         }}>
           <div style={{ textAlign: 'center' }}>
             <h2>Loading shared photo...</h2>
@@ -122,8 +133,7 @@ const SharePage = () => {
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center',
-          height: '100vh',
-          backgroundColor: '#f9f9f9'
+          height: '100vh'
         }}>
           <div style={{ textAlign: 'center', maxWidth: '600px', padding: '20px' }}>
             <h2 style={{ color: '#d32f2f' }}>Error Loading Photo</h2>
@@ -162,9 +172,6 @@ const SharePage = () => {
           padding: '20px',
           maxWidth: '800px',
           margin: '0 auto',
-          backgroundColor: '#fff',
-          borderRadius: '8px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
           marginTop: '40px'
         }}>
           <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
@@ -264,9 +271,6 @@ const SharePage = () => {
         padding: '20px',
         maxWidth: '800px',
         margin: '0 auto',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
         marginTop: '40px'
       }}>
         <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>

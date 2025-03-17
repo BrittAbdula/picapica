@@ -533,7 +533,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
 							className="video-feed"
 							style={{ 
 								filter,
-								borderRadius: "8px",
 								border: "2px solid #000",
 								boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
 								width: "100%",
@@ -588,7 +587,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
 							<div style={{
 								width: "100%",
 								aspectRatio: "16/9",
-								borderRadius: "8px",
 								border: "2px solid #000",
 								boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
 								backgroundColor: "rgba(0,0,0,0.1)",
@@ -613,7 +611,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
 									style={{
 										width: "100%",
 										height: "auto",
-										borderRadius: "8px",
 										border: "2px solid #000", // 使用与视频流相同的黑色边框
 										boxShadow: "0 4px 8px rgba(0,0,0,0.2)", // 与视频流相同的阴影效果
 										objectFit: "cover", // 确保图片填充容器

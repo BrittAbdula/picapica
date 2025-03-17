@@ -2,14 +2,32 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Meta from "./Meta";
 
-const PhotoPreview = ({ capturedImages }) => {
+const PhotoPreview = ({ capturedImages: initialImages }) => {
 	const stripCanvasRef = useRef(null);
+	const fileInputRef = useRef(null);
 	const navigate = useNavigate();
 	const [stripColor, setStripColor] = useState("white");
 	const [selectedFrame, setSelectedFrame] = useState("none");
 	const [shareLink, setShareLink] = useState("");
 	const [isGeneratingLink, setIsGeneratingLink] = useState(false);
 	const [linkCopied, setLinkCopied] = useState(false);
+	const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+	const [localImages, setLocalImages] = useState(Array(4).fill(null));
+	const [draggedIndex, setDraggedIndex] = useState(null);
+	const [dragOverIndex, setDragOverIndex] = useState(null);
+	
+	// 初始化照片数组 - 固定4个位置
+	useEffect(() => {
+		if (initialImages && initialImages.length > 0) {
+			const newImages = [...Array(4).fill(null)];
+			initialImages.forEach((img, index) => {
+				if (index < 4) {
+					newImages[index] = img;
+				}
+			});
+			setLocalImages(newImages);
+		}
+	}, [initialImages]);
 
 	const generatePhotoStrip = useCallback(() => {
 		const canvas = stripCanvasRef.current;
@@ -27,16 +45,23 @@ const PhotoPreview = ({ capturedImages }) => {
 		canvas.width = imgWidth + borderSize * 2;
 		canvas.height = totalHeight;
 
+		// 先填充背景颜色
 		ctx.fillStyle = stripColor;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+		// 计算有多少实际照片需要加载
+		const actualImages = localImages.filter(img => img !== null);
 		let imagesLoaded = 0;
-		capturedImages.forEach((image, index) => {
-			const img = new Image();
-			img.src = image;
-			img.onload = () => {
-				const yOffset = borderSize + (imgHeight + photoSpacing) * index;
 
+		// 处理四个位置
+		for (let i = 0; i < 4; i++) {
+			const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+			
+			if (localImages[i]) {
+				// 绘制有照片的位置
+			const img = new Image();
+				img.src = localImages[i];
+			img.onload = () => {
 				const imageRatio = img.width / img.height;
 				const targetRatio = imgWidth / imgHeight;
 
@@ -80,7 +105,34 @@ const PhotoPreview = ({ capturedImages }) => {
 
 				imagesLoaded++;
 
-				if (imagesLoaded === capturedImages.length) {
+					// 所有实际照片都加载完成后，添加底部文字
+					if (imagesLoaded === actualImages.length) {
+						addFooterAndWatermark(ctx, totalHeight, borderSize, canvas.width);
+					}
+				};
+			} else {
+				// 绘制空白位置的占位符
+				ctx.fillStyle = "#f5f5f5";
+				ctx.fillRect(borderSize, yOffset, imgWidth, imgHeight);
+				
+				ctx.fillStyle = "#cccccc";
+				ctx.font = "16px Arial";
+				ctx.textAlign = "center";
+				ctx.fillText(
+					"Add Photo " + (i + 1),
+					borderSize + imgWidth / 2,
+					yOffset + imgHeight / 2
+				);
+			}
+		}
+		
+		// 如果没有照片，仍然显示底部文字
+		if (actualImages.length === 0) {
+			addFooterAndWatermark(ctx, totalHeight, borderSize, canvas.width);
+		}
+	}, [localImages, stripColor, selectedFrame]);
+
+	const addFooterAndWatermark = (ctx, totalHeight, borderSize, canvasWidth) => {
 					const now = new Date();
 					const timestamp =
 						now.toLocaleDateString("en-US", {
@@ -101,7 +153,7 @@ const PhotoPreview = ({ capturedImages }) => {
 
 					ctx.fillText(
 						"Picapica  " + timestamp,
-						canvas.width / 2,
+			canvasWidth / 2,
 						totalHeight - borderSize * 1
 					);
 
@@ -111,23 +163,26 @@ const PhotoPreview = ({ capturedImages }) => {
 
 					ctx.fillText(
 						"pica pica.app   ",
-						canvas.width - borderSize,
+			canvasWidth - borderSize,
 						totalHeight - borderSize / 2
 					);
-				}
 			};
-		});
-	}, [capturedImages, stripColor, selectedFrame]);
 
+	// 每当localImages变化，都重新生成照片条
 	useEffect(() => {
-		if (capturedImages.length === 4) {
 			setTimeout(() => {
 				generatePhotoStrip();
 			}, 100);
-		}
-	}, [capturedImages, stripColor, selectedFrame, generatePhotoStrip]);
+	}, [localImages, stripColor, selectedFrame, generatePhotoStrip]);
 
 	const downloadPhotoStrip = () => {
+		// 检查是否所有位置都有照片
+		const allSlotsFilled = localImages.every(img => img !== null);
+		if (!allSlotsFilled) {
+			alert("Please add photos to all slots before downloading.");
+			return;
+		}
+		
 		const link = document.createElement("a");
 		link.download = "photostrip.png";
 		link.href = stripCanvasRef.current.toDataURL("image/png");
@@ -135,6 +190,13 @@ const PhotoPreview = ({ capturedImages }) => {
 	};
 
 	const getShareableLink = async () => {
+		// 检查是否所有位置都有照片
+		const allSlotsFilled = localImages.every(img => img !== null);
+		if (!allSlotsFilled) {
+			alert("Please add photos to all slots before sharing.");
+			return;
+		}
+		
 		if (!stripCanvasRef.current) return;
 		
 		try {
@@ -177,6 +239,7 @@ const PhotoPreview = ({ capturedImages }) => {
 	const copyLinkToClipboard = () => {
 		if (!shareLink) return;
 		
+		if (navigator.clipboard && window.isSecureContext) {
 		navigator.clipboard.writeText(shareLink)
 			.then(() => {
 				setLinkCopied(true);
@@ -185,6 +248,21 @@ const PhotoPreview = ({ capturedImages }) => {
 			.catch(err => {
 				console.error('Failed to copy link:', err);
 			});
+		} else {
+			// 回退方案
+			const textArea = document.createElement('textarea');
+			textArea.value = shareLink;
+			document.body.appendChild(textArea);
+			textArea.select();
+			try {
+				document.execCommand('copy');
+				setLinkCopied(true);
+				setTimeout(() => setLinkCopied(false), 3000);
+			} catch (err) {
+				console.error('Fallback copy failed:', err);
+			}
+			document.body.removeChild(textArea);
+		}
 	};
 	
 	const navigateToShare = () => {
@@ -195,6 +273,148 @@ const PhotoPreview = ({ capturedImages }) => {
 		navigate(`/share?imageurl=${imageUrl}`);
 	};
 
+	const handleDeleteImage = (index) => {
+		const newImages = [...localImages];
+		newImages[index] = null;
+		setLocalImages(newImages);
+		setSelectedImageIndex(null);
+	};
+
+	const handleUploadImage = (e) => {
+		const file = e.target.files[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (event) => {
+			const img = new Image();
+			img.onload = () => {
+				if (selectedImageIndex !== null) {
+					// Replace existing image
+					const newImages = [...localImages];
+					newImages[selectedImageIndex] = event.target.result;
+					setLocalImages(newImages);
+					setSelectedImageIndex(null);
+				}
+			};
+			img.src = event.target.result;
+		};
+		reader.readAsDataURL(file);
+		// Reset file input
+		e.target.value = null;
+	};
+
+	const triggerFileUpload = (index) => {
+		setSelectedImageIndex(index);
+		fileInputRef.current.click();
+	};
+
+	// 拖拽开始
+	const handleDragStart = (e, index) => {
+		if (localImages[index] === null) return; // 空位置不能拖拽
+		
+		// 设置拖拽时的图像预览 (可选)
+		if (e.dataTransfer.setDragImage && e.target.querySelector('img')) {
+			const img = e.target.querySelector('img');
+			e.dataTransfer.setDragImage(img, img.width / 2, img.height / 2);
+		}
+		
+		e.dataTransfer.effectAllowed = 'move';
+		e.dataTransfer.setData('text/plain', index.toString());
+		
+		setDraggedIndex(index);
+		
+		// 添加类使元素看起来正在被拖拽
+		setTimeout(() => {
+			e.target.style.opacity = '0.4';
+		}, 0);
+	};
+
+	// 拖拽结束
+	const handleDragEnd = (e) => {
+		e.target.style.opacity = '1';
+		setDraggedIndex(null);
+		setDragOverIndex(null);
+		
+		// 清除所有拖拽效果
+		document.querySelectorAll('.photo-item').forEach(item => {
+			item.classList.remove('drag-over');
+			item.style.transform = 'scale(1)';
+			item.style.boxShadow = '';
+		});
+	};
+
+	// 拖拽经过
+	const handleDragOver = (e, index) => {
+		e.preventDefault(); // 必须阻止默认行为以允许放置
+		e.dataTransfer.dropEffect = 'move';
+		
+		// 只有当拖拽到新位置时才更新状态
+		if (dragOverIndex !== index) {
+			setDragOverIndex(index);
+		}
+	};
+	
+	// 拖拽进入
+	const handleDragEnter = (e, index) => {
+		e.preventDefault();
+		// 添加视觉反馈
+		e.currentTarget.classList.add('drag-over');
+		e.currentTarget.style.transform = 'scale(1.03)';
+		e.currentTarget.style.boxShadow = '0 0 10px rgba(0, 123, 255, 0.5)';
+	};
+	
+	// 拖拽离开
+	const handleDragLeave = (e) => {
+		e.preventDefault();
+		// 移除视觉反馈
+		e.currentTarget.classList.remove('drag-over');
+		e.currentTarget.style.transform = 'scale(1)';
+		e.currentTarget.style.boxShadow = '';
+	};
+
+	// 放置
+	const handleDrop = (e, targetIndex) => {
+		e.preventDefault();
+		e.stopPropagation();
+		
+		// 移除视觉反馈
+		e.currentTarget.classList.remove('drag-over');
+		e.currentTarget.style.transform = 'scale(1)';
+		e.currentTarget.style.boxShadow = '';
+		
+		// 获取拖拽的索引
+		const dragIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+		
+		if (isNaN(dragIndex) || dragIndex === targetIndex) return;
+		
+		// 交换两个位置的照片
+		const newImages = [...localImages];
+		const temp = newImages[dragIndex];
+		newImages[dragIndex] = newImages[targetIndex];
+		newImages[targetIndex] = temp;
+		
+		setLocalImages(newImages);
+		setDraggedIndex(null);
+		setDragOverIndex(null);
+	};
+
+	// 计算已上传的照片数量
+	const uploadedCount = localImages.filter(img => img !== null).length;
+	// 检查是否所有位置都有照片
+	const allSlotsFilled = localImages.every(img => img !== null);
+
+	// 获取样式类名
+	const getPhotoItemClassName = (index) => {
+		let className = "photo-item";
+		if (draggedIndex === index) {
+			className += " dragged";
+		}
+		if (dragOverIndex === index) {
+			className += " drag-over";
+		}
+		return className;
+	};
+
 	return (
 		<>
 			<Meta 
@@ -202,47 +422,456 @@ const PhotoPreview = ({ capturedImages }) => {
 				description="Customize your Picapica photo strip with different colors, frames, and stickers. Download or share your photo strip with friends and family."
 				canonicalUrl="/preview"
 			/>
+			
+			{/* CSS for drag and drop effects */}
+			<style>
+				{`
+					.photo-item {
+						transition: all 0.2s ease;
+					}
+					.photo-item.dragged {
+						opacity: 0.4;
+					}
+					.photo-item.drag-over {
+						background-color: rgba(0, 123, 255, 0.1);
+						border: 2px dashed #007bff !important;
+					}
+					.photo-item:hover .drag-handle {
+						opacity: 1;
+					}
+					.drag-handle {
+						opacity: 0;
+						transition: opacity 0.2s;
+						cursor: move;
+						background-color: rgba(0,0,0,0.1);
+					}
+					.photo-item.empty:hover {
+						background-color: #f0f8ff;
+						border-color: #89CFF0;
+					}
+				`}
+			</style>
+			
 			<div className="photo-preview">
 				<h2>Photo Strip Preview</h2>
 
-				<div className="color-options">
-					<button onClick={() => setStripColor("white")}>White</button>
-					<button onClick={() => setStripColor("black")}>Black</button>
-					<button onClick={() => setStripColor("#f6d5da")}>Pink</button>
-					<button onClick={() => setStripColor("#dde6d5")}>Green</button>
-					<button onClick={() => setStripColor("#adc3e5")}>Blue</button>
-					<button onClick={() => setStripColor("#FFF2CC")}>Yellow</button>
-					<button onClick={() => setStripColor("#dbcfff")}>Purple</button>
+				{/* Photo management section */}
+				<div className="photo-management" style={{
+					marginBottom: "20px",
+					padding: "15px"
+				}}>
+					<h3 style={{ marginTop: 0 }}>Manage Photos</h3>
+					<div style={{ 
+						display: "flex", 
+						alignItems: "center", 
+						marginBottom: "15px",
+						backgroundColor: "#e9f7fe",
+						padding: "10px",
+						borderRadius: "5px"
+					}}>
+						<span style={{ 
+							marginRight: "10px", 
+							fontSize: "20px"
+						}}>
+							💡
+						</span>
+						<span style={{ fontSize: "14px" }}>
+							Drag and drop photos to rearrange their order. Click empty slots to add new photos.
+						</span>
+					</div>
+					
+					<div className="photo-grid" style={{
+						display: "grid",
+						gridTemplateColumns: "repeat(2, 1fr)",
+						gap: "15px",
+						marginBottom: "15px"
+					}}>
+						{Array.from({ length: 4 }).map((_, index) => (
+							<div 
+								key={index} 
+								className={`${getPhotoItemClassName(index)} ${localImages[index] === null ? 'empty' : ''}`}
+								style={{
+									position: "relative",
+									border: "1px solid rgba(0,0,0,0.05)",
+									overflow: "hidden",
+									backgroundColor: localImages[index] ? "#fff" : "#f9f9f9",
+									boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
+									cursor: localImages[index] ? "move" : "pointer",
+									minHeight: "160px",
+									display: "flex",
+									flexDirection: "column"
+								}}
+								onClick={() => localImages[index] === null && triggerFileUpload(index)}
+								draggable={localImages[index] !== null}
+								onDragStart={(e) => handleDragStart(e, index)}
+								onDragEnd={handleDragEnd}
+								onDragOver={(e) => handleDragOver(e, index)}
+								onDragEnter={(e) => handleDragEnter(e, index)}
+								onDragLeave={handleDragLeave}
+								onDrop={(e) => handleDrop(e, index)}
+							>
+								{localImages[index] ? (
+									<>
+										{/* 拖动手柄 */}
+										<div className="drag-handle" style={{
+											position: "absolute",
+											top: "0",
+											left: "0",
+											right: "0",
+											padding: "5px",
+											textAlign: "center",
+											fontSize: "12px",
+											zIndex: "10",
+											borderRadius: "8px 8px 0 0"
+										}}>
+											<span role="img" aria-label="drag handle">
+												⣿ DRAG TO REORDER ⣿
+											</span>
+										</div>
+										
+										{/* 照片容器 */}
+										<div style={{
+											position: "relative",
+											paddingTop: "75%", // 4:3 aspect ratio
+											flexGrow: 1,
+											border: "1px solid rgba(0, 0, 0, 0.93)",
+										}}>
+											<img 
+												src={localImages[index]} 
+												alt={`Photo ${index + 1}`} 
+												style={{
+													position: "absolute",
+													top: 0,
+													left: 0,
+													width: "100%",
+													height: "100%",
+													objectFit: "cover",
+												}}
+											/>
+											{/* 照片序号标记 */}
+											<div style={{
+												position: "absolute",
+												top: "10px",
+												right: "10px",
+												backgroundColor: "#FF69B4",
+												color: "white",
+												borderRadius: "50%",
+												width: "28px",
+												height: "28px",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												fontSize: "14px",
+												fontWeight: "bold",
+												boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+											}}>
+												{index + 1}
+											</div>
+										</div>
+										
+										{/* 照片控制按钮 */}
+										<div className="photo-actions" style={{
+											display: "flex",
+											justifyContent: "space-between",
+											padding: "10px",
+											backgroundColor: "rgba(0,0,0,0.05)"
+										}}>
+											<button 
+												onClick={(e) => {
+													e.stopPropagation();
+													triggerFileUpload(index);
+												}}
+												style={{
+													backgroundColor: "#FF69B4",
+													color: "white",
+													border: "none",
+													borderRadius: "4px",
+													padding: "6px 10px",
+													fontSize: "12px",
+													cursor: "pointer",
+													fontWeight: "bold"
+												}}
+											>
+												📤 Replace
+											</button>
+											<button 
+												onClick={(e) => {
+													e.stopPropagation();
+													handleDeleteImage(index);
+												}}
+												style={{
+													backgroundColor: "#ff4d4d",
+													color: "white",
+													border: "none",
+													borderRadius: "4px",
+													padding: "6px 10px",
+													fontSize: "12px",
+													cursor: "pointer",
+													fontWeight: "bold"
+												}}
+											>
+												🗑️ Delete
+											</button>
+										</div>
+									</>
+								) : (
+									<div style={{
+										height: "100%",
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										justifyContent: "center",
+										padding: "15px"
+									}}>
+										<div style={{ 
+											width: "60px",
+											height: "60px",
+											borderRadius: "50%",
+											backgroundColor: "#e0e0e0",
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											marginBottom: "15px"
+										}}>
+											<span style={{ 
+												fontSize: "32px", 
+												color: "#666" 
+											}}>
+												➕
+											</span>
+										</div>
+										<div style={{ 
+											color: "#666",
+											fontWeight: "bold" 
+										}}>
+											Photo {index + 1}
+										</div>
+										<div style={{ 
+											color: "#999",
+											fontSize: "12px",
+											marginTop: "5px",
+											textAlign: "center"
+										}}>
+											Click to upload
+										</div>
+									</div>
+								)}
+							</div>
+						))}
+					</div>
+					
+					<input 
+						type="file" 
+						ref={fileInputRef} 
+						onChange={handleUploadImage} 
+						accept="image/*" 
+						style={{ display: "none" }}
+					/>
+					
+					<div style={{ 
+						fontSize: "14px", 
+						color: "#666", 
+						textAlign: "center", 
+						backgroundColor: allSlotsFilled ? "#e8f5e9" : "#e9f7fe", 
+						padding: "10px", 
+						borderRadius: "5px",
+						border: allSlotsFilled ? "1px solid #c8e6c9" : "1px solid #bbdefb"
+					}}>
+						<span role="img" aria-label="info">
+							{allSlotsFilled ? "✅" : "ℹ️"}
+						</span> {allSlotsFilled 
+							? "All photos added! Your photo strip is ready to download or share." 
+							: `${uploadedCount} of 4 photos added. ${4 - uploadedCount} more needed to complete your strip.`}
+					</div>
 				</div>
 
-				<div className="frame-options">
-					<button onClick={() => setSelectedFrame("pastel")}>Girlypop Stickers</button>
-					<button onClick={() => setSelectedFrame("cute")}>Cute Stickers</button>
+				<div className="customization-section" style={{
+					marginBottom: "20px",
+					padding: "15px"
+				}}>
+					<h3 style={{ marginTop: 0, marginBottom: "15px" }}>Customize Your Strip</h3>
+					
+					<div style={{ marginBottom: "15px" }}>
+						<label style={{ 
+							display: "block", 
+							marginBottom: "8px",
+							fontWeight: "bold" 
+						}}>
+							Background Color:
+						</label>
+						<div className="color-options" style={{
+							display: "flex",
+							flexWrap: "wrap",
+							gap: "10px"
+						}}>
+							<button onClick={() => setStripColor("white")} style={{
+								backgroundColor: "white",
+								border: stripColor === "white" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>White</button>
+							<button onClick={() => setStripColor("black")} style={{
+								backgroundColor: "black",
+								color: "white",
+								border: stripColor === "black" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Black</button>
+							<button onClick={() => setStripColor("#f6d5da")} style={{
+								backgroundColor: "#f6d5da",
+								border: stripColor === "#f6d5da" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Pink</button>
+							<button onClick={() => setStripColor("#dde6d5")} style={{
+								backgroundColor: "#dde6d5",
+								border: stripColor === "#dde6d5" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Green</button>
+							<button onClick={() => setStripColor("#adc3e5")} style={{
+								backgroundColor: "#adc3e5",
+								border: stripColor === "#adc3e5" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Blue</button>
+							<button onClick={() => setStripColor("#FFF2CC")} style={{
+								backgroundColor: "#FFF2CC",
+								border: stripColor === "#FFF2CC" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Yellow</button>
+							<button onClick={() => setStripColor("#dbcfff")} style={{
+								backgroundColor: "#dbcfff",
+								border: stripColor === "#dbcfff" ? "3px solid #FF69B4" : "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Purple</button>
+						</div>
+					</div>
+
+					<div>
+						<label style={{ 
+							display: "block", 
+							marginBottom: "8px",
+							fontWeight: "bold" 
+						}}>
+							Sticker Style:
+						</label>
+						<div className="frame-options" style={{
+							display: "flex",
+							flexWrap: "wrap",
+							gap: "10px"
+						}}>
+							<button onClick={() => setSelectedFrame("pastel")} style={{
+								backgroundColor: selectedFrame === "pastel" ? "#FF69B4" : "#f8f8f8",
+								color: selectedFrame === "pastel" ? "white" : "black",
+								border: "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Girlypop Stickers</button>
+							<button onClick={() => setSelectedFrame("cute")} style={{
+								backgroundColor: selectedFrame === "cute" ? "#FF69B4" : "#f8f8f8",
+								color: selectedFrame === "cute" ? "white" : "black",
+								border: "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>Cute Stickers</button>
+							<button onClick={() => setSelectedFrame("none")} style={{
+								backgroundColor: selectedFrame === "none" ? "#FF69B4" : "#f8f8f8",
+								color: selectedFrame === "none" ? "white" : "black",
+								border: "1px solid #ddd",
+								borderRadius: "5px",
+								padding: "10px 15px"
+							}}>No Stickers</button>
+						</div>
+					</div>
 				</div>
 
-				<canvas ref={stripCanvasRef} className="photo-strip" />
+				<div style={{
+					padding: "20px",
+					marginBottom: "20px",
+					display: "flex",
+					justifyContent: "center"
+				}}>
+					<canvas ref={stripCanvasRef} className="photo-strip" style={{
+						maxWidth: "100%",
+						height: "auto",
+						boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
+					}} />
+				</div>
 
-				<div className="strip-buttons">
-					<button onClick={downloadPhotoStrip}>📥 Download Photo Strip</button>
-					<button onClick={() => navigate("/photobooth")}>
+				<div className="strip-buttons" style={{
+					display: "flex",
+					flexWrap: "wrap",
+					gap: "15px",
+					justifyContent: "center",
+					marginBottom: "30px"
+				}}>
+					<button 
+						onClick={downloadPhotoStrip} 
+						disabled={!allSlotsFilled}
+						style={{
+							backgroundColor: allSlotsFilled ? "#4CAF50" : "#e0e0e0",
+							color: "white",
+							border: "none",
+							padding: "12px 20px",
+							borderRadius: "5px",
+							cursor: allSlotsFilled ? "pointer" : "not-allowed",
+							fontWeight: "bold",
+							fontSize: "16px"
+						}}
+					>
+						📥 Download Photo Strip
+					</button>
+					<button 
+						onClick={() => navigate("/photobooth")}
+						style={{
+							backgroundColor: "#555555",
+							color: "white",
+							border: "none",
+							padding: "12px 20px",
+							borderRadius: "5px",
+							cursor: "pointer",
+							fontWeight: "bold",
+							fontSize: "16px"
+						}}
+					>
 						🔄 Take New Photos
 					</button>
 					<button 
 						onClick={getShareableLink} 
-						disabled={isGeneratingLink}
+						disabled={isGeneratingLink || !allSlotsFilled}
 						style={{
 							backgroundColor: "#FF69B4",
 							color: "white",
 							border: "none",
-							padding: "10px 15px",
+							padding: "12px 20px",
 							borderRadius: "5px",
-							cursor: isGeneratingLink ? "wait" : "pointer",
-							marginLeft: "10px"
+							cursor: (isGeneratingLink || !allSlotsFilled) ? "not-allowed" : "pointer",
+							opacity: !allSlotsFilled ? 0.6 : 1,
+							fontWeight: "bold",
+							fontSize: "16px"
 						}}
 					>
 						{isGeneratingLink ? "Generating..." : "🔗 Get Shareable Link"}
 					</button>
 				</div>
+				
+				{!allSlotsFilled && (
+					<div style={{
+						marginTop: "15px",
+						padding: "15px",
+						backgroundColor: "#FFF3CD",
+						borderRadius: "5px",
+						border: "1px solid #FFEEBA",
+						color: "#856404",
+						fontSize: "14px",
+						textAlign: "center"
+					}}>
+						<strong>Notice:</strong> Please add photos to all 4 positions to enable download and sharing.
+					</div>
+				)}
 				
 				{shareLink && (
 					<div className="share-link-container" style={{
