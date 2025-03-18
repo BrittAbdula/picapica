@@ -10,17 +10,17 @@ let activeStreams = [];
  * 停止所有活跃的摄像头流
  */
 const stopAllCameras = () => {
-  // console.log('Stopping all camera streams:', activeStreams.length);
-  
-  activeStreams.forEach(stream => {
-    const tracks = stream.getTracks();
-    tracks.forEach(track => {
-      track.stop();
-    });
-  });
-  
-  activeStreams = [];
-  // console.log('All camera streams stopped');
+	// console.log('Stopping all camera streams:', activeStreams.length);
+
+	activeStreams.forEach((stream) => {
+		const tracks = stream.getTracks();
+		tracks.forEach((track) => {
+			track.stop();
+		});
+	});
+
+	activeStreams = [];
+	// console.log('All camera streams stopped');
 };
 
 /**
@@ -28,10 +28,10 @@ const stopAllCameras = () => {
  * @param {MediaStream} stream - 要注册的摄像头流
  */
 const registerStream = (stream) => {
-  if (stream && !activeStreams.includes(stream)) {
-    activeStreams.push(stream);
-    // console.log('Camera stream registered, total active streams:', activeStreams.length);
-  }
+	if (stream && !activeStreams.includes(stream)) {
+		activeStreams.push(stream);
+		// console.log('Camera stream registered, total active streams:', activeStreams.length);
+	}
 };
 
 /**
@@ -39,13 +39,13 @@ const registerStream = (stream) => {
  * @param {MediaStream} stream - 要注销的摄像头流
  */
 const unregisterStream = (stream) => {
-  if (stream) {
-    const index = activeStreams.indexOf(stream);
-    if (index !== -1) {
-      activeStreams.splice(index, 1);
-      // console.log('Camera stream unregistered, remaining active streams:', activeStreams.length);
-    }
-  }
+	if (stream) {
+		const index = activeStreams.indexOf(stream);
+		if (index !== -1) {
+			activeStreams.splice(index, 1);
+			// console.log('Camera stream unregistered, remaining active streams:', activeStreams.length);
+		}
+	}
 };
 
 /**
@@ -53,26 +53,110 @@ const unregisterStream = (stream) => {
  * @param {Object} constraints - 摄像头约束条件
  * @returns {Promise<MediaStream>} 摄像头媒体流
  */
-const getCamera = async (constraints = {
-  video: {
-    facingMode: "user",
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
-    frameRate: { ideal: 30 },
-  }
-}) => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    registerStream(stream);
-    return stream;
-  } catch (error) {
-    if (error.name === "NotAllowedError") {
-      console.error("user denied camera access");
-    } else {
-      console.error("error accessing camera:", error);
-    }
-    throw error;
-  }
+const getCamera = async (constraints) => {
+	try {
+		// 记录设备信息
+		console.log("设备信息:", {
+			userAgent: navigator.userAgent,
+			platform: navigator.platform,
+			isIOS: isIOS(),
+		});
+
+		// 默认约束条件
+		const defaultConstraints = {
+			video: {
+				width: { ideal: 640 },
+				height: { ideal: 480 },
+				facingMode: "user",
+			},
+			audio: false,
+		};
+
+		// 合并用户提供的约束条件
+		const finalConstraints = constraints || defaultConstraints;
+
+		// iOS Safari 特殊处理
+		if (isIOS()) {
+			console.log("检测到 iOS 设备，应用特殊处理");
+			// 移除可能导致问题的特定约束
+			if (finalConstraints.video && typeof finalConstraints.video === "object") {
+				// 移除 frameRate 约束，在某些 iOS 版本上可能导致问题
+				delete finalConstraints.video.frameRate;
+
+				// 确保 width 和 height 使用 ideal 值而非 exact
+				if (finalConstraints.video.width && finalConstraints.video.width.exact) {
+					finalConstraints.video.width.ideal = finalConstraints.video.width.exact;
+					delete finalConstraints.video.width.exact;
+				}
+
+				if (finalConstraints.video.height && finalConstraints.video.height.exact) {
+					finalConstraints.video.height.ideal = finalConstraints.video.height.exact;
+					delete finalConstraints.video.height.exact;
+				}
+			}
+		}
+
+		console.log("请求摄像头，最终约束条件:", JSON.stringify(finalConstraints, null, 2));
+
+		// 记录支持的设备
+		if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+			try {
+				const devices = await navigator.mediaDevices.enumerateDevices();
+				const videoDevices = devices.filter((device) => device.kind === "videoinput");
+				console.log("可用视频设备:", videoDevices);
+			} catch (enumError) {
+				console.warn("枚举设备失败:", enumError);
+			}
+		}
+
+		// 尝试获取媒体流
+		const stream = await navigator.mediaDevices.getUserMedia(finalConstraints);
+		console.log("成功获取摄像头流:", stream);
+
+		// 记录流的 tracks 信息
+		const videoTracks = stream.getVideoTracks();
+		if (videoTracks.length > 0) {
+			console.log("视频轨道信息:", {
+				label: videoTracks[0].label,
+				settings: videoTracks[0].getSettings(),
+				constraints: videoTracks[0].getConstraints(),
+			});
+		}
+
+		return stream;
+	} catch (error) {
+		console.error("获取摄像头失败:", {
+			name: error.name,
+			message: error.message,
+			stack: error.stack,
+			constraints: JSON.stringify(constraints),
+		});
+
+		// 处理特定错误类型
+		if (error.name === "NotAllowedError") {
+			throw new Error("用户拒绝了摄像头访问权限。请在浏览器设置中允许访问摄像头。");
+		} else if (error.name === "NotFoundError") {
+			throw new Error("未找到摄像头设备。请确保您的设备有摄像头并且工作正常。");
+		} else if (error.name === "NotReadableError") {
+			throw new Error(
+				"无法访问摄像头。可能已被其他应用程序占用，请关闭其他可能使用摄像头的应用后重试。"
+			);
+		} else if (error.name === "OverconstrainedError") {
+			// 如果约束条件过严，尝试使用更简单的约束
+			console.log("约束条件过严，尝试使用基本约束...");
+			return this.getCamera({ video: true, audio: false });
+		} else {
+			throw error;
+		}
+	}
+};
+
+// 检测是否为 iOS 设备的辅助方法
+const isIOS = () => {
+	return (
+		(/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) ||
+		(navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+	);
 };
 
 /**
@@ -80,20 +164,20 @@ const getCamera = async (constraints = {
  * @param {MediaStream} stream - 要停止的摄像头流
  */
 const stopCamera = (stream) => {
-  if (stream) {
-    const tracks = stream.getTracks();
-    tracks.forEach(track => {
-      track.stop();
-    });
-    unregisterStream(stream);
-    // console.log('Camera stream stopped');
-  }
+	if (stream) {
+		const tracks = stream.getTracks();
+		tracks.forEach((track) => {
+			track.stop();
+		});
+		unregisterStream(stream);
+		// console.log('Camera stream stopped');
+	}
 };
 
 export default {
-  getCamera,
-  stopCamera,
-  stopAllCameras,
-  registerStream,
-  unregisterStream
-}; 
+	getCamera,
+	stopCamera,
+	stopAllCameras,
+	registerStream,
+	unregisterStream,
+};

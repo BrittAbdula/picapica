@@ -18,6 +18,9 @@ const PhotoBooth = ({ setCapturedImages }) => {
 	const [showColorPicker, setShowColorPicker] = useState(false); // Control color picker display
 	const [soundEnabled, setSoundEnabled] = useState(true); // Sound enabled by default
 	const [currentStream, setCurrentStream] = useState(null); // 存储当前摄像头流的引用
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(null);
+	const [cameraActive, setCameraActive] = useState(false);
 
 	// Website theme colors
 	const themeColors = {
@@ -262,42 +265,37 @@ const PhotoBooth = ({ setCapturedImages }) => {
 	// Start Camera
 	const startCamera = async () => {
 		try {
-			if (videoRef.current && videoRef.current.srcObject) {
-				return;
-			}
+			setLoading(true);
+			setError(null);
+			setCameraActive(false);
 			
 			const constraints = {
 				video: {
-					facingMode: "user",
-					width: { ideal: 1920 },
-					height: { ideal: 1080 },
-					frameRate: { ideal: 30 },
+					width: { ideal: 640 },
+					height: { ideal: 480 },
+					facingMode: 'user'
 				},
+				audio: false
 			};
-
-			// 使用CameraManager获取摄像头流
+			
 			const stream = await CameraManager.getCamera(constraints);
-			setCurrentStream(stream);
-
+			
+			// 设置视频源
 			if (videoRef.current) {
 				videoRef.current.srcObject = stream;
-				
-				// Use event listener instead of directly calling play()
-				videoRef.current.onloadedmetadata = () => {
-					if (videoRef.current) {
-						videoRef.current.play()
-							.catch((err) => console.error("Error playing video:", err));
-					}
-				};
-
-				// mirror video stream
-				videoRef.current.style.transform = "scaleX(-1)";
-				videoRef.current.style.objectFit = "cover";
+				// 重要：iOS 需要设置 playsinline 属性以避免全屏播放
+				videoRef.current.setAttribute('playsinline', 'true');
+				videoRef.current.muted = true;
 			}
+			
+			setCurrentStream(stream);
+			setCameraActive(true);
+			setLoading(false);
 		} catch (error) {
-			if (error.name == "NotAllowedError") {
-				console.error("User denied camera permissions.");
-			} else console.error("Error accessing camera:", error);
+			console.error('启动摄像头失败:', error);
+			setError(error.message || '无法访问摄像头。请确保您已授予权限并刷新页面。');
+			setLoading(false);
+			setCameraActive(false);
 		}
 	};
 
@@ -530,6 +528,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
 						<video
 							ref={videoRef}
 							autoPlay
+							playsInline
+							muted
 							className="video-feed"
 							style={{ 
 								filter,
@@ -934,6 +934,16 @@ const PhotoBooth = ({ setCapturedImages }) => {
 						</div>
 					)}
 				</div>
+
+				{/* 显示错误信息 */}
+				{error && (
+					<div className="error-message">
+						<p>{error}</p>
+						<button onClick={startCamera}>
+							重试
+						</button>
+					</div>
+				)}
 			</div>
 		</>
 	);

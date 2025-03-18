@@ -13,6 +13,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import RouteGuard from './utils/RouteGuard';
 import Clarity from '@microsoft/clarity';
+import VConsoleComponent from './utils/VConsole';
 
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
@@ -84,6 +85,9 @@ function App() {
 					<Link to="/privacy-policy" onClick={() => setMenuOpen(false)}>Privacy Policy</Link>
 					<Link to="/terms-of-service" onClick={() => setMenuOpen(false)}>Terms of Service</Link>
 			</footer>
+
+			{/* 添加 VConsole 组件 */}
+			<VConsoleComponent />
 		</div>
 	);
 }
