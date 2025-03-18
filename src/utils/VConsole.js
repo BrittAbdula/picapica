@@ -12,7 +12,7 @@ const VConsoleComponent = () => {
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         // 在开发环境、移动设备上或通过 URL 参数启用时加载 vConsole
-        if (process.env.NODE_ENV !== 'production' || isMobile || debugMode) {
+        if (process.env.NODE_ENV !== 'production') {
           const { default: VConsole } = await import('vconsole');
           const vConsole = new VConsole({ 
             theme: 'dark',
