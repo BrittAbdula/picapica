@@ -398,7 +398,7 @@ button {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-top: 15px;
+	margin-top: 30px;
 	gap: 10px;
 	position: relative;
 	z-index: 10;
@@ -489,7 +489,7 @@ button:active {
 	padding: 10px;
 	min-width: 120px;
 	margin-left: 20px;
-	margin-top: -120px;
+	/* margin-top: 20px; */
 }
 
 .side-preview {

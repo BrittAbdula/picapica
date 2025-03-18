@@ -504,18 +504,6 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 				boxSizing: "border-box", // 确保padding不会增加宽度
 				minHeight: "100vh" // 确保至少占满整个视口高度
 			}}>
-				{/* 添加提示信息 */}
-				<div style={{
-					textAlign: "center",
-					marginBottom: "15px",
-					color: "#333",
-					fontSize: "14px",
-					padding: "0 20px",
-					maxWidth: "800px", // 限制最大宽度
-					margin: "0 auto 15px" // 居中并保持下边距
-				}}>
-					<p>Choose countdown time, click "Start Capture" to take photos</p>
-				</div>
 
 				<div className="photo-container" style={{
 					display: "flex",
@@ -642,7 +630,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 					gap: "15px", // Add gap between elements
 					maxWidth: "1000px", // 限制最大宽度
 					margin: "0 auto", // 居中
-					marginTop: "20px",
+					marginTop: "60px",
 					padding: "0 15px", // 添加水平内边距
 					boxSizing: "border-box" // 确保padding不会增加宽度
 				}}>
@@ -779,13 +767,13 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 				</div>
 
 				<div className="filters" style={{ 
-					marginTop: "20px",
+					marginTop: "60px",
 					display: "flex",
 					flexWrap: "wrap",
 					justifyContent: "center",
 					gap: "8px",
 					maxWidth: "1000px", // 限制最大宽度
-					margin: "20px auto 0", // 居中并设置上边距
+					margin: "40px auto 0", // 居中并设置上边距
 					padding: "0 15px", // 添加水平内边距
 					boxSizing: "border-box" // 确保padding不会增加宽度
 				}}>
