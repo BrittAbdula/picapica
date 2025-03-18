@@ -18,6 +18,7 @@ import VConsoleComponent from './utils/VConsole';
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [backgroundColor, setBackgroundColor] = useState('#ffffff');
 	
 	// 在组件挂载后初始化 Clarity
 	useEffect(() => {
@@ -34,6 +35,11 @@ function App() {
 
 	const toggleMenu = () => {
 		setMenuOpen(!menuOpen);
+	};
+
+	const handleBackgroundColorChange = (color) => {
+		console.log('Background color changed:', color);
+		setBackgroundColor(color);
 	};
 
 	return (
@@ -71,7 +77,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/welcome" element={<Welcome />} />
-					<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
+					<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} handleBackgroundColorChange={handleBackgroundColorChange} />} />
 					<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
 					<Route path="/g" element={<GalleryPage />} />
 					<Route path="/share" element={<SharePage />} />
@@ -80,7 +86,7 @@ function App() {
 				</Routes>
 			</RouteGuard>
 
-			<footer className="mt-8 text-sm text-gray-600">
+			<footer className="text-sm text-gray-600" style={{ backgroundColor: backgroundColor }}>
 				<p>© 2025 picapica.app - The Web Photo Booth App</p>
 					<Link to="/privacy-policy" onClick={() => setMenuOpen(false)}>Privacy Policy</Link>
 					<Link to="/terms-of-service" onClick={() => setMenuOpen(false)}>Terms of Service</Link>
