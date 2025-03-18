@@ -189,7 +189,6 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 
 	useEffect(() => {
 		startCamera();
-		handleBackgroundColorChange(backgroundColor)
 
 		const handleVisibilityChange = () => {
 			if (!document.hidden) {
@@ -208,7 +207,6 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 			// Reset navigation bar color when component unmounts
 			resetNavBarColor();
 			console.log("PhotoBooth component is unmounting, stopping camera...");
-			handleBackgroundColorChange('#ffffff');
 		};
 	}, []);
 
@@ -478,14 +476,10 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 	// Handle custom color change
 	const handleColorChange = (e) => {
 		setBackgroundColor(e.target.value);
-		handleBackgroundColorChange(e.target.value);
-		console.log('handleColorChange', e.target.value);
 	};
 
 	const setDefaultBackgroundColor = (color) => {
 		setBackgroundColor(color);
-		handleBackgroundColorChange(color);
-		console.log('handleColorChange',color);
 	};
 
 	// Toggle color picker display
@@ -502,7 +496,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 			/>
 			<style>{pulseKeyframes}</style>
 			<div className="photo-booth" style={{ 
-				backgroundColor,
+				background: `radial-gradient(circle, ${backgroundColor} 20%, #fff 80%)`,
 				paddingTop: "80px", // 增加顶部空间，避免被header遮挡
 				overflow: "hidden", // 防止内容溢出
 				width: "100%",
