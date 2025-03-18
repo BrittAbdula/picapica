@@ -632,6 +632,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					gap: "15px", // Add gap between elements
 					maxWidth: "1000px", // 限制最大宽度
 					margin: "0 auto", // 居中
+					marginTop: "20px",
 					padding: "0 15px", // 添加水平内边距
 					boxSizing: "border-box" // 确保padding不会增加宽度
 				}}>

@@ -6,13 +6,13 @@ import "./index.css";
 import App from "./App";
 
 // 仅在开发环境和非桌面设备上启用 vConsole
-if (process.env.NODE_ENV !== 'production' || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-	// 动态导入 vConsole
-	import('vconsole').then(({ default: VConsole }) => {
-		const vConsole = new VConsole();
-		console.log('vConsole 已启用', vConsole);
-	});
-}
+// if (process.env.NODE_ENV !== 'production' || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+// 	// 动态导入 vConsole
+// 	import('vconsole').then(({ default: VConsole }) => {
+// 		const vConsole = new VConsole();
+// 		console.log('vConsole 已启用', vConsole);
+// 	});
+// }
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 

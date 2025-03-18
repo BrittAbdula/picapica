@@ -162,7 +162,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 					ctx.textAlign = "center";
 
 					ctx.fillText(
-						"pica pica.app   ",
+						"picapica.app   ",
 			canvasWidth - borderSize,
 						totalHeight - borderSize / 2
 					);
@@ -455,235 +455,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			<div className="photo-preview">
 				<h2>Photo Strip Preview</h2>
 
-				{/* Photo management section */}
-				<div className="photo-management" style={{
-					marginBottom: "20px",
-					padding: "15px"
-				}}>
-					<h3 style={{ marginTop: 0 }}>Manage Photos</h3>
-					<div style={{ 
-						display: "flex", 
-						alignItems: "center", 
-						marginBottom: "15px",
-						backgroundColor: "#e9f7fe",
-						padding: "10px",
-						borderRadius: "5px"
-					}}>
-						<span style={{ 
-							marginRight: "10px", 
-							fontSize: "20px"
-						}}>
-							💡
-						</span>
-						<span style={{ fontSize: "14px" }}>
-							Drag and drop photos to rearrange their order. Click empty slots to add new photos.
-						</span>
-					</div>
-					
-					<div className="photo-grid" style={{
-						display: "grid",
-						gridTemplateColumns: "repeat(2, 1fr)",
-						gap: "15px",
-						marginBottom: "15px"
-					}}>
-						{Array.from({ length: 4 }).map((_, index) => (
-							<div 
-								key={index} 
-								className={`${getPhotoItemClassName(index)} ${localImages[index] === null ? 'empty' : ''}`}
-								style={{
-									position: "relative",
-									border: "1px solid rgba(0,0,0,0.05)",
-									overflow: "hidden",
-									backgroundColor: localImages[index] ? "#fff" : "#f9f9f9",
-									boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
-									cursor: localImages[index] ? "move" : "pointer",
-									minHeight: "160px",
-									display: "flex",
-									flexDirection: "column"
-								}}
-								onClick={() => localImages[index] === null && triggerFileUpload(index)}
-								draggable={localImages[index] !== null}
-								onDragStart={(e) => handleDragStart(e, index)}
-								onDragEnd={handleDragEnd}
-								onDragOver={(e) => handleDragOver(e, index)}
-								onDragEnter={(e) => handleDragEnter(e, index)}
-								onDragLeave={handleDragLeave}
-								onDrop={(e) => handleDrop(e, index)}
-							>
-								{localImages[index] ? (
-									<>
-										{/* 拖动手柄 */}
-										<div className="drag-handle" style={{
-											position: "absolute",
-											top: "0",
-											left: "0",
-											right: "0",
-											padding: "5px",
-											textAlign: "center",
-											fontSize: "12px",
-											zIndex: "10",
-											borderRadius: "8px 8px 0 0"
-										}}>
-											<span role="img" aria-label="drag handle">
-												⣿ DRAG TO REORDER ⣿
-											</span>
-										</div>
-										
-										{/* 照片容器 */}
-										<div style={{
-											position: "relative",
-											paddingTop: "75%", // 4:3 aspect ratio
-											flexGrow: 1,
-											border: "1px solid rgba(0, 0, 0, 0.93)",
-										}}>
-											<img 
-												src={localImages[index]} 
-												alt={`Photo ${index + 1}`} 
-												style={{
-													position: "absolute",
-													top: 0,
-													left: 0,
-													width: "100%",
-													height: "100%",
-													objectFit: "cover",
-												}}
-											/>
-											{/* 照片序号标记 */}
-											<div style={{
-												position: "absolute",
-												top: "10px",
-												right: "10px",
-												backgroundColor: "#FF69B4",
-												color: "white",
-												borderRadius: "50%",
-												width: "28px",
-												height: "28px",
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "center",
-												fontSize: "14px",
-												fontWeight: "bold",
-												boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
-											}}>
-												{index + 1}
-											</div>
-										</div>
-										
-										{/* 照片控制按钮 */}
-										<div className="photo-actions" style={{
-											display: "flex",
-											justifyContent: "space-between",
-											padding: "10px",
-											backgroundColor: "rgba(0,0,0,0.05)"
-										}}>
-											<button 
-												onClick={(e) => {
-													e.stopPropagation();
-													triggerFileUpload(index);
-												}}
-												style={{
-													backgroundColor: "#FF69B4",
-													color: "white",
-													border: "none",
-													borderRadius: "4px",
-													padding: "6px 10px",
-													fontSize: "12px",
-													cursor: "pointer",
-													fontWeight: "bold"
-												}}
-											>
-												📤 Replace
-											</button>
-											<button 
-												onClick={(e) => {
-													e.stopPropagation();
-													handleDeleteImage(index);
-												}}
-												style={{
-													backgroundColor: "#ff4d4d",
-													color: "white",
-													border: "none",
-													borderRadius: "4px",
-													padding: "6px 10px",
-													fontSize: "12px",
-													cursor: "pointer",
-													fontWeight: "bold"
-												}}
-											>
-												🗑️ Delete
-											</button>
-										</div>
-									</>
-								) : (
-									<div style={{
-										height: "100%",
-										display: "flex",
-										flexDirection: "column",
-										alignItems: "center",
-										justifyContent: "center",
-										padding: "15px"
-									}}>
-										<div style={{ 
-											width: "60px",
-											height: "60px",
-											borderRadius: "50%",
-											backgroundColor: "#e0e0e0",
-											display: "flex",
-											alignItems: "center",
-											justifyContent: "center",
-											marginBottom: "15px"
-										}}>
-											<span style={{ 
-												fontSize: "32px", 
-												color: "#666" 
-											}}>
-												➕
-											</span>
-										</div>
-										<div style={{ 
-											color: "#666",
-											fontWeight: "bold" 
-										}}>
-											Photo {index + 1}
-										</div>
-										<div style={{ 
-											color: "#999",
-											fontSize: "12px",
-											marginTop: "5px",
-											textAlign: "center"
-										}}>
-											Click to upload
-										</div>
-									</div>
-								)}
-							</div>
-						))}
-					</div>
-					
-					<input 
-						type="file" 
-						ref={fileInputRef} 
-						onChange={handleUploadImage} 
-						accept="image/*" 
-						style={{ display: "none" }}
-					/>
-					
-					<div style={{ 
-						fontSize: "14px", 
-						color: "#666", 
-						textAlign: "center", 
-						backgroundColor: allSlotsFilled ? "#e8f5e9" : "#e9f7fe", 
-						padding: "10px", 
-						borderRadius: "5px",
-						border: allSlotsFilled ? "1px solid #c8e6c9" : "1px solid #bbdefb"
-					}}>
-						<span role="img" aria-label="info">
-							{allSlotsFilled ? "✅" : "ℹ️"}
-						</span> {allSlotsFilled 
-							? "All photos added! Your photo strip is ready to download or share." 
-							: `${uploadedCount} of 4 photos added. ${4 - uploadedCount} more needed to complete your strip.`}
-					</div>
-				</div>
 
 				<div className="customization-section" style={{
 					marginBottom: "20px",
@@ -928,6 +699,238 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						</button>
 					</div>
 				)}
+				
+				{/* Photo management section */}
+				<div className="photo-management" style={{
+					marginBottom: "20px",
+					padding: "15px"
+				}}>
+					<h3 style={{ marginTop: 0 }}>Manage Photos</h3>
+					<div style={{ 
+						display: "flex", 
+						alignItems: "center", 
+						marginBottom: "15px",
+						backgroundColor: "#e9f7fe",
+						padding: "10px",
+						borderRadius: "5px"
+					}}>
+						<span style={{ 
+							marginRight: "10px", 
+							fontSize: "20px"
+						}}>
+							💡
+						</span>
+						<span style={{ fontSize: "14px" }}>
+							Drag and drop photos to rearrange their order. Click empty slots to add new photos.
+						</span>
+					</div>
+					
+					<div className="photo-grid" style={{
+						display: "grid",
+						gridTemplateColumns: "repeat(2, 1fr)",
+						gap: "15px",
+						marginBottom: "15px"
+					}}>
+						{Array.from({ length: 4 }).map((_, index) => (
+							<div 
+								key={index} 
+								className={`${getPhotoItemClassName(index)} ${localImages[index] === null ? 'empty' : ''}`}
+								style={{
+									position: "relative",
+									border: "1px solid rgba(0,0,0,0.05)",
+									overflow: "hidden",
+									backgroundColor: localImages[index] ? "#fff" : "#f9f9f9",
+									boxShadow: "0 2px 5px rgba(0,0,0,0.05)",
+									cursor: localImages[index] ? "move" : "pointer",
+									minHeight: "160px",
+									display: "flex",
+									flexDirection: "column"
+								}}
+								onClick={() => localImages[index] === null && triggerFileUpload(index)}
+								draggable={localImages[index] !== null}
+								onDragStart={(e) => handleDragStart(e, index)}
+								onDragEnd={handleDragEnd}
+								onDragOver={(e) => handleDragOver(e, index)}
+								onDragEnter={(e) => handleDragEnter(e, index)}
+								onDragLeave={handleDragLeave}
+								onDrop={(e) => handleDrop(e, index)}
+							>
+								{localImages[index] ? (
+									<>
+										{/* 拖动手柄 */}
+										<div className="drag-handle" style={{
+											position: "absolute",
+											top: "0",
+											left: "0",
+											right: "0",
+											padding: "5px",
+											textAlign: "center",
+											fontSize: "12px",
+											zIndex: "10",
+											borderRadius: "8px 8px 0 0"
+										}}>
+											<span role="img" aria-label="drag handle">
+												⣿ DRAG TO REORDER ⣿
+											</span>
+										</div>
+										
+										{/* 照片容器 */}
+										<div style={{
+											position: "relative",
+											paddingTop: "75%", // 4:3 aspect ratio
+											flexGrow: 1,
+											border: "1px solid rgba(0, 0, 0, 0.93)",
+										}}>
+											<img 
+												src={localImages[index]} 
+												alt={`Photo ${index + 1}`} 
+												style={{
+													position: "absolute",
+													top: 0,
+													left: 0,
+													width: "100%",
+													height: "100%",
+													objectFit: "cover",
+												}}
+											/>
+											{/* 照片序号标记 */}
+											<div style={{
+												position: "absolute",
+												top: "10px",
+												right: "10px",
+												backgroundColor: "#FF69B4",
+												color: "white",
+												borderRadius: "50%",
+												width: "28px",
+												height: "28px",
+												display: "flex",
+												alignItems: "center",
+												justifyContent: "center",
+												fontSize: "14px",
+												fontWeight: "bold",
+												boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+											}}>
+												{index + 1}
+											</div>
+										</div>
+										
+										{/* 照片控制按钮 */}
+										<div className="photo-actions" style={{
+											display: "flex",
+											justifyContent: "space-between",
+											padding: "10px",
+											backgroundColor: "rgba(0,0,0,0.05)"
+										}}>
+											<button 
+												onClick={(e) => {
+													e.stopPropagation();
+													triggerFileUpload(index);
+												}}
+												style={{
+													backgroundColor: "#FF69B4",
+													color: "white",
+													border: "none",
+													borderRadius: "4px",
+													padding: "6px 10px",
+													fontSize: "12px",
+													cursor: "pointer",
+													fontWeight: "bold"
+												}}
+											>
+												📤 Replace
+											</button>
+											<button 
+												onClick={(e) => {
+													e.stopPropagation();
+													handleDeleteImage(index);
+												}}
+												style={{
+													backgroundColor: "#ff4d4d",
+													color: "white",
+													border: "none",
+													borderRadius: "4px",
+													padding: "6px 10px",
+													fontSize: "12px",
+													cursor: "pointer",
+													fontWeight: "bold"
+												}}
+											>
+												🗑️ Delete
+											</button>
+										</div>
+									</>
+								) : (
+									<div style={{
+										height: "100%",
+										display: "flex",
+										flexDirection: "column",
+										alignItems: "center",
+										justifyContent: "center",
+										padding: "15px"
+									}}>
+										<div style={{ 
+											width: "60px",
+											height: "60px",
+											borderRadius: "50%",
+											backgroundColor: "#e0e0e0",
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "center",
+											marginBottom: "15px"
+										}}>
+											<span style={{ 
+												fontSize: "32px", 
+												color: "#666" 
+											}}>
+												➕
+											</span>
+										</div>
+										<div style={{ 
+											color: "#666",
+											fontWeight: "bold" 
+										}}>
+											Photo {index + 1}
+										</div>
+										<div style={{ 
+											color: "#999",
+											fontSize: "12px",
+											marginTop: "5px",
+											textAlign: "center"
+										}}>
+											Click to upload
+										</div>
+									</div>
+								)}
+							</div>
+						))}
+					</div>
+					
+					<input 
+						type="file" 
+						ref={fileInputRef} 
+						onChange={handleUploadImage} 
+						accept="image/*" 
+						style={{ display: "none" }}
+					/>
+					
+					<div style={{ 
+						fontSize: "14px", 
+						color: "#666", 
+						textAlign: "center", 
+						backgroundColor: allSlotsFilled ? "#e8f5e9" : "#e9f7fe", 
+						padding: "10px", 
+						borderRadius: "5px",
+						border: allSlotsFilled ? "1px solid #c8e6c9" : "1px solid #bbdefb"
+					}}>
+						<span role="img" aria-label="info">
+							{allSlotsFilled ? "✅" : "ℹ️"}
+						</span> {allSlotsFilled 
+							? "All photos added! Your photo strip is ready to download or share." 
+							: `${uploadedCount} of 4 photos added. ${4 - uploadedCount} more needed to complete your strip.`}
+					</div>
+				</div>
+
+				
 			</div>
 		</>
 	);
