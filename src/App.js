@@ -9,28 +9,28 @@ import SharePage from "./components/SharePage";
 import GalleryPage from "./components/GalleryPage";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import AnalyticsTracker from "./components/AnalyticsTracker";
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsOfService from './components/TermsOfService';
-import RouteGuard from './utils/RouteGuard';
-import Clarity from '@microsoft/clarity';
-import VConsoleComponent from './utils/VConsole';
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import TermsOfService from "./components/TermsOfService";
+import RouteGuard from "./utils/RouteGuard";
+import Clarity from "@microsoft/clarity";
+import VConsoleComponent from "./utils/VConsole";
 
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
 	const [menuOpen, setMenuOpen] = useState(false);
-	
+
 	// 在组件挂载后初始化 Clarity
 	useEffect(() => {
 		// 延迟初始化 Clarity，让更重要的资源先加载
 		const timer = setTimeout(() => {
-			Clarity.init('qp466xa3k1');
+			Clarity.init("qp466xa3k1");
 		}, 2000); // 延迟 2 秒加载
-		
+
 		return () => clearTimeout(timer);
 	}, []);
 
 	// 定义使用摄像头的路由
-	const cameraRoutes = ['/photobooth'];
+	const cameraRoutes = ["/photobooth"];
 
 	const toggleMenu = () => {
 		setMenuOpen(!menuOpen);
@@ -41,21 +41,17 @@ function App() {
 			{/* 添加分析工具 */}
 			<GoogleAnalytics />
 			<AnalyticsTracker />
-			
+
 			<nav className="navbar">
 				<Link to="/" className="logo-link">
-					<img
-						src="/images/picapica-icon.svg"
-						alt="Pica Pica"
-						className="navbar-logo"
-					/>
+					<img src="/images/picapica-icon.svg" alt="Pica Pica" className="navbar-logo" />
 					<span className="site-name">Picapica.app</span>
 				</Link>
 
 				<div className="hamburger-menu" onClick={toggleMenu}>
-					<div className={`hamburger-line ${menuOpen ? 'open' : ''}`}></div>
-					<div className={`hamburger-line ${menuOpen ? 'open' : ''}`}></div>
-					<div className={`hamburger-line ${menuOpen ? 'open' : ''}`}></div>
+					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
+					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
+					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
 				</div>
 
 				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
@@ -71,8 +67,14 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/welcome" element={<Welcome />} />
-					<Route path="/photobooth" element={<PhotoBooth setCapturedImages={setCapturedImages} />} />
-					<Route path="/preview" element={<PhotoPreview capturedImages={capturedImages} />} />
+					<Route
+						path="/photobooth"
+						element={<PhotoBooth setCapturedImages={setCapturedImages} />}
+					/>
+					<Route
+						path="/preview"
+						element={<PhotoPreview capturedImages={capturedImages} />}
+					/>
 					<Route path="/g" element={<GalleryPage />} />
 					<Route path="/share" element={<SharePage />} />
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -80,10 +82,14 @@ function App() {
 				</Routes>
 			</RouteGuard>
 
-			<footer className="mt-8 text-sm text-gray-600">
+			<footer className="text-sm text-gray-600">
 				<p>© 2025 picapica.app - The Web Photo Booth App</p>
-					<Link to="/privacy-policy" onClick={() => setMenuOpen(false)}>Privacy Policy</Link>
-					<Link to="/terms-of-service" onClick={() => setMenuOpen(false)}>Terms of Service</Link>
+				<Link to="/privacy-policy" onClick={() => setMenuOpen(false)}>
+					Privacy Policy
+				</Link>
+				<Link to="/terms-of-service" onClick={() => setMenuOpen(false)} style={{ marginLeft: "10px" }}>
+					Terms of Service
+				</Link>
 			</footer>
 
 			{/* 添加 VConsole 组件 */}

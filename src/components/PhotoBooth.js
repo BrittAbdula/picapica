@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Meta from "./Meta";
 import CameraManager from "../utils/CameraManager";
 
-const PhotoBooth = ({ setCapturedImages }) => {
+const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const videoRef = useRef(null);
@@ -16,11 +16,13 @@ const PhotoBooth = ({ setCapturedImages }) => {
 	const cameraShutterRef = useRef(new Audio('/camera-shutter.mp3'));
 	const [backgroundColor, setBackgroundColor] = useState("#FFF0F5"); // Default light pink background
 	const [showColorPicker, setShowColorPicker] = useState(false); // Control color picker display
-	const [soundEnabled, setSoundEnabled] = useState(true); // Sound enabled by default
-	const [currentStream, setCurrentStream] = useState(null); // 存储当前摄像头流的引用
+	const [soundEnabled, setSoundEnabled] = useState(true); // Sound enabled by default/ 存储当前摄像头流的引用
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [cameraActive, setCameraActive] = useState(false);
+
+	// 使用 ref 存储相机流引用
+	const currentStream = useRef(null);
 
 	// Website theme colors
 	const themeColors = {
@@ -204,6 +206,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 			// 不需要在这里手动停止摄像头，由RouteGuard处理
 			// Reset navigation bar color when component unmounts
 			resetNavBarColor();
+			console.log("PhotoBooth component is unmounting, stopping camera...");
 		};
 	}, []);
 
@@ -279,6 +282,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
 			};
 			
 			const stream = await CameraManager.getCamera(constraints);
+			console.log('stream----------', stream);
+			CameraManager.registerStream(stream)
 			
 			// 设置视频源
 			if (videoRef.current) {
@@ -288,7 +293,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 				videoRef.current.muted = true;
 			}
 			
-			setCurrentStream(stream);
+			currentStream.current = stream;
 			setCameraActive(true);
 			setLoading(false);
 		} catch (error) {
@@ -301,9 +306,10 @@ const PhotoBooth = ({ setCapturedImages }) => {
 
 	// Stop Camera - 保留此方法用于组件内部需要停止摄像头的场景
 	const stopCamera = () => {
-		if (currentStream) {
-			CameraManager.stopCamera(currentStream);
-			setCurrentStream(null);
+		console.log('stopCamera', currentStream.current);
+		if (currentStream.current) {
+			CameraManager.stopCamera(currentStream.current);
+			currentStream.current = null;
 			if (videoRef.current) {
 				videoRef.current.srcObject = null;
 			}
@@ -472,6 +478,10 @@ const PhotoBooth = ({ setCapturedImages }) => {
 		setBackgroundColor(e.target.value);
 	};
 
+	const setDefaultBackgroundColor = (color) => {
+		setBackgroundColor(color);
+	};
+
 	// Toggle color picker display
 	const toggleColorPicker = () => {
 		setShowColorPicker(!showColorPicker);
@@ -486,7 +496,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 			/>
 			<style>{pulseKeyframes}</style>
 			<div className="photo-booth" style={{ 
-				backgroundColor,
+				background: `radial-gradient(circle, ${backgroundColor} 20%, #fff 80%)`,
 				paddingTop: "80px", // 增加顶部空间，避免被header遮挡
 				overflow: "hidden", // 防止内容溢出
 				width: "100%",
@@ -879,7 +889,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 						{lightingPresets.map((preset, index) => (
 							<button
 								key={index}
-								onClick={() => setBackgroundColor(preset.color)}
+								onClick={() => setDefaultBackgroundColor(preset.color)}
 								style={{
 									backgroundColor: preset.color,
 									color: preset.color === "#FFFFFF" || preset.color === "#F5F5DC" || preset.color === "#FFD580" || preset.color === "#ADD8E6" || preset.color === "#FFC0CB" || preset.color === "#FFF0F5" || preset.color === "#E6E6FA" ? "#000000" : "#FFFFFF",
@@ -941,7 +951,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
 					<div className="error-message">
 						<p>{error}</p>
 						<button onClick={startCamera}>
-							重试
+							replay
 						</button>
 					</div>
 				)}

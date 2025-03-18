@@ -11,10 +11,11 @@ let activeStreams = [];
  */
 const stopAllCameras = () => {
 	// console.log('Stopping all camera streams:', activeStreams.length);
-
+	console.log('stopAllCameras',activeStreams)
 	activeStreams.forEach((stream) => {
 		const tracks = stream.getTracks();
 		tracks.forEach((track) => {
+			console.log('track', track);
 			track.stop();
 		});
 	});
