@@ -14,7 +14,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 	const [countdownDuration, setCountdownDuration] = useState(3); // Default countdown duration
 	const [capturing, setCapturing] = useState(false);
 	const cameraShutterRef = useRef(new Audio('/camera-shutter.mp3'));
-	const [backgroundColor, setBackgroundColor] = useState("#FFF0F5"); // Default light pink background
+	const [backgroundColor, setBackgroundColor] = useState("#FFC0CB"); // Default light pink background
 	const [showColorPicker, setShowColorPicker] = useState(false); // Control color picker display
 	const [soundEnabled, setSoundEnabled] = useState(true); // Sound enabled by default/ 存储当前摄像头流的引用
 	const [loading, setLoading] = useState(false);
