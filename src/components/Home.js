@@ -61,7 +61,7 @@ const Home = () => {
               We'd love to hear your thoughts! Take a quick survey to help us make PicaPica even better.
             </p>
             <a 
-              href="https://tally.so/forms/mB0Wl4/edit" 
+              href="https://tally.so/r/mB0Wl4" 
               target="_blank" 
               rel="noopener noreferrer"
               className="inline-block bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition"
