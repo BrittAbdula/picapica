@@ -280,6 +280,12 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		setSelectedImageIndex(null);
 	};
 
+	const handleEditImage = (index) => {
+		const image = localImages[index];
+		localStorage.setItem('editImage', image);
+		navigate('/editor');
+	};
+
 	const handleUploadImage = (e) => {
 		const file = e.target.files[0];
 		if (!file) return;
@@ -612,6 +618,13 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 											>
 												🗑️ Delete
 											</button>
+
+											<span onClick={(e) => {
+													e.stopPropagation();
+													handleEditImage(index);
+												}}>Edit</span>
+
+							
 										</div>
 									</>
 								) : (

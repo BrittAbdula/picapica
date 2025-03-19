@@ -14,6 +14,7 @@ import TermsOfService from "./components/TermsOfService";
 import RouteGuard from "./utils/RouteGuard";
 import Clarity from "@microsoft/clarity";
 import VConsoleComponent from "./utils/VConsole";
+import PhotoEditor from "./components/PhotoEditor";
 
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
@@ -87,6 +88,7 @@ function App() {
 					<Route path="/share" element={<SharePage />} />
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
+					<Route path="/editor" element={<PhotoEditor />} />
 				</Routes>
 			</RouteGuard>
 
