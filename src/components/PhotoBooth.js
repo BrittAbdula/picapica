@@ -179,7 +179,6 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 		{ name: "Sunset Glow", color: "#FFA07A" },     // Light salmon
 		{ name: "Stage Light", color: "#E6E6FA" },     // Lavender
 		{ name: "Pink Theme", color: themeColors.mainPink }, // Website theme pink
-		{ name: "Black", color: "#000000" },           // Black
 	];
 
 	// Toggle sound on/off
@@ -496,7 +495,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 			/>
 			<style>{pulseKeyframes}</style>
 			<div className="photo-booth" style={{ 
-				background: `radial-gradient(circle, ${backgroundColor} 20%, #fff 80%)`,
+				background: `radial-gradient(circle at 55% 40%, ${backgroundColor} 10%, #fff 35%)`,
 				paddingTop: "80px", // 增加顶部空间，避免被header遮挡
 				overflow: "hidden", // 防止内容溢出
 				width: "100%",
@@ -507,21 +506,20 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 
 				<div className="photo-container" style={{
 					display: "flex",
-					justifyContent: "center",
-					alignItems: "flex-start",
+					flexDirection: "column",
+					alignItems: "center",
 					gap: "15px",
 					marginBottom: "20px",
 					padding: "0 15px",
-					boxSizing: "border-box", // 确保padding不会增加宽度
-					maxWidth: "1200px", // 限制最大宽度
-					margin: "0 auto" // 居中
+					boxSizing: "border-box",
+					maxWidth: "1200px",
+					margin: "0 auto"
 				}}>
 					<div className="camera-container" style={{ 
 						position: "relative",
-						maxWidth: "70%",
-						flexGrow: 1,
-						width: "100%", // 确保填充可用空间
-						boxSizing: "border-box" // 确保边框不会增加宽度
+						width: "100%",
+						maxWidth: "800px",
+						boxSizing: "border-box"
 					}}>
 						<video
 							ref={videoRef}
@@ -532,24 +530,25 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 							style={{ 
 								filter,
 								border: "2px solid #000",
+								borderRadius: "8px",
 								boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
 								width: "100%",
 								height: "auto",
-								maxHeight: "70vh", // 限制最大高度
-								objectFit: "cover", // 确保视频填充容器
-								boxSizing: "border-box" // 确保边框不会增加宽度
+								maxHeight: "70vh",
+								objectFit: "cover",
+								boxSizing: "border-box",
+								overflow: "hidden"
 							}}
 						/>
 						<canvas ref={canvasRef} className="hidden" />
 						
-						{/* 将倒计时放在视频流内部 */}
 						{countdown !== null && (
 							<div className="countdown-display-overlay" style={{
 								position: "absolute",
 								top: "50%",
 								left: "50%",
 								transform: "translate(-50%, -50%)",
-								fontSize: typeof countdown === "string" ? "40px" : "120px", // 如果是文字提示，使用较小的字体
+								fontSize: typeof countdown === "string" ? "40px" : "120px",
 								fontWeight: "bold",
 								color: "rgba(255, 255, 255, 0.8)",
 								textShadow: "0 0 10px rgba(0, 0, 0, 0.5)",
@@ -562,7 +561,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 								height: "150px",
 								borderRadius: "50%",
 								backgroundColor: "rgba(0, 0, 0, 0.3)",
-								pointerEvents: "none" // 确保不会阻挡用户交互
+								pointerEvents: "none"
 							}}>
 								{countdown}
 							</div>
@@ -570,368 +569,424 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 					</div>
 
 					<div className="preview-side" style={{ 
-						marginLeft: "10px", // 调整间距
 						display: "flex",
-						flexDirection: "column",
+						flexDirection: "row",
 						alignItems: "center",
-						justifyContent: "flex-start",
+						justifyContent: "center",
 						gap: "10px",
-						width: "25%", // 固定宽度比例
-						maxWidth: "200px", // 最大宽度限制
-						minWidth: "120px", // 最小宽度限制
-						boxSizing: "border-box" // 确保边框不会增加宽度
+						width: "100%",
+						maxWidth: "800px",
+						boxSizing: "border-box",
+						marginTop: "20px"
 					}}>
-						{capturedImages.length === 0 ? (
-							<div style={{
-								width: "100%",
-								aspectRatio: "16/9",
-								border: "2px solid #000",
-								boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
-								backgroundColor: "rgba(0,0,0,0.1)",
-								display: "flex",
-								justifyContent: "center",
-								alignItems: "center",
-								color: "#666",
-								fontSize: "12px",
-								textAlign: "center",
-								padding: "10px",
-								boxSizing: "border-box" // 确保边框不会增加宽度
-							}}>
-								photos will show here
-							</div>
-						) : (
-							capturedImages.map((image, index) => (
-								<img
-									key={index}
-									src={image}
-									alt={`Captured ${index + 1}`}
-									className="side-preview"
-									style={{
-										width: "100%",
-										height: "auto",
-										border: "2px solid #000", // 使用与视频流相同的黑色边框
-										boxShadow: "0 4px 8px rgba(0,0,0,0.2)", // 与视频流相同的阴影效果
-										objectFit: "cover", // 确保图片填充容器
-										aspectRatio: "16/9", // 保持与视频相同的宽高比
-										boxSizing: "border-box" // 确保边框不会增加宽度
-									}}
-								/>
-							))
-						)}
+						{capturedImages.map((image, index) => (
+							<img
+								key={index}
+								src={image}
+								alt={`Captured ${index + 1}`}
+								className="side-preview"
+								style={{
+									width: "120px",
+									height: "auto",
+									border: "2px solid #000",
+									boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+									objectFit: "cover",
+									aspectRatio: "16/9",
+									boxSizing: "border-box"
+								}}
+							/>
+						))}
 					</div>
 				</div>
 
 				<div className="controls" style={{ 
 					display: "flex", 
-					flexDirection: "row", 
+					flexDirection: "column", 
 					alignItems: "center", 
 					justifyContent: "center",
-					flexWrap: "wrap", // Allow wrapping on small screens
-					gap: "15px", // Add gap between elements
-					maxWidth: "1000px", // 限制最大宽度
-					margin: "0 auto", // 居中
+					flexWrap: "wrap",
+					gap: "15px",
+					maxWidth: "1000px",
+					margin: "0 auto",
 					marginTop: "60px",
-					padding: "0 15px", // 添加水平内边距
-					boxSizing: "border-box" // 确保padding不会增加宽度
+					padding: "0 15px",
+					boxSizing: "border-box"
 				}}>
-					{/* Countdown Duration Setting */}
-					<div className="countdown-setting" style={{ 
-						display: "flex", 
-						flexDirection: "column", 
-						alignItems: "center", 
-						marginRight: "20px",
-						minWidth: "120px",
-						maxWidth: "150px",
-						flex: "1 1 auto" // Allow flexible sizing
-					}}>
-						<label style={{ 
-							marginBottom: "8px", 
-							fontWeight: "bold", 
-							color: "#333",
-							fontSize: "14px",
-							textAlign: "center"
-						}}>
-							Countdown: {countdownDuration}s
-						</label>
-						<div style={{ 
-							display: "flex", 
-							alignItems: "flex-end", 
-							height: "40px", 
-							width: "100%", 
-							justifyContent: "space-between",
-							maxWidth: "120px", // Limit maximum width
-							padding: "0 5px" // Add padding for better spacing
-						}}>
-							{[1, 2, 3, 4, 5].map((value) => (
-								<div 
-									key={value} 
-									onClick={() => !capturing && setCountdownDuration(value)}
-									style={{
-										width: "18px", // Slightly narrower for better mobile spacing
-										height: `${value * 20}%`,
-										backgroundColor: value === countdownDuration 
-											? themeColors.accentColor 
-											: themeColors.mainPink,
-										borderRadius: "3px 3px 0 0",
-										cursor: capturing ? "not-allowed" : "pointer",
-										transition: "all 0.3s ease",
-										opacity: capturing ? 0.6 : 1,
-										position: "relative",
-										boxShadow: value === countdownDuration ? "0 0 5px rgba(0,0,0,0.2)" : "none", // Add shadow to selected bar
-										WebkitTapHighlightColor: "transparent" // Remove default mobile tap highlight
-									}}
-								>
-									<span style={{
-										position: "absolute",
-										bottom: "-20px",
-										left: "50%",
-										transform: "translateX(-50%)",
-										fontSize: "12px",
-										fontWeight: value === countdownDuration ? "bold" : "normal",
-										color: value === countdownDuration ? themeColors.accentColor : "#333"
-									}}>
-										{value}
-									</span>
-								</div>
-							))}
-						</div>
-					</div>
-
 					<button 
 						onClick={startCountdown} 
 						disabled={capturing}
-						style={{
-							backgroundColor: themeColors.mainPink,
-							color: "#000000",
-							border: "none",
-							padding: "10px 20px",
-							borderRadius: "5px",
-							cursor: capturing ? "not-allowed" : "pointer",
-							fontWeight: "bold"
-						}}
 					>
 						{capturing ? "Capturing..." : "Start Capture :)"}
 					</button>
-					
-					{/* Sound toggle switch - Fixed clickable version */}
-					<div className="sound-toggle" style={{ 
-						display: "flex", 
-						flexDirection: "column", 
-						alignItems: "center",
-						minWidth: "150px"
-					}}>
-						<label style={{ 
-							marginBottom: "8px", 
-							fontWeight: "bold", 
-							color: "#333",
-							fontSize: "14px",
-							userSelect: "none", 
-							cursor: "pointer" 
-						}} onClick={toggleSound}>
-							Camera Sound: {soundEnabled ? "On" : "Off"}
-						</label>
-						<div 
-							className="switch-container" 
-							style={{ position: "relative", display: "inline-block", width: "60px", height: "30px", cursor: "pointer" }}
-							onClick={toggleSound}
-						>
-							<div
-								className="slider"
-								style={{
-									position: "absolute",
-									top: 0,
-									left: 0,
-									right: 0,
-									bottom: 0,
-									backgroundColor: soundEnabled ? themeColors.accentColor : "#ccc",
-									borderRadius: "34px",
-									transition: "0.4s",
-								}}
-							>
-								<div 
-									className="slider-button"
-									style={{
-										position: "absolute",
-										height: "22px",
-										width: "22px",
-										left: soundEnabled ? "34px" : "4px",
-										bottom: "4px",
-										backgroundColor: "white",
-										borderRadius: "50%",
-										transition: "0.4s",
-									}}
-								/>
-							</div>
-						</div>
-					</div>
-				</div>
 
-				<div className="filters" style={{ 
-					marginTop: "60px",
-					display: "flex",
-					flexWrap: "wrap",
-					justifyContent: "center",
-					gap: "8px",
-					maxWidth: "1000px", // 限制最大宽度
-					margin: "40px auto 0", // 居中并设置上边距
-					padding: "0 15px", // 添加水平内边距
-					boxSizing: "border-box" // 确保padding不会增加宽度
-				}}>
-					<button 
-						onClick={() => setFilter("none")}
-						style={{
-							backgroundColor: filter === "none" ? themeColors.mainPink : "#f0f0f0",
-							margin: "5px",
-							padding: "8px 12px",
-							borderRadius: "4px",
-							cursor: "pointer",
-							border: filter === "none" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-						}}
-					>
-						No Filter
-					</button>
-					<button 
-						onClick={() => setFilter("grayscale(100%)")}
-						style={{
-							backgroundColor: filter === "grayscale(100%)" ? themeColors.mainPink : "#f0f0f0",
-							margin: "5px",
-							padding: "8px 12px",
-							borderRadius: "4px",
-							cursor: "pointer",
-							border: filter === "grayscale(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-						}}
-					>
-						Grayscale
-					</button>
-					<button 
-						onClick={() => setFilter("sepia(100%)")}
-						style={{
-							backgroundColor: filter === "sepia(100%)" ? themeColors.mainPink : "#f0f0f0",
-							margin: "5px",
-							padding: "8px 12px",
-							borderRadius: "4px",
-							cursor: "pointer",
-							border: filter === "sepia(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-						}}
-					>
-						Sepia
-					</button>
-					<button
-						onClick={() =>
-							setFilter(
-								"grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)"
-							)
-						}
-						style={{
-							backgroundColor: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? themeColors.mainPink : "#f0f0f0",
-							margin: "5px",
-							padding: "8px 12px",
-							borderRadius: "4px",
-							cursor: "pointer",
-							border: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-						}}
-					>
-						Vintage
-					</button>
-					<button
-						onClick={() =>
-							setFilter(
-								"brightness(130%) contrast(105%) saturate(80%) blur(0.3px)"
-							)
-						}
-						style={{
-							backgroundColor: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? themeColors.mainPink : "#f0f0f0",
-							margin: "5px",
-							padding: "8px 12px",
-							borderRadius: "4px",
-							cursor: "pointer",
-							border: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc"
-						}}
-					>
-						Soft
-					</button>
-				</div>
-
-				{/* Background Lighting Section */}
-				<div className="lighting-section" style={{ 
-					marginTop: "20px",
-					padding: "0 15px",
-					maxWidth: "1000px", // 限制最大宽度
-					margin: "20px auto 0", // 居中并设置上边距
-					boxSizing: "border-box" // 确保padding不会增加宽度
-				}}>
-					<h3 style={{ 
-						color: "#333", 
-						marginBottom: "10px",
-						textAlign: "center",
-						fontSize: "16px"
-					}}>
-						Background Lighting
-					</h3>
-					<div className="lighting-presets" style={{
+					{/* Filters */}
+					<div style={{ 
 						display: "flex",
 						flexWrap: "wrap",
 						justifyContent: "center",
-						gap: "8px"
+						gap: "8px",
+						marginTop: "20px"
 					}}>
-						{lightingPresets.map((preset, index) => (
-							<button
-								key={index}
-								onClick={() => setDefaultBackgroundColor(preset.color)}
-								style={{
-									backgroundColor: preset.color,
-									color: preset.color === "#FFFFFF" || preset.color === "#F5F5DC" || preset.color === "#FFD580" || preset.color === "#ADD8E6" || preset.color === "#FFC0CB" || preset.color === "#FFF0F5" || preset.color === "#E6E6FA" ? "#000000" : "#FFFFFF",
-									border: backgroundColor === preset.color ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
-									margin: "5px",
-									padding: "8px 12px",
-									borderRadius: "4px",
-									cursor: "pointer",
-									fontSize: "12px"
-								}}
-							>
-								{preset.name}
-							</button>
-						))}
 						<button 
-							onClick={toggleColorPicker}
+							onClick={() => setFilter("none")}
 							style={{
+								backgroundColor: filter === "none" ? themeColors.mainPink : "#f0f0f0",
 								margin: "5px",
 								padding: "8px 12px",
 								borderRadius: "4px",
 								cursor: "pointer",
-								backgroundColor: themeColors.lightPink,
-								border: "1px solid #ccc",
-								fontSize: "12px"
+								border: filter === "none" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "none" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
 							}}
 						>
-							Custom Color
+							No Filter
+						</button>
+						<button 
+							onClick={() => setFilter("grayscale(100%)")}
+							style={{
+								backgroundColor: filter === "grayscale(100%)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "grayscale(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "grayscale(100%)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Grayscale
+						</button>
+						<button 
+							onClick={() => setFilter("sepia(100%)")}
+							style={{
+								backgroundColor: filter === "sepia(100%)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "sepia(100%)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "sepia(100%)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Sepia
+						</button>
+						<button
+							onClick={() =>
+								setFilter(
+									"grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)"
+								)
+							}
+							style={{
+								backgroundColor: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "grayscale(100%) contrast(120%) brightness(110%) sepia(30%) hue-rotate(10deg) blur(0.4px)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Vintage
+						</button>
+						<button
+							onClick={() =>
+								setFilter(
+									"brightness(130%) contrast(105%) saturate(80%) blur(0.3px)"
+								)
+							}
+							style={{
+								backgroundColor: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "brightness(130%) contrast(105%) saturate(80%) blur(0.3px)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Soft
+						</button>
+						<button
+							onClick={() =>
+								setFilter(
+									"brightness(120%) contrast(120%) saturate(150%) hue-rotate(20deg)"
+								)
+							}
+							style={{
+								backgroundColor: filter === "brightness(120%) contrast(120%) saturate(150%) hue-rotate(20deg)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "brightness(120%) contrast(120%) saturate(150%) hue-rotate(20deg)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "brightness(120%) contrast(120%) saturate(150%) hue-rotate(20deg)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Vivid
+						</button>
+						<button
+							onClick={() =>
+								setFilter(
+									"brightness(90%) contrast(110%) saturate(90%) hue-rotate(-10deg)"
+								)
+							}
+							style={{
+								backgroundColor: filter === "brightness(90%) contrast(110%) saturate(90%) hue-rotate(-10deg)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "brightness(90%) contrast(110%) saturate(90%) hue-rotate(-10deg)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "brightness(90%) contrast(110%) saturate(90%) hue-rotate(-10deg)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Moody
+						</button>
+						<button
+							onClick={() =>
+								setFilter(
+									"brightness(110%) contrast(130%) saturate(120%) hue-rotate(5deg) blur(0.2px)"
+								)
+							}
+							style={{
+								backgroundColor: filter === "brightness(110%) contrast(130%) saturate(120%) hue-rotate(5deg) blur(0.2px)" ? themeColors.mainPink : "#f0f0f0",
+								margin: "5px",
+								padding: "8px 12px",
+								borderRadius: "4px",
+								cursor: "pointer",
+								border: filter === "brightness(110%) contrast(130%) saturate(120%) hue-rotate(5deg) blur(0.2px)" ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+								fontSize: "14px",
+								fontWeight: "500",
+								transition: "all 0.3s ease",
+								boxShadow: filter === "brightness(110%) contrast(130%) saturate(120%) hue-rotate(5deg) blur(0.2px)" ? "0 2px 4px rgba(0,0,0,0.1)" : "none"
+							}}
+						>
+							Portrait
 						</button>
 					</div>
+				</div>
+
+				{/* Advanced Settings Section */}
+				<div className="advanced-settings" style={{ 
+					marginTop: "60px",
+					padding: "40px 15px",
+					maxWidth: "1000px",
+					margin: "60px auto 0",
+				}}>
+					<h3 style={{ 
+						color: "#333", 
+						marginBottom: "30px",
+						textAlign: "center",
+						fontSize: "18px"
+					}}>
+						Advanced Settings
+					</h3>
 					
-					{showColorPicker && (
-						<div className="color-picker-container" style={{ 
-							margin: "15px 0",
-							display: "flex",
-							justifyContent: "center",
+					{/* Countdown and Sound Controls */}
+					<div style={{
+						display: "flex",
+						justifyContent: "center",
+						gap: "20px",
+						marginBottom: "30px",
+						flexWrap: "wrap"
+					}}>
+						{/* Countdown Setting */}
+						<div style={{ 
+							display: "flex", 
+							flexDirection: "column", 
 							alignItems: "center",
-							flexWrap: "wrap",
-							gap: "10px"
+							minWidth: "150px"
 						}}>
-							<input
-								type="color"
-								value={backgroundColor}
-								onChange={handleColorChange}
-								style={{ width: "50px", height: "50px", cursor: "pointer" }}
-							/>
-							<span style={{ 
+							<label style={{ 
+								marginBottom: "8px", 
+								fontWeight: "bold", 
+								color: "#333",
 								fontSize: "14px",
-								fontWeight: "bold",
-								color: "#333"
+								textAlign: "center"
 							}}>
-								{backgroundColor}
-							</span>
+								Countdown: {countdownDuration}s
+							</label>
+							<div 
+								className="switch-container" 
+								style={{ 
+									position: "relative", 
+									display: "inline-block", 
+									width: "80px", 
+									height: "30px", 
+									cursor: capturing ? "not-allowed" : "pointer",
+									opacity: capturing ? 0.6 : 1
+								}}
+							>
+								<input
+									type="range"
+									min="1"
+									max="10"
+									value={countdownDuration}
+									onChange={(e) => !capturing && setCountdownDuration(Number(e.target.value))}
+									disabled={capturing}
+									style={{
+										width: "100%",
+										height: "6px",
+										background: themeColors.mainPink,
+										outline: "none",
+										WebkitAppearance: "none",
+										appearance: "none",
+										borderRadius: "3px"
+									}}
+								/>
+							</div>
 						</div>
-					)}
+
+						{/* Sound Toggle */}
+						<div style={{ 
+							display: "flex", 
+							flexDirection: "column", 
+							alignItems: "center",
+							minWidth: "150px"
+						}}>
+							<label style={{ 
+								marginBottom: "8px", 
+								fontWeight: "bold", 
+								color: "#333",
+								fontSize: "14px",
+								userSelect: "none", 
+								cursor: "pointer" 
+							}} onClick={toggleSound}>
+								Camera Sound: {soundEnabled ? "On" : "Off"}
+							</label>
+							<div 
+								className="switch-container" 
+								style={{ position: "relative", display: "inline-block", width: "60px", height: "30px", cursor: "pointer" }}
+								onClick={toggleSound}
+							>
+								<div
+									className="slider"
+									style={{
+										position: "absolute",
+										top: 0,
+										left: 0,
+										right: 0,
+										bottom: 0,
+										backgroundColor: soundEnabled ? themeColors.accentColor : "#ccc",
+										borderRadius: "34px",
+										transition: "0.4s",
+									}}
+								>
+									<div 
+										className="slider-button"
+										style={{
+											position: "absolute",
+											height: "22px",
+											width: "22px",
+											left: soundEnabled ? "34px" : "4px",
+											bottom: "4px",
+											backgroundColor: "white",
+											borderRadius: "50%",
+											transition: "0.4s",
+										}}
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					{/* Background Lighting */}
+					<div style={{ 
+						marginTop: "20px",
+						textAlign: "center"
+					}}>
+						<h3 style={{ 
+							color: "#333", 
+							marginBottom: "10px",
+							fontSize: "16px"
+						}}>
+							Background Lighting
+						</h3>
+						<div className="lighting-presets" style={{
+							display: "flex",
+							flexWrap: "wrap",
+							justifyContent: "center",
+							gap: "8px"
+						}}>
+							{lightingPresets.map((preset, index) => (
+								<button
+									key={index}
+									onClick={() => setDefaultBackgroundColor(preset.color)}
+									style={{
+										backgroundColor: preset.color,
+										color: preset.color === "#FFFFFF" || preset.color === "#F5F5DC" || preset.color === "#FFD580" || preset.color === "#ADD8E6" || preset.color === "#FFC0CB" || preset.color === "#FFF0F5" || preset.color === "#E6E6FA" ? "#000000" : "#FFFFFF",
+										border: backgroundColor === preset.color ? `2px solid ${themeColors.accentColor}` : "1px solid #ccc",
+										margin: "5px",
+										padding: "8px 12px",
+										borderRadius: "4px",
+										cursor: "pointer",
+										fontSize: "12px"
+									}}
+								>
+									{preset.name}
+								</button>
+							))}
+							<button 
+								onClick={toggleColorPicker}
+								style={{
+									margin: "5px",
+									padding: "8px 12px",
+									borderRadius: "4px",
+									cursor: "pointer",
+									backgroundColor: themeColors.lightPink,
+									border: "1px solid #ccc",
+									fontSize: "12px"
+								}}
+							>
+								Custom Color
+							</button>
+						</div>
+						
+						{showColorPicker && (
+							<div className="color-picker-container" style={{ 
+								margin: "15px 0",
+								display: "flex",
+								justifyContent: "center",
+								alignItems: "center",
+								flexWrap: "wrap",
+								gap: "10px"
+							}}>
+								<input
+									type="color"
+									value={backgroundColor}
+									onChange={handleColorChange}
+									style={{ width: "50px", height: "50px", cursor: "pointer" }}
+								/>
+								<span style={{ 
+									fontSize: "14px",
+									fontWeight: "bold",
+									color: "#333"
+								}}>
+									{backgroundColor}
+								</span>
+							</div>
+						)}
+					</div>
 				</div>
 
 				{/* 显示错误信息 */}
