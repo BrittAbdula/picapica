@@ -280,18 +280,78 @@ const SharePage = () => {
         <div className="image-container" style={{ 
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '30px'
+          marginBottom: '30px',
+          position: 'relative'
         }}>
           <img 
             src={decodedUrl} 
             alt="Shared photo strip" 
             style={{
               maxWidth: '100%',
+              maxHeight: '70vh',
               height: 'auto',
-              borderRadius: '0px',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+              objectFit: 'contain',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              cursor: 'pointer'
+            }}
+            onClick={() => {
+              document.getElementById('fullscreen-viewer').style.display = 'flex';
             }}
           />
+          <div 
+            id="fullscreen-viewer" 
+            style={{
+              display: 'none',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0,0,0,0.9)',
+              zIndex: 1000,
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                document.getElementById('fullscreen-viewer').style.display = 'none';
+              }
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              top: '15px',
+              right: '20px',
+              color: 'white',
+              fontSize: '30px',
+              cursor: 'pointer',
+              zIndex: 1001
+            }}
+            onClick={() => {
+              document.getElementById('fullscreen-viewer').style.display = 'none';
+            }}>
+              ×
+            </div>
+            <div style={{
+              overflow: 'auto',
+              maxHeight: '90vh',
+              maxWidth: '90vw',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <img 
+                src={decodedUrl} 
+                alt="Shared photo strip (fullscreen)" 
+                style={{
+                  maxWidth: '90%',
+                  maxHeight: '90%',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+          </div>
         </div>
         
         <div className="share-actions" style={{ 

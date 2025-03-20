@@ -19,7 +19,7 @@ const GalleryPage = () => {
     try {
       setLoading(true);
       const offset = pageNum * ITEMS_PER_PAGE;
-      const response = await fetch(`https://api.picapica.app/api/images?limit=${ITEMS_PER_PAGE}&offset=${offset}`);
+      const response = await fetch(`https://api.picapica.app/api/x/images?limit=${ITEMS_PER_PAGE}&offset=${offset}`);
       
       if (!response.ok) {
         throw new Error('Failed to fetch images');
@@ -108,9 +108,9 @@ const GalleryPage = () => {
                   className={`masonry-item ${photo.filter}`}
                   ref={isLastElement ? lastPhotoElementRef : null}
                 >
-                  <Link to={`/share?imageurl=${encodeURIComponent(photo.url)}`}>
+                  <Link to={`/share?imageurl=${encodeURIComponent(photo.imageUrl)}`}>
                     <img 
-                      src={photo.url} 
+                      src={photo.imageUrl} 
                       alt={`Photo ${photo.id}`} 
                       className="gallery-image"
                       loading="lazy"

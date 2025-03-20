@@ -214,6 +214,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			
 			// Upload to server
 			const response = await fetch('https://api.picapica.app/api/photos/upload', {
+			// const response = await fetch('https://picapica-api-test.auroroa.workers.dev/api/photos/upload', {
 				method: 'POST',
 				body: formData
 			});
