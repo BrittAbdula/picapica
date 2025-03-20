@@ -213,7 +213,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			formData.append('image', blob, 'photostrip.png');
 			
 			// Upload to server
-			const response = await fetch('https://api.picapica.app/api/upload', {
+			const response = await fetch('https://api.picapica.app/api/photos/upload', {
 				method: 'POST',
 				body: formData
 			});

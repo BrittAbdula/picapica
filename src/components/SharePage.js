@@ -59,7 +59,7 @@ const SharePage = () => {
   let metaTitle = 'Share Your Photo Strip';
   let metaDescription = 'Share your Picapica photo strip with friends and family. Create beautiful photo strips with our free online photo booth app.';
   let metaImage = decodedUrl || 'https://picapica.app/images/og-image.png';
-  let canonicalPath = location.pathname + location.search;
+  let canonicalPath = 'https://picapica.app/share';
 
   if (loading) {
     metaTitle = 'Loading Shared Photo';
