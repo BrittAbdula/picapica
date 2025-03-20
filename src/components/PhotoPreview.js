@@ -15,6 +15,9 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 	const [localImages, setLocalImages] = useState(Array(4).fill(null));
 	const [draggedIndex, setDraggedIndex] = useState(null);
 	const [dragOverIndex, setDragOverIndex] = useState(null);
+	const [prediction, setPrediction] = useState(null);
+	const [isFetchingPrediction, setIsFetchingPrediction] = useState(false);
+	const [showPrediction, setShowPrediction] = useState(false);
 	
 	// 初始化照片数组 - 固定4个位置
 	useEffect(() => {
@@ -38,7 +41,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		const imgHeight = 300;
 		const borderSize = 40;
 		const photoSpacing = 20;
-		const textHeight = 50;
+		const textHeight = showPrediction && prediction ? 150 : 50;
 		const totalHeight =
 			imgHeight * 4 + photoSpacing * 3 + borderSize * 2 + textHeight;
 
@@ -102,12 +105,68 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						imgHeight
 					);
 				}
+				
+				// 如果有预言且需要显示，在照片上添加关键词
+				if (showPrediction && prediction && prediction.keywords && prediction.keywords[i]) {
+					// 添加半透明背景
+					ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+					ctx.fillRect(borderSize, yOffset + imgHeight - 40, imgWidth, 40);
+					
+					// 添加关键词文本
+					ctx.fillStyle = "#ffffff";
+					ctx.font = "bold 20px Arial";
+					ctx.textAlign = "center";
+					ctx.fillText(
+						prediction.keywords[i],
+						borderSize + imgWidth / 2,
+						yOffset + imgHeight - 15
+					);
+				}
 
 				imagesLoaded++;
 
 					// 所有实际照片都加载完成后，添加底部文字
 					if (imagesLoaded === actualImages.length) {
 						addFooterAndWatermark(ctx, totalHeight, borderSize, canvas.width);
+						
+						// 添加预言总结
+						if (showPrediction && prediction && prediction.summary) {
+							const summaryY = borderSize + (imgHeight + photoSpacing) * 4 - 10; 
+							
+							// // 添加半透明背景 - 保留背景但去掉边框
+							// ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+							// ctx.fillRect(borderSize, summaryY, imgWidth, 100);
+							
+							// 添加标题 - 改为居中
+							ctx.fillStyle = "#9C27B0";
+							ctx.font = "bold 18px Arial";
+							ctx.textAlign = "center"; // 改为居中
+							ctx.fillText("✨ Your Four Moments ✨", borderSize + imgWidth / 2, summaryY + 25);
+							
+							// 添加预言文本 - 自动换行
+							ctx.fillStyle = "#333333";
+							ctx.font = "16px Arial";
+							ctx.textAlign = "left"; // 内容仍然是左对齐
+							const maxWidth = imgWidth - 20;
+							const words = prediction.summary.split(' ');
+							let line = '';
+							let y = summaryY + 50;
+							
+							for (let n = 0; n < words.length; n++) {
+								const testLine = line + words[n] + ' ';
+								const metrics = ctx.measureText(testLine);
+								const testWidth = metrics.width;
+								
+								if (testWidth > maxWidth && n > 0) {
+									ctx.fillText(line, borderSize + 10, y);
+									line = words[n] + ' ';
+									y += 20;
+								} else {
+									line = testLine;
+								}
+							}
+							ctx.fillText(line, borderSize + 10, y);
+						}
 					}
 				};
 			} else {
@@ -130,7 +189,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		if (actualImages.length === 0) {
 			addFooterAndWatermark(ctx, totalHeight, borderSize, canvas.width);
 		}
-	}, [localImages, stripColor, selectedFrame]);
+	}, [localImages, stripColor, selectedFrame, prediction, showPrediction]);
 
 	const addFooterAndWatermark = (ctx, totalHeight, borderSize, canvasWidth) => {
 					const now = new Date();
@@ -224,6 +283,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			}
 			
 			const data = await response.json();
+
 			
 			// Generate shareable link
 			const shareableLink = `${window.location.origin}/share?imageurl=${encodeURIComponent(data.imageUrl)}`;
@@ -263,6 +323,85 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				console.error('Fallback copy failed:', err);
 			}
 			document.body.removeChild(textArea);
+		}
+	};
+	
+	// 获取人生四格预言的函数
+	const getPrediction = async () => {
+		// 检查是否所有位置都有照片
+		const allSlotsFilled = localImages.every(img => img !== null);
+		if (!allSlotsFilled) {
+			alert("Please add photos to all 4 positions before analysis.");
+			return;
+		}
+		
+		if (!stripCanvasRef.current) return;
+		
+		try {
+			setIsFetchingPrediction(true);
+			
+			let imageUrl;
+			
+			// 如果已经生成了分享链接，提取图片URL而不是重新上传
+			if (shareLink) {
+				const urlParams = new URL(shareLink).searchParams;
+				imageUrl = urlParams.get('imageurl');
+				if (!imageUrl) {
+					throw new Error('Could not extract image URL from share link');
+				}
+			} else {
+				// 首先上传照片，获取图片URL
+				const blob = await new Promise(resolve => {
+					stripCanvasRef.current.toBlob(resolve, 'image/png');
+				});
+				
+				// 创建表单并上传
+				const formData = new FormData();
+				formData.append('image', blob, 'photostrip.png');
+				
+				// 上传到服务器
+				// const response = await fetch('https://picapica-api-test.auroroa.workers.dev/api/photos/upload', {
+				const response = await fetch('https://api.picapica.app/api/photos/upload', {
+					method: 'POST',
+					body: formData
+				});
+				
+				if (!response.ok) {
+					throw new Error('Failed to upload image');
+				}
+				
+				const data = await response.json();
+				imageUrl = data.imageUrl;
+			}
+			
+			// 分析照片获取预言
+			// const analysisResponse = await fetch('https://picapica-api-test.auroroa.workers.dev/api/ai/analyze-photo', {
+				const analysisResponse = await fetch('https://api.picapica.app/api/ai/analyze-photo', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ imageUrl: imageUrl })
+			});
+			
+			if (!analysisResponse.ok) {
+				throw new Error('Failed to analyze image');
+			}
+			
+			const analysisResult = await analysisResponse.json();
+			
+			if (analysisResult.success && analysisResult.data) {
+				setPrediction(analysisResult.data);
+				setShowPrediction(true);
+			} else {
+				throw new Error('Invalid analysis result');
+			}
+			
+		} catch (error) {
+			console.error('Error getting prediction:', error);
+			alert('Failed to get prediction. Please try again.');
+		} finally {
+			setIsFetchingPrediction(false);
 		}
 	};
 	
@@ -628,6 +767,23 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 					>
 						{isGeneratingLink ? "Generating..." : "🔗 Get Shareable Link"}
 					</button>
+					<button 
+						onClick={getPrediction} 
+						disabled={isFetchingPrediction || !allSlotsFilled}
+						style={{
+							backgroundColor: "#9C27B0",
+							color: "white",
+							border: "none",
+							padding: "12px 20px",
+							borderRadius: "5px",
+							cursor: (isFetchingPrediction || !allSlotsFilled) ? "not-allowed" : "pointer",
+							opacity: !allSlotsFilled ? 0.6 : 1,
+							fontWeight: "bold",
+							fontSize: "16px"
+						}}
+					>
+						{isFetchingPrediction ? "Generating..." : "✨ PicaPica My Moments"}
+					</button>
 				</div>
 				
 				{!allSlotsFilled && (
@@ -698,6 +854,119 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						>
 							🔍 View Shared Page
 						</button>
+					</div>
+				)}
+				
+				{/* 预言结果显示区域 */}
+				{prediction && (
+					<div style={{
+						marginTop: "20px",
+						marginBottom: "20px",
+						padding: "20px",
+						backgroundColor: "#f8f5ff",
+						borderRadius: "8px",
+						border: "1px solid #e6d8ff",
+						boxShadow: "0 2px 8px rgba(156, 39, 176, 0.1)"
+					}}>
+						<h3 style={{ 
+							color: "#9C27B0", 
+							marginTop: 0,
+							marginBottom: "15px",
+							display: "flex", 
+							alignItems: "center",
+							justifyContent: "center"
+						}}>
+							<span style={{ marginRight: "8px" }}>✨</span>
+							Your Four Moments Interpretation
+							<span style={{ marginLeft: "8px" }}>✨</span>
+						</h3>
+						
+						<div style={{ 
+							display: "flex", 
+							flexDirection: "column", 
+							gap: "15px" 
+						}}>
+							<div style={{ 
+								display: "grid", 
+								gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", 
+								gap: "10px",
+								margin: "10px 0" 
+							}}>
+								{prediction.keywords.map((keyword, index) => (
+									<div key={index} style={{
+										backgroundColor: "#9C27B0",
+										color: "white",
+										padding: "10px",
+										borderRadius: "5px",
+										textAlign: "center",
+										fontWeight: "bold"
+									}}>
+										{keyword}
+									</div>
+								))}
+							</div>
+							
+							<div 
+								onClick={() => {
+									if (navigator.clipboard) {
+										navigator.clipboard.writeText(prediction.summary)
+											.then(() => {
+												alert("Summary copied to clipboard!");
+											})
+											.catch(err => {
+												console.error('Failed to copy text: ', err);
+											});
+									}
+								}}
+								style={{ 
+									backgroundColor: "white", 
+									padding: "15px", 
+									borderRadius: "5px",
+									border: "1px solid #e6d8ff",
+									fontStyle: "italic",
+									color: "#333",
+									cursor: "pointer",
+									position: "relative"
+								}}
+								title="Click to copy"
+							>
+								<div style={{
+									position: "absolute",
+									top: "8px",
+									right: "8px",
+									fontSize: "12px",
+									color: "#9C27B0",
+									opacity: 0.7
+								}}>
+									📋 Click to copy
+								</div>
+								"{prediction.summary}"
+							</div>
+							
+							<div style={{ 
+								display: "flex", 
+								justifyContent: "center", 
+								marginTop: "10px" 
+							}}>
+								<label style={{ 
+									display: "flex", 
+									alignItems: "center", 
+									cursor: "pointer",
+									userSelect: "none",
+									padding: "8px 12px",
+									backgroundColor: "#f0e6f7",
+									borderRadius: "4px"
+								}}>
+									<input 
+										type="checkbox" 
+										checked={showPrediction} 
+										onChange={() => setShowPrediction(!showPrediction)}
+										style={{ marginRight: "8px" }}
+									/>
+									Display interpretation on photos
+								</label>
+							</div>
+						</div>
 					</div>
 				)}
 				
