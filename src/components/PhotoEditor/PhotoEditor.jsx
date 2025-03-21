@@ -10,6 +10,8 @@ const PhotoEditor = () => {
 	const [selectedTemplate, setSelectedTemplate] = useState(null);
 	const [loading, setLoading] = useState(true); // 默认为加载状态
 	const [error, setError] = useState(null);
+	const [textInput, setTextInput] = useState(""); // 添加文本输入状态
+	const [showTextInputSheet, setShowTextInputSheet] = useState(false); // 控制文本输入弹窗显示
 
 	// Fabric.js 画布引用
 	const canvasRef = useRef(null);
@@ -385,6 +387,47 @@ const PhotoEditor = () => {
 		canvas.renderAll();
 	};
 
+	// 添加文本到画布
+	const handleAddTextToCanvas = () => {
+		if (!fabricCanvasRef.current || !textInput.trim()) return;
+
+		const canvas = fabricCanvasRef.current;
+		const canvasWidth = canvas.width;
+		const canvasHeight = canvas.height;
+
+		const text = new fabric.Text(textInput, {
+			left: canvasWidth / 2,
+			top: canvasHeight / 2,
+			originX: "center",
+			originY: "center",
+			fontFamily: "Arial",
+			fontSize: 30,
+			fill: "#000000",
+			hasControls: true,
+			hasBorders: true,
+			cornerColor: "#4285f4",
+			borderColor: "#4285f4",
+			cornerSize: 10,
+			transparentCorners: false,
+			isText: true, // 自定义标记
+			selectable: true,
+			evented: true,
+		});
+
+		canvas.add(text);
+		canvas.setActiveObject(text);
+		canvas.renderAll();
+
+		// 清空输入框并隐藏弹窗
+		setTextInput("");
+		setShowTextInputSheet(false);
+	};
+
+	// 切换文本输入弹窗显示
+	const toggleTextInputSheet = () => {
+		setShowTextInputSheet(!showTextInputSheet);
+	};
+
 	return (
 		<div className="photo-editor">
 			{/* 主内容区域 */}
@@ -406,6 +449,11 @@ const PhotoEditor = () => {
 						<button className="action-button delete" onClick={handleDeleteSelected}>
 							<i className="icon-delete">🗑️</i>
 						</button>
+
+						{/* 悬浮的文字按钮 */}
+						<button className="floating-text-button" onClick={toggleTextInputSheet}>
+							<i className="icon-text">T</i>
+						</button>
 					</div>
 				</div>
 			</div>
@@ -420,7 +468,7 @@ const PhotoEditor = () => {
 					<i className="toolbar-icon">🌟</i>
 					<span>Stickers</span>
 				</button>
-				<button className="toolbar-button" onClick={handleSaveImage}>
+				<button className="toolbar-button save-button" onClick={handleSaveImage}>
 					<i className="toolbar-icon">💾</i>
 					<span>Save</span>
 				</button>
@@ -489,6 +537,40 @@ const PhotoEditor = () => {
 									))}
 								</div>
 							)}
+						</div>
+					</div>
+				</div>
+			)}
+
+			{/* 文本输入底部弹窗 */}
+			{showTextInputSheet && (
+				<div className="bottom-sheet">
+					<div className="bottom-sheet-backdrop" onClick={toggleTextInputSheet}></div>
+					<div className="bottom-sheet-container">
+						<div className="bottom-sheet-header">
+							<div className="bottom-sheet-handle"></div>
+							<h3>Add Text</h3>
+							<button className="bottom-sheet-close" onClick={toggleTextInputSheet}>
+								×
+							</button>
+						</div>
+						<div className="bottom-sheet-content">
+							<input
+								type="text"
+								value={textInput}
+								onChange={(e) => setTextInput(e.target.value)}
+								placeholder="Enter your text..."
+								className="text-input"
+								autoFocus
+							/>
+							<div className="text-input-buttons">
+								<button onClick={toggleTextInputSheet} className="cancel-button">
+									Cancel
+								</button>
+								<button onClick={handleAddTextToCanvas} className="add-text-button">
+									Add
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>

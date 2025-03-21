@@ -84,13 +84,35 @@ canvas {
 
 /* 浮动控制按钮 */
 .floating-controls {
-	position: absolute;
-	bottom: 20px;
-	right: 20px;
+	position: fixed;
+	bottom: 200px;
+	right: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	z-index: 5;
+	z-index: 500;
+}
+
+/* 悬浮的文字按钮样式 */
+.floating-text-button {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background-color: #4285f4;
+	color: white;
+	border: none;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24px;
+	cursor: pointer;
+	transition: transform 0.3s ease;
+	z-index: 10;
+}
+
+.floating-text-button:hover {
+	transform: scale(1.1);
 }
 
 .action-button {
@@ -149,14 +171,14 @@ canvas {
 	color: #333;
 }
 
-/* 底部弹窗样式 */
+/* 美化弹窗样式 */
 .bottom-sheet {
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
-	z-index: 100;
+	z-index: 600;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
@@ -177,7 +199,7 @@ canvas {
 	background-color: white;
 	border-top-left-radius: 16px;
 	border-top-right-radius: 16px;
-	height: 60vh; /* 高度为视口高度的60% */
+	height: 40vh; /* 高度为视口高度的40% */
 	width: 100%;
 	animation: slideUp 0.3s ease;
 	box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
@@ -191,6 +213,95 @@ canvas {
 	border-bottom: 1px solid #eee;
 	position: relative;
 	flex-shrink: 0;
+	text-align: center;
+}
+
+.bottom-sheet-handle {
+	width: 40px;
+	height: 4px;
+	background-color: #ddd;
+	border-radius: 4px;
+	margin: 0 auto;
+	position: absolute;
+	top: 8px;
+	left: 0;
+	right: 0;
+}
+
+.bottom-sheet-close {
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: #666;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: absolute;
+	right: 16px;
+	top: 12px;
+}
+
+.bottom-sheet-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+	-webkit-overflow-scrolling: touch; /* 适用于iOS滚动优化 */
+}
+
+.text-input {
+	width: 100%;
+	padding: 12px 16px;
+	border: 1px solid #e0e0e0;
+	border-radius: 8px;
+	font-size: 16px;
+	margin-bottom: 16px;
+	transition: border-color 0.3s;
+	box-sizing: border-box;
+}
+
+.text-input:focus {
+	border-color: #4285f4;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.text-input-buttons {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.add-text-button,
+.cancel-button {
+	padding: 10px 20px;
+	border: none;
+	border-radius: 8px;
+	font-weight: 500;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.add-text-button {
+	background-color: #4285f4;
+	color: white;
+}
+
+.add-text-button:hover {
+	background-color: #3367d6;
+	transform: translateY(-1px);
+}
+
+.cancel-button {
+	background-color: #f1f1f1;
+	color: #333;
+}
+
+.cancel-button:hover {
+	background-color: #e0e0e0;
 }
 
 .sheet-tabs {
