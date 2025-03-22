@@ -408,13 +408,47 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		}
 
 		try {
-			console.log("availablePhotos", availablePhotos, availablePhotos.length);
-			console.log("JSON.stringify(availablePhotos)", JSON.stringify(availablePhotos));
-			// 保存到localStorage
-			localStorage.setItem("photoToEnhance", JSON.stringify(availablePhotos));
-			localStorage.setItem("photoToEnhanceColor", stripColor);
-			// 跳转到编辑页面
-			navigate(`/editor`);
+			// 使用IndexedDB存储照片数据
+			const dbName = "picapicaDB";
+			const storeName = "photoData";
+			const request = indexedDB.open(dbName, 1);
+
+			request.onupgradeneeded = (event) => {
+				const db = event.target.result;
+				if (!db.objectStoreNames.contains(storeName)) {
+					db.createObjectStore(storeName, { keyPath: "id" });
+				}
+			};
+
+			request.onsuccess = (event) => {
+				const db = event.target.result;
+				const transaction = db.transaction([storeName], "readwrite");
+				const store = transaction.objectStore(storeName);
+
+				// 清除之前的数据
+				store.clear();
+
+				// 存储新的照片数据
+				store.add({ id: "photoToEnhance", photos: availablePhotos });
+
+				// 存储背景颜色到localStorage (体积小的数据仍可使用localStorage)
+				localStorage.setItem("photoToEnhanceColor", stripColor);
+
+				transaction.oncomplete = () => {
+					// 跳转到编辑页面
+					navigate(`/editor`);
+				};
+
+				transaction.onerror = (error) => {
+					console.error("IndexedDB transaction error:", error);
+					alert("Failed to prepare photo for enhancement. Please try again.");
+				};
+			};
+
+			request.onerror = (event) => {
+				console.error("Error opening IndexedDB:", event.target.error);
+				alert("Failed to prepare photo for enhancement. Please try again.");
+			};
 		} catch (error) {
 			console.error("Error preparing photo for enhancement:", error);
 			alert("Failed to prepare photo for enhancement. Please try again.");
@@ -506,9 +540,8 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						{Array.from({ length: 4 }).map((_, index) => (
 							<div
 								key={index}
-								className={`${getPhotoItemClassName(index)} ${
-									localImages[index] === null ? "empty" : ""
-								}`}
+								className={`${getPhotoItemClassName(index)} ${localImages[index] === null ? "empty" : ""
+									}`}
 								style={{
 									position: "relative",
 									border: "1px solid rgba(0,0,0,0.05)",
@@ -725,9 +758,8 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						</span>{" "}
 						{allSlotsFilled
 							? "All photos added! Your photo strip is ready to download or share."
-							: `${uploadedCount} of 4 photos added. ${
-									4 - uploadedCount
-							  } more needed to complete your strip.`}
+							: `${uploadedCount} of 4 photos added. ${4 - uploadedCount
+							} more needed to complete your strip.`}
 					</div>
 				</div>
 
@@ -1105,7 +1137,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 const FRAMES = {
 	none: {
-		draw: (ctx, x, y, width, height) => {}, // Empty function for no frame
+		draw: (ctx, x, y, width, height) => { }, // Empty function for no frame
 	},
 	pastel: {
 		draw: (ctx, x, y, width, height) => {

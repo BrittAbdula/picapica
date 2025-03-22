@@ -74,27 +74,51 @@ const PhotoEditor = () => {
 	useEffect(() => {
 		try {
 			// 从 localStorage 获取图片
-			const savedImage = localStorage.getItem("photoToEnhance");
+			// const savedImage = localStorage.getItem("photoToEnhance");
 
-			if (!savedImage) {
-				setError("未找到需要美化的图片");
-				setLoading(false);
-				return;
-			}
+			const dbName = "picapicaDB";
+			const storeName = "photoData";
+			const request = indexedDB.open(dbName, 1);
 
-			// 初始化画布并添加图片
-			if (!fabricCanvasRef.current) {
-				initCanvas();
-				// 等待画布初始化完成后再添加图片
-				setTimeout(() => {
-					if (fabricCanvasRef.current) {
-						addPhotoToCanvas(savedImage);
-					} else {
-						setError("画布初始化失败");
-						setLoading(false);
+			request.onsuccess = (event) => {
+				const db = event.target.result;
+				const transaction = db.transaction([storeName], "readonly");
+				const store = transaction.objectStore(storeName);
+
+				const getRequest = store.get("photoToEnhance");
+
+				getRequest.onsuccess = () => {
+					if (getRequest.result) {
+						const { photos } = getRequest.result;
+						// 使用获取到的照片数据
+						// 初始化画布并添加图片
+						if (!fabricCanvasRef.current) {
+							initCanvas();
+							// 等待画布初始化完成后再添加图片
+							setTimeout(() => {
+								if (fabricCanvasRef.current) {
+									addPhotoToCanvas(photos);
+								} else {
+									setError("画布初始化失败");
+									setLoading(false);
+								}
+							}, 0);
+						}
 					}
-				}, 0);
-			}
+				};
+
+				getRequest.onerror = (error) => {
+					console.error("Error getting photo data from IndexedDB:", error);
+				};
+			};
+
+			request.onerror = (event) => {
+				console.error("Error opening IndexedDB:", event.target.error);
+			};
+
+
+
+
 		} catch (error) {
 			console.error("从localStorage加载图片失败:", error);
 			setError("加载图片失败，请重试");
@@ -133,7 +157,7 @@ const PhotoEditor = () => {
 	};
 
 	// 修改 addPhotoToCanvas 函数，避免重复初始化画布
-	const addPhotoToCanvas = (photoSrc) => {
+	const addPhotoToCanvas = (photos) => {
 		// 确保 canvas 已初始化
 		if (!fabricCanvasRef.current) {
 			console.error("画布未初始化");
@@ -151,7 +175,6 @@ const PhotoEditor = () => {
 		existingUserImages.forEach((obj) => fabricCanvasRef.current.remove(obj));
 
 		const photoSpacing = 10;
-		const photos = JSON.parse(localStorage.getItem("photoToEnhance"));
 
 		console.log("photos", photos.length);
 
@@ -176,7 +199,7 @@ const PhotoEditor = () => {
 						(canvasHeight -
 							(photos.length * img.height * scale +
 								(photos.length - 1) * photoSpacing)) /
-							2 +
+						2 +
 						i * (img.height * scale + photoSpacing);
 					// 确保图片不超出画布边界
 
@@ -486,17 +509,15 @@ const PhotoEditor = () => {
 							<div className="bottom-sheet-handle"></div>
 							<div className="sheet-tabs">
 								<button
-									className={`sheet-tab-button ${
-										activeTab === "template" ? "active" : ""
-									}`}
+									className={`sheet-tab-button ${activeTab === "template" ? "active" : ""
+										}`}
 									onClick={() => setActiveTab("template")}
 								>
 									Templates
 								</button>
 								<button
-									className={`sheet-tab-button ${
-										activeTab === "sticker" ? "active" : ""
-									}`}
+									className={`sheet-tab-button ${activeTab === "sticker" ? "active" : ""
+										}`}
 									onClick={() => setActiveTab("sticker")}
 								>
 									Stickers
