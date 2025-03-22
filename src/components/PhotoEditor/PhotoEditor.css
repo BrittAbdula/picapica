@@ -1,12 +1,11 @@
 .photo-editor {
 	display: flex;
 	flex-direction: column;
-	height: 80vh;
-	width: 80vw;
 	overflow: hidden;
 	position: relative;
 	/* background-color: #ffffff; */
 	margin: 0 auto;
+	width: fit-content;
 }
 
 .back-button,

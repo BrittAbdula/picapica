@@ -36,9 +36,11 @@ const PhotoEditor = () => {
 		console.log("initCanvas", canvasRef.current);
 		if (!canvasRef.current) return;
 
+		const totalHeight = 20 * 2 + 225 * 4 + 20 * 3 + 30
+
 		const canvas = new fabric.Canvas(canvasRef.current, {
-			width: window.innerWidth * 0.8,
-			height: window.innerHeight - 250, // 减去顶部和底部空间
+			width: 340,
+			height: totalHeight, // 减去顶部和底部空间
 			backgroundColor: localStorage.getItem("photoToEnhanceColor") || "#ffffff",
 			preserveObjectStacking: true,
 			selection: true, // 确保可以选择对象
@@ -178,6 +180,10 @@ const PhotoEditor = () => {
 
 		console.log("photos", photos.length);
 
+		// 目标矩形尺寸
+		const targetWidth = 300;
+		const targetHeight = 225;
+
 		for (let i = 0; i < photos.length; i++) {
 			// 继续添加照片到画布的逻辑...
 			fabric.Image.fromURL(
@@ -186,53 +192,47 @@ const PhotoEditor = () => {
 					console.log("加载照片");
 					// 设置图片属性
 					const canvas = fabricCanvasRef.current;
-					const canvasWidth = canvas.width;
-					const canvasHeight = canvas.height;
 
-					// 调整图片大小以适应画布
-					const scale = Math.min(
-						(canvasWidth * 0.7) / img.width,
-						(canvasHeight * 0.7) / img.height
-					);
 
-					const yOffset =
-						(canvasHeight -
-							(photos.length * img.height * scale +
-								(photos.length - 1) * photoSpacing)) /
-						2 +
-						i * (img.height * scale + photoSpacing);
-					// 确保图片不超出画布边界
 
+					const originalWidth = img.width; // 1920
+					const originalHeight = img.height; // 1080
+
+					// 计算目标宽高比
+					const targetAspectRatio = targetWidth / targetHeight; // 4:3
+					const originalAspectRatio = originalWidth / originalHeight; // 16:9
+
+					let cropWidth, cropHeight;
+
+					if (originalAspectRatio > targetAspectRatio) {
+						// 如果原始图片更宽，按高度裁剪
+						cropHeight = originalHeight;
+						cropWidth = cropHeight * targetAspectRatio; // 按目标宽高比计算裁剪宽度
+					} else {
+						// 如果原始图片更高，按宽度裁剪
+						cropWidth = originalWidth;
+						cropHeight = cropWidth / targetAspectRatio; // 按目标宽高比计算裁剪高度
+					}
+
+					// 计算裁剪起始点（居中裁剪）
+					const cropX = (originalWidth - cropWidth) / 2;
+					const cropY = (originalHeight - cropHeight) / 2;
+
+					// 设置裁剪区域
 					img.set({
-						scaleX: scale,
-						scaleY: scale,
-						left: (canvasWidth - img.width * scale) / 2,
-						top: yOffset,
-						hasControls: true,
-						hasBorders: true,
-						cornerColor: "#00a9ff",
-						borderColor: "#00a9ff",
-						cornerSize: 10,
-						transparentCorners: false,
-						isUserImage: true, // 自定义标记
-						lockRotation: false, // 允许旋转
-						selectable: true, // 确保可选择
-						evented: true, // 确保可以接收事件
+						width: cropWidth, // 裁剪后的宽度
+						height: cropHeight, // 裁剪后的高度
+						cropX: cropX, // 裁剪起始 X 坐标
+						cropY: cropY, // 裁剪起始 Y 坐标
+						left: 20,
+						top: 20 + i * (targetHeight + photoSpacing), // 每个图片之间有一定的间距
 					});
 
-					// 启用所有控制点
-					// img.setControlsVisibility({
-					// 	mt: true, // 上中
-					// 	mb: true, // 下中
-					// 	ml: true, // 左中
-					// 	mr: true, // 右中
-					// 	bl: true, // 左下
-					// 	br: true, // 右下
-					// 	tl: true, // 左上
-					// 	tr: true, // 右上
-					// 	mtr: true, // 旋转控制点
-					// });
-
+					// 缩放图片到目标尺寸
+					const scaleX = targetWidth / cropWidth;
+					const scaleY = targetHeight / cropHeight;
+					img.scaleX = scaleX;
+					img.scaleY = scaleY;
 					// 将图片添加到画布
 					canvas.add(img);
 					canvas.setActiveObject(img);
