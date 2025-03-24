@@ -391,16 +391,20 @@ const PhotoEditor = () => {
 		const canvas = fabricCanvasRef.current;
 		const objects = canvas.getObjects();
 
-		console.log("objects", objects);
-
 		// 先提取所有对象
 		const templates = objects.filter((obj) => obj.isTemplate);
 		const userImages = objects.filter((obj) => obj.isUserImage);
 		const stickers = objects.filter((obj) => obj.isSticker);
+		const texts = objects.filter((obj) => obj.isText);
 
-		// 然后按顺序移动它们
+		// 获取背景颜色
+		const backgroundColor = localStorage.getItem("photoToEnhanceColor") || "#ffffff";
+		
+		// 清空画布并设置背景颜色
 		canvas.clear();
+		canvas.setBackgroundColor(backgroundColor, canvas.renderAll.bind(canvas));
 
+		// 然后按顺序添加对象
 		// 模板放在最底层
 		templates.forEach((obj) => canvas.add(obj));
 
@@ -409,6 +413,9 @@ const PhotoEditor = () => {
 
 		// 贴纸放在最上层
 		stickers.forEach((obj) => canvas.add(obj));
+		
+		// 文本放在最顶层
+		texts.forEach((obj) => canvas.add(obj));
 
 		canvas.renderAll();
 	};
