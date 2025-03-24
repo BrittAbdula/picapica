@@ -36,7 +36,7 @@ const PhotoEditor = () => {
 		console.log("initCanvas", canvasRef.current);
 		if (!canvasRef.current) return;
 
-		const totalHeight = 20 * 2 + 225 * 4 + 20 * 3 + 30
+		const totalHeight = 20 * 2 + 225 * 4 + 20 * 3 + 30;
 
 		const canvas = new fabric.Canvas(canvasRef.current, {
 			width: 340,
@@ -117,10 +117,6 @@ const PhotoEditor = () => {
 			request.onerror = (event) => {
 				console.error("Error opening IndexedDB:", event.target.error);
 			};
-
-
-
-
 		} catch (error) {
 			console.error("从localStorage加载图片失败:", error);
 			setError("加载图片失败，请重试");
@@ -193,8 +189,6 @@ const PhotoEditor = () => {
 					// 设置图片属性
 					const canvas = fabricCanvasRef.current;
 
-
-
 					const originalWidth = img.width; // 1920
 					const originalHeight = img.height; // 1080
 
@@ -226,6 +220,8 @@ const PhotoEditor = () => {
 						cropY: cropY, // 裁剪起始 Y 坐标
 						left: 20,
 						top: 20 + i * (targetHeight + photoSpacing), // 每个图片之间有一定的间距
+						selectable: false,
+						isUserImage: true,
 					});
 
 					// 缩放图片到目标尺寸
@@ -235,12 +231,11 @@ const PhotoEditor = () => {
 					img.scaleY = scaleY;
 					// 将图片添加到画布
 					canvas.add(img);
-					canvas.setActiveObject(img);
 					canvas.renderAll();
 
 					if (i === photos.length - 1) {
 						// 确保图层顺序正确
-						// arrangeLayerOrder();
+						arrangeLayerOrder();
 						// 图片加载完成
 						setLoading(false);
 					}
@@ -327,7 +322,22 @@ const PhotoEditor = () => {
 			// 确保所有控制点都可见，包括旋转控制
 			img.setControlsVisibility({
 				mtr: true, // 保留旋转控制点
+				mt: false, // 禁用上中控制点
+				mb: false, // 禁用下中控制点
+				ml: false, // 禁用左中控制点
+				mr: false, // 禁用右中控制点
+				bl: false, // 禁用左下控制点
+				br: false, // 禁用右下控制点
+				tl: false, // 禁用左上控制点
+				tr: false, // 禁用右上控制点
 			});
+
+			// 设置对象属性，锁定缩放比例
+			img.lockScalingX = true;
+			img.lockScalingY = true;
+			img.lockSkewingX = true;
+			img.lockSkewingY = true;
+			img.lockUniScaling = true;
 
 			// 添加贴纸到画布
 			canvas.add(img);
@@ -381,9 +391,7 @@ const PhotoEditor = () => {
 		const canvas = fabricCanvasRef.current;
 		const objects = canvas.getObjects();
 
-		// 保存当前选中对象
-		const activeObject = canvas.getActiveObject();
-		canvas.discardActiveObject();
+		console.log("objects", objects);
 
 		// 先提取所有对象
 		const templates = objects.filter((obj) => obj.isTemplate);
@@ -401,11 +409,6 @@ const PhotoEditor = () => {
 
 		// 贴纸放在最上层
 		stickers.forEach((obj) => canvas.add(obj));
-
-		// 恢复选中状态
-		if (activeObject && canvas.contains(activeObject)) {
-			canvas.setActiveObject(activeObject);
-		}
 
 		canvas.renderAll();
 	};
@@ -509,15 +512,17 @@ const PhotoEditor = () => {
 							<div className="bottom-sheet-handle"></div>
 							<div className="sheet-tabs">
 								<button
-									className={`sheet-tab-button ${activeTab === "template" ? "active" : ""
-										}`}
+									className={`sheet-tab-button ${
+										activeTab === "template" ? "active" : ""
+									}`}
 									onClick={() => setActiveTab("template")}
 								>
 									Templates
 								</button>
 								<button
-									className={`sheet-tab-button ${activeTab === "sticker" ? "active" : ""
-										}`}
+									className={`sheet-tab-button ${
+										activeTab === "sticker" ? "active" : ""
+									}`}
 									onClick={() => setActiveTab("sticker")}
 								>
 									Stickers
