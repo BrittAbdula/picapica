@@ -32,12 +32,18 @@ const TermsOfService = () => {
           <div className="privacy-section">
             <h2 className="text-2xl font-semibold text-pink-600 mb-3">Service Description</h2>
             <p className="text-lg text-gray-700 mb-4">
-              Pica Pica Photo Booth is a web application that allows users to take photos using their device's camera and apply various filters and effects to those photos.
+              Pica Pica Photo Booth is a web application that allows users to take photos using their device's camera, apply various filters and effects, share photos, and access AI-powered features like pixel art transformation and photo interpretation.
             </p>
             <div className="flex items-start mb-3">
               <div className="text-pink-600 mr-3 mt-1">✓</div>
               <p className="text-lg text-gray-700">
-                <strong>Local Processing:</strong> All photo processing occurs locally on your device.
+                <strong>Local Processing:</strong> Basic photo processing occurs locally on your device when possible.
+              </p>
+            </div>
+            <div className="flex items-start mb-3">
+              <div className="text-pink-600 mr-3 mt-1">✓</div>
+              <p className="text-lg text-gray-700">
+                <strong>Cloud Services:</strong> Advanced features like sharing, AI interpretations, and pixel art transformations utilize secure cloud processing.
               </p>
             </div>
             <div className="flex items-start mb-3">
@@ -46,6 +52,22 @@ const TermsOfService = () => {
                 <strong>No Account Required:</strong> You can use our service without creating an account.
               </p>
             </div>
+          </div>
+          
+          <div className="privacy-section">
+            <h2 className="text-2xl font-semibold text-pink-600 mb-3">Data Storage & Retention</h2>
+            <p className="text-lg text-gray-700 mb-4">
+              When using our sharing and AI-powered features, you agree to the following terms:
+            </p>
+            <ul className="list-disc pl-8 text-lg text-gray-700 mb-4">
+              <li><strong>Temporary Storage:</strong> Your photos will be stored on our servers for a maximum of 7 days when you use features that require uploading (sharing, AI interpretations, pixel art transformations).</li>
+              <li><strong>Automatic Deletion:</strong> After 7 days, all uploaded photos and their derivatives will be automatically and permanently deleted from our servers.</li>
+              <li><strong>Shareable Links:</strong> Any links to shared photos will expire after 7 days and will no longer be accessible.</li>
+              <li><strong>Link Access:</strong> Anyone with access to your shareable link can view your photos during the 7-day period. Share links responsibly.</li>
+            </ul>
+            <p className="text-lg text-gray-700 mb-4">
+              If you wish to have your content removed before the 7-day period expires, please contact us directly.
+            </p>
           </div>
           
           <div className="privacy-section">
@@ -58,6 +80,8 @@ const TermsOfService = () => {
               <li>Not use the service for any illegal or unauthorized purpose</li>
               <li>Not attempt to interfere with or disrupt the service or its servers</li>
               <li>Not attempt to access features or areas of the service that you are not authorized to access</li>
+              <li>Not upload, share, or process content that is illegal, harmful, threatening, abusive, or otherwise objectionable</li>
+              <li>Take responsibility for managing your shareable links and understanding that they provide access to your photos</li>
             </ul>
           </div>
           
@@ -67,8 +91,20 @@ const TermsOfService = () => {
               The Pica Pica Photo Booth application, including its design, logo, and code, is the property of Pica Pica and is protected by copyright and other intellectual property laws.
             </p>
             <p className="text-lg text-gray-700 mb-4">
-              Photos taken by users using our application belong to the users. We do not claim any ownership rights over these photos.
+              Photos taken by users using our application belong to the users. We do not claim any ownership rights over these photos. However, by using our sharing and AI features, you grant us a temporary, limited license to store and process your content solely for the purpose of providing the requested services.
             </p>
+          </div>
+          
+          <div className="privacy-section">
+            <h2 className="text-2xl font-semibold text-pink-600 mb-3">AI-Generated Content</h2>
+            <p className="text-lg text-gray-700 mb-4">
+              Our "PicaPica My Moments" interpretation feature and pixel art transformation use AI to generate content based on your photos. Please understand that:
+            </p>
+            <ul className="list-disc pl-8 text-lg text-gray-700 mb-4">
+              <li>AI-generated interpretations are for entertainment purposes only</li>
+              <li>You retain ownership of AI-generated content derived from your photos</li>
+              <li>AI-generated content is subject to the same 7-day retention policy as uploaded photos</li>
+            </ul>
           </div>
           
           <div className="privacy-section">
@@ -77,7 +113,7 @@ const TermsOfService = () => {
               Pica Pica Photo Booth is provided "as is" without any warranties, expressed or implied. We do not guarantee that the service will be error-free or uninterrupted.
             </p>
             <p className="text-lg text-gray-700 mb-4">
-              In no event shall Pica Pica be liable for any damages arising out of the use or inability to use the service.
+              In no event shall Pica Pica be liable for any damages arising out of the use or inability to use the service, or for any content shared through our service.
             </p>
           </div>
           

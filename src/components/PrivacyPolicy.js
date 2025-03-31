@@ -36,13 +36,13 @@ const PrivacyPolicy = () => {
             <div className="flex items-start mb-3">
               <div className="text-pink-600 mr-3 mt-1">✓</div>
               <p className="text-lg text-gray-700">
-                <strong>No Personal Data Collection:</strong> We do not track, collect, or store any personal data.
+                <strong>Minimal Personal Data Collection:</strong> We do not track, collect, or store any personal identification data like emails, names, or accounts.
               </p>
             </div>
             <div className="flex items-start mb-3">
               <div className="text-pink-600 mr-3 mt-1">✓</div>
               <p className="text-lg text-gray-700">
-                <strong>Local Processing:</strong> All photos taken are processed locally on your device and are not uploaded or saved to any external server.
+                <strong>Local Processing:</strong> Most photos taken are processed locally on your device when possible.
               </p>
             </div>
             <div className="flex items-start mb-3">
@@ -62,6 +62,34 @@ const PrivacyPolicy = () => {
               <li>Only active when you're using the photo booth feature</li>
               <li>Automatically disabled when you leave the photo booth or close the application</li>
               <li>Never used to record or transmit video/images without your knowledge</li>
+            </ul>
+          </div>
+
+          <div className="privacy-section">
+            <h2 className="text-2xl font-semibold text-pink-600 mb-3">Photo Sharing & Storage</h2>
+            <p className="text-lg text-gray-700 mb-4">
+              When you choose to use our sharing features (such as generating a shareable link, pixel art transformation, or getting a four frames interpretation), please be aware of the following:
+            </p>
+            <ul className="list-disc pl-8 text-lg text-gray-700 mb-4">
+              <li><strong>Temporary Server Storage:</strong> Your photos will be uploaded to our secure servers to enable sharing functionality.</li>
+              <li><strong>7-Day Retention Policy:</strong> All uploaded photos and their derivatives (pixel art versions, AI interpretations) are automatically deleted after 7 days.</li>
+              <li><strong>No Third-Party Sharing:</strong> We do not sell, share, or provide your photos to any third parties except as necessary to provide the requested service.</li>
+              <li><strong>Public Access:</strong> Anyone with your generated link can access your shared photo during the 7-day period - please share links responsibly.</li>
+            </ul>
+            <p className="text-lg text-gray-700 mb-4">
+              If you prefer not to have your photos temporarily stored on our servers, you can still use the local download functionality without generating a shareable link.
+            </p>
+          </div>
+          
+          <div className="privacy-section">
+            <h2 className="text-2xl font-semibold text-pink-600 mb-3">AI Features</h2>
+            <p className="text-lg text-gray-700 mb-4">
+              Our app offers AI-powered features like "PicaPica My Moments" interpretation and pixel art transformation. When using these features:
+            </p>
+            <ul className="list-disc pl-8 text-lg text-gray-700 mb-4">
+              <li>Your photos are processed by our AI services to generate interpretations or transformations</li>
+              <li>The results of these analyses are subject to the same 7-day deletion policy</li>
+              <li>We do not use your photos to train AI models or for any purpose other than providing the requested feature</li>
             </ul>
           </div>
           
