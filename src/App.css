@@ -720,42 +720,48 @@ body {
     display: flex;
   }
   
-  .nav-links {
-    position: fixed;
-    top: 0;
-    right: -100%;
-    width: 70%;
-    max-width: 300px;
-    height: 100vh;
-    background-color: white;
-    flex-direction: column;
-    padding: 80px 20px 30px;
-    transition: right 0.3s ease;
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-  }
+  .nav-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999; /* 略低于导航栏的z-index */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.nav-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.nav-links {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 70%;
+  max-width: 300px;
+  height: 100vh;
+  background-color: white;
+  flex-direction: column;
+  padding: 80px 20px 30px;
+  transition: right 0.3s ease;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
   
-  .nav-links.open {
-    right: 0;
-  }
+.nav-links.open {
+  right: 0;
+}
   
-  .nav-links a {
-    margin: 10px 0;
-    padding: 12px 15px;
-    width: 100%;
-    text-align: left;
-    border-radius: 8px;
-  }
-  
-  /* 添加背景遮罩 */
-  .nav-links.open::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: -1;
-  }
+.nav-links a {
+  margin: 10px 0;
+  padding: 12px 15px;
+  width: 100%;
+  text-align: left;
+  border-radius: 8px;
+}
 }

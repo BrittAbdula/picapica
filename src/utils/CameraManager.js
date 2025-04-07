@@ -11,7 +11,6 @@ let activeStreams = [];
  */
 const stopAllCameras = () => {
 	// console.log('Stopping all camera streams:', activeStreams.length);
-	console.log('stopAllCameras',activeStreams)
 	activeStreams.forEach((stream) => {
 		const tracks = stream.getTracks();
 		tracks.forEach((track) => {
@@ -56,12 +55,6 @@ const unregisterStream = (stream) => {
  */
 const getCamera = async (constraints) => {
 	try {
-		// 记录设备信息
-		console.log("设备信息:", {
-			userAgent: navigator.userAgent,
-			platform: navigator.platform,
-			isIOS: isIOS(),
-		});
 
 		// 默认约束条件
 		const defaultConstraints = {
@@ -78,7 +71,6 @@ const getCamera = async (constraints) => {
 
 		// iOS Safari 特殊处理
 		if (isIOS()) {
-			console.log("检测到 iOS 设备，应用特殊处理");
 			// 移除可能导致问题的特定约束
 			if (finalConstraints.video && typeof finalConstraints.video === "object") {
 				// 移除 frameRate 约束，在某些 iOS 版本上可能导致问题
@@ -97,14 +89,12 @@ const getCamera = async (constraints) => {
 			}
 		}
 
-		console.log("请求摄像头，最终约束条件:", JSON.stringify(finalConstraints, null, 2));
 
 		// 记录支持的设备
 		if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
 			try {
 				const devices = await navigator.mediaDevices.enumerateDevices();
 				const videoDevices = devices.filter((device) => device.kind === "videoinput");
-				console.log("可用视频设备:", videoDevices);
 			} catch (enumError) {
 				console.warn("枚举设备失败:", enumError);
 			}
@@ -112,7 +102,6 @@ const getCamera = async (constraints) => {
 
 		// 尝试获取媒体流
 		const stream = await navigator.mediaDevices.getUserMedia(finalConstraints);
-		console.log("成功获取摄像头流:", stream);
 
 		// 记录流的 tracks 信息
 		const videoTracks = stream.getVideoTracks();

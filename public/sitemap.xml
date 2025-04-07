@@ -13,6 +13,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://picapica.app/templates</loc>
+    <lastmod>2025-04-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://picapica.app/photobooth</loc>
     <lastmod>2025-03-01</lastmod>
     <changefreq>monthly</changefreq>
@@ -20,14 +26,14 @@
   </url>
   <url>
     <loc>https://picapica.app/preview</loc>
-    <lastmod>2025-03-01</lastmod>
+    <lastmod>2025-04-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://picapica.app/share</loc>
     <lastmod>2025-03-01</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>

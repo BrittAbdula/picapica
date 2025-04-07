@@ -41,27 +41,32 @@ function App() {
 			{/* 添加分析工具 */}
 			<GoogleAnalytics />
 			<AnalyticsTracker />
+<nav className="navbar">
+  <Link to="/" className="logo-link">
+    <img src="/images/picapica-icon.svg" alt="Pica Pica" className="navbar-logo" />
+    <span className="site-name">Picapica.app</span>
+  </Link>
 
-			<nav className="navbar">
-				<Link to="/" className="logo-link">
-					<img src="/images/picapica-icon.svg" alt="Pica Pica" className="navbar-logo" />
-					<span className="site-name">Picapica.app</span>
-				</Link>
+  <div className="hamburger-menu" onClick={toggleMenu}>
+    <div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
+    <div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
+    <div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
+  </div>
 
-				<div className="hamburger-menu" onClick={toggleMenu}>
-					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
-					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
-					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
-				</div>
+  {/* 添加独立的遮罩元素 */}
+  <div 
+    className={`nav-backdrop ${menuOpen ? 'open' : ''}`} 
+    onClick={() => setMenuOpen(false)}
+  ></div>
 
-				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
-					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-					<Link to="/templates" onClick={() => setMenuOpen(false)}>Templates</Link>
-					<Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
-					<Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
-					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
-				</div>
-			</nav>
+  <div className={`nav-links ${menuOpen ? 'open' : ''}`}>
+    <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+    <Link to="/templates" onClick={() => setMenuOpen(false)}>Templates</Link>
+    <Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
+    <Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
+    <Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
+  </div>
+</nav>
 
 			{/* 使用RouteGuard包裹Routes，实现路由层面的摄像头管理 */}
 			<RouteGuard cameraRoutes={cameraRoutes}>

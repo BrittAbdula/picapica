@@ -283,7 +283,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 			};
 			
 			const stream = await CameraManager.getCamera(constraints);
-			console.log('stream----------', stream);
+			// console.log('stream----------', stream);
 			CameraManager.registerStream(stream)
 			
 			// 设置视频源

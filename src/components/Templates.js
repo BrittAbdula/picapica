@@ -38,7 +38,7 @@ const Templates = () => {
     ctx.fillStyle = "#999999";
     ctx.font = "16px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("Photo", canvas.width / 2, canvas.height / 2);
+    ctx.fillText("Photo Booth Preview", canvas.width / 2, canvas.height / 2);
     
     // Apply the frame
     if (FRAMES[frameType] && typeof FRAMES[frameType].draw === "function") {
@@ -62,13 +62,13 @@ const Templates = () => {
   return (
     <>
       <Meta
-        title="Photo Frame Templates"
-        description="Choose a template for your photo strip. Select from various designs and styles for your photos."
+        title="Photo Booth Frames & Templates "
+        description="Choose from our collection of beautiful photo booth frames for your next event. Customizable photo booth frame templates for your special moment."
         canonicalUrl="/templates"
       />
       
-      <div className="templates-container" style={{ padding: "20px" }}>
-        <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Choose Your Photo Frame</h1>
+      <div className="photo-booth-frames-container" style={{ padding: "20px" }}>
+        <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Photo Booth Frames Collection</h1>
         
         <p style={{ 
           textAlign: "center", 
@@ -76,10 +76,10 @@ const Templates = () => {
           margin: "0 auto 40px", 
           color: "#666"
         }}>
-          Select a frame style for your photo strip. Click on any template to continue to the photo booth.
+          Browse our selection of premium photo booth frames for your next event. Each frame is designed to enhance your photo booth experience and create memorable keepsakes.
         </p>
         
-        <div className="templates-grid" style={{
+        <div className="photo-booth-frames-grid" style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
           gap: "30px",
@@ -89,7 +89,7 @@ const Templates = () => {
           {frameTypes.map((frameType, index) => (
             <div 
               key={frameType}
-              className="template-item"
+              className="photo-booth-frame-item"
               onClick={() => handleTemplateClick(frameType)}
               style={{
                 cursor: "pointer",
@@ -112,6 +112,7 @@ const Templates = () => {
                   width: "100%",
                   display: "block"
                 }}
+                aria-label={`${frameType} photo booth frame preview`}
               />
               <div style={{
                 padding: "15px",
@@ -123,18 +124,106 @@ const Templates = () => {
                   fontSize: "18px",
                   color: "#333"
                 }}>
-                  {frameType.charAt(0).toUpperCase() + frameType.slice(1)} Frame
+                  {frameType.charAt(0).toUpperCase() + frameType.slice(1)} Photo Booth Frame
                 </h3>
                 <p style={{ 
                   margin: "0", 
                   fontSize: "14px",
                   color: "#666"
                 }}>
-                  Click to select
+                  Select this photo booth frame
                 </p>
               </div>
             </div>
           ))}
+        </div>
+        
+        <div className="photo-booth-frames-info" style={{
+          maxWidth: "800px",
+          margin: "50px auto 0",
+          padding: "20px",
+          backgroundColor: "#f9f9f9",
+          borderRadius: "8px"
+        }}>
+          <h2 style={{ marginTop: 0 }}>About Our Photo Booth Frames</h2>
+          <p>
+            Our photo booth frames are designed to enhance your event photos with beautiful, customizable designs. 
+            Perfect for weddings, corporate events, birthday parties, and any special occasion. 
+            These digital photo booth frames help create memorable keepsakes for you and your guests.
+          </p>
+          <p>
+            Simply select your favorite photo booth frame design from our collection and proceed to the photo booth 
+            to capture stunning photos with your chosen frame.
+          </p>
+        </div>
+        
+        {/* Request new frames section */}
+        <div className="request-photo-booth-frames" style={{
+          maxWidth: "800px",
+          margin: "50px auto 30px",
+          padding: "30px",
+          backgroundColor: "#f0f7ff",
+          borderRadius: "12px",
+          textAlign: "center",
+          boxShadow: "0 4px 15px rgba(0,0,0,0.05)"
+        }}>
+          <h2 style={{ 
+            marginTop: 0, 
+            color: "#2c5282",
+            fontSize: "24px"
+          }}>
+            Can't Find the Perfect Photo Booth Frame?
+          </h2>
+          
+          <p style={{ 
+            fontSize: "16px", 
+            lineHeight: "1.6",
+            color: "#4a5568",
+            marginBottom: "25px"
+          }}>
+            We're constantly adding new photo booth frames to our collection based on user feedback. 
+            If you have a specific frame design in mind for your event or occasion, we'd love to hear about it!
+          </p>
+          
+          <p style={{ 
+            fontSize: "16px", 
+            lineHeight: "1.6",
+            color: "#4a5568",
+            marginBottom: "25px"
+          }}>
+            Complete our quick survey to tell us what type of photo booth frames you'd like to see. 
+            We aim to implement popular requests as quickly as possible.
+          </p>
+          
+          <a 
+            href="https://tally.so/r/mB0Wl4" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              backgroundColor: "#3182ce",
+              color: "white",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              textDecoration: "none",
+              fontWeight: "600",
+              fontSize: "16px",
+              transition: "background-color 0.3s",
+              boxShadow: "0 4px 6px rgba(0,0,0,0.1)"
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = "#2b6cb0"}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = "#3182ce"}
+          >
+            Request New Photo Booth Frames
+          </a>
+          
+          <p style={{ 
+            fontSize: "14px", 
+            marginTop: "20px",
+            color: "#718096"
+          }}>
+            Your feedback helps us create better photo booth frame designs for everyone!
+          </p>
         </div>
       </div>
     </>
