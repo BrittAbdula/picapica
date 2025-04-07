@@ -14,6 +14,7 @@
   "dependencies": {
     "@microsoft/clarity": "^1.0.0",
     "axios": "^1.7.9",
+    "qrcode": "^1.5.4",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "react-helmet": "^6.1.0",

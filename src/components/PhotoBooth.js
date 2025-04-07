@@ -20,7 +20,9 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [cameraActive, setCameraActive] = useState(false);
-
+	const [frameType, setFrameType] = useState(
+		location.state?.frameType || localStorage.getItem("selectedFrame") || "none"
+	);
 	// 使用 ref 存储相机流引用
 	const currentStream = useRef(null);
 
@@ -354,7 +356,7 @@ const PhotoBooth = ({ setCapturedImages, handleBackgroundColorChange }) => {
 					document.body.appendChild(notification);
 
 					setTimeout(() => {
-						navigateTo("/preview");
+						navigateTo("/preview", { state: { frameType } });
 						document.body.removeChild(notification);
 					}, 2000);
 				} catch (error) {

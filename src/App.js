@@ -14,7 +14,7 @@ import TermsOfService from "./components/TermsOfService";
 import RouteGuard from "./utils/RouteGuard";
 import Clarity from "@microsoft/clarity";
 import VConsoleComponent from "./utils/VConsole";
-
+import Templates from "./components/Templates";
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -56,6 +56,7 @@ function App() {
 
 				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
 					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+					<Link to="/templates" onClick={() => setMenuOpen(false)}>Templates</Link>
 					<Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
 					<Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
 					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
@@ -79,6 +80,7 @@ function App() {
 					<Route path="/share" element={<SharePage />} />
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
+					<Route path="/templates" element={<Templates />} />
 				</Routes>
 			</RouteGuard>
 
