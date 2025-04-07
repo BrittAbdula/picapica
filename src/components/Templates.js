@@ -225,6 +225,29 @@ const Templates = () => {
             Your feedback helps us create better photo booth frame designs for everyone!
           </p>
         </div>
+        {/* Creem link */}
+        <div style={{
+          textAlign: "center",
+          margin: "30px auto",
+          paddingTop: "20px",
+          borderTop: "1px solid #eaeaea"
+        }}>
+          <a 
+            href="https://www.creem.io/bip/picapica"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-block",
+              color: "#666",
+              fontSize: "14px",
+              textDecoration: "none"
+            }}
+            onMouseOver={(e) => e.currentTarget.style.color = "#3182ce"}
+            onMouseOut={(e) => e.currentTarget.style.color = "#666"}
+          >
+            Built in Public with Creem
+          </a>
+        </div>
       </div>
     </>
   );
