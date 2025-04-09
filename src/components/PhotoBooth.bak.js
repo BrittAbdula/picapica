@@ -76,8 +76,6 @@ const handleRandomStyle = () => {
     setTimeout(() => setCustomizeTab('colors'), 600);
     setTimeout(() => setCustomizeTab('border'), 1200);
     setTimeout(() => setCustomizeTab('frames'), 1800);
-	// 关闭选项卡
-	setActiveDrawer(null);
   }, 800);
 };
 	// 检测设备宽度
@@ -297,7 +295,7 @@ const handleRandomStyle = () => {
 		ctx.textAlign = "center";
 
 		ctx.fillText(
-			timestamp,
+			"Picapica  " + timestamp,
 			canvasWidth / 2,
 			totalHeight - borderSize * 1
 		);
@@ -307,7 +305,7 @@ const handleRandomStyle = () => {
 		ctx.textAlign = "center";
 
 		ctx.fillText(
-			"Picapica.app   ",
+			"picapica.app   ",
 			canvasWidth - borderSize,
 			totalHeight - borderSize / 2
 		);
