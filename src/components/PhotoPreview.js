@@ -8,9 +8,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 	const stripCanvasRef = useRef(null);
 	const fileInputRef = useRef(null);
 	const multipleFilesInputRef = useRef(null);
-	const framesContainerRef = useRef(null);
-	const colorsContainerRef = useRef(null);
-	const borderWidthContainerRef = useRef(null);
 	const navigate = useNavigate();
 	const [stripColor, setStripColor] = useState("white");
 	const [borderWidth, setBorderWidth] = useState(0); // 新增：照片边框宽度设置
@@ -231,10 +228,10 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 							const summaryY = borderSize + (imgHeight + photoSpacing) * 4 - 10;
 
 							// 添加标题 - 改为居中
-							ctx.fillStyle = "#9C27B0";
-							ctx.font = "bold 18px Arial";
-							ctx.textAlign = "center"; // 改为居中
-							ctx.fillText("✨ Your Four Moments ✨", borderSize + imgWidth / 2, summaryY + 25);
+							// ctx.fillStyle = "#9C27B0";
+							// ctx.font = "bold 18px Arial";
+							// ctx.textAlign = "center"; // 改为居中
+							// ctx.fillText("✨ Your Four Moments ✨", borderSize + imgWidth / 2, summaryY + 25);
 
 							// 添加预言文本 - 自动换行
 							ctx.fillStyle = "#333333";
