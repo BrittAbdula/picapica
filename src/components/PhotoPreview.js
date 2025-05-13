@@ -1650,18 +1650,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 							>
 								{isGeneratingLink ? "Generating..." : "🔗 Share"}
 							</button>
-
-							<button
-								onClick={getPrediction}
-								disabled={isFetchingPrediction || !allSlotsFilled}
-								className={`action-button ${allSlotsFilled && !isFetchingPrediction ? '' : 'disabled'}`}
-								style={{
-									backgroundColor: allSlotsFilled && !isFetchingPrediction ? "#9C27B0" : "#e0e0e0",
-									color: "white"
-								}}
-							>
-								{isFetchingPrediction ? "Generating..." : "✨ PicaPica"}
-							</button>
 						</div>
 
 						{!allSlotsFilled && (
