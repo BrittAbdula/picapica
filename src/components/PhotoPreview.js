@@ -389,7 +389,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			const data = await response.json();
 
 			// Generate shareable link
-			const shareableLink = `${window.location.origin}/share?imageurl=${encodeURIComponent(data.imageUrl)}`;
+			const shareableLink = `https://idolbooth.com/share?accessKey=${encodeURIComponent(data.imageUrl)}`;
 			setShareLink(shareableLink);
 
 			// 生成QR码URL
