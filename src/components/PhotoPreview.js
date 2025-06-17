@@ -391,7 +391,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			const data = await response.json();
 
 			// Generate shareable link
-			const shareableLink = `https://picapica.com/share?imageurl=${data.imageUrl}`;
+			const shareableLink = `https://picapica.app/share?imageurl=${data.imageUrl}`;
 			setShareLink(shareableLink);
 
 			// 生成QR码URL
@@ -511,11 +511,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		} finally {
 			setIsFetchingPrediction(false);
 		}
-	};
-
-	const navigateToShare = () => {
-		if (!shareLink) return;
-		navigate(`${shareLink}`, { replace: false });
 	};
 
 	const handleDeleteImage = (index) => {
@@ -1739,8 +1734,8 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 										</div>
 									)}
 
-									<button
-										onClick={navigateToShare}
+									<a
+										href={shareLink}
 										style={{
 											backgroundColor: "#FF69B4",
 											color: "white",
@@ -1751,9 +1746,10 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 											marginLeft: "auto",
 											flex: "0 0 auto"
 										}}
+										target="_blank"
 									>
 										🔍 View Shared Page
-									</button>
+									</a>
 								</div>
 							</div>
 						)}
