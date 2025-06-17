@@ -391,7 +391,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			const data = await response.json();
 
 			// Generate shareable link
-			const shareableLink = `https://idolbooth.com/share?accessKey=${encodeURIComponent(data.imageUrl)}`;
+			const shareableLink = `https://idolbooth.com/share?accessKey=${data.access_key}`;
 			setShareLink(shareableLink);
 
 			// 生成QR码URL
@@ -466,6 +466,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 				// 创建表单并上传
 				const formData = new FormData();
+				formData.append('userId', userId);
 				formData.append('image', blob, 'photostrip.png');
 
 				// 上传到服务器
@@ -515,10 +516,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 	const navigateToShare = () => {
 		if (!shareLink) return;
-
-		// Extract the query parameter
-		const imageUrl = new URL(shareLink).searchParams.get('imageurl');
-		navigate(`/share?imageurl=${imageUrl}`);
+		navigate(`${shareLink}`, { replace: false });
 	};
 
 	const handleDeleteImage = (index) => {

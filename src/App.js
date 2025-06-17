@@ -106,9 +106,8 @@ function App() {
 					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
 					{userAuthenticated ? (
 						<>
-							<Link to="/my-photos" onClick={() => setMenuOpen(false)}>我的照片</Link>
+							<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
 							<div className="nav-user-info">
-								<span>欢迎, {username}</span>
 								<button 
 									onClick={() => {
 										handleLogout();
@@ -116,7 +115,7 @@ function App() {
 									}}
 									className="logout-btn"
 								>
-									退出
+									Logout
 								</button>
 							</div>
 						</>

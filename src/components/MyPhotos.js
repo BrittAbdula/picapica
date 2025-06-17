@@ -112,33 +112,6 @@ const MyPhotos = () => {
 
     return (
         <div className="my-photos">
-            <div className="my-photos-header" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '20px',
-                borderBottom: '1px solid #eee'
-            }}>
-                <div>
-                    <h1 style={{ margin: 0, fontSize: '24px', color: '#333' }}>My Photos</h1>
-                    <p style={{ margin: '5px 0 0 0', color: '#666' }}>
-                        欢迎, {userInfo.username}
-                    </p>
-                </div>
-                <button
-                    onClick={handleLogout}
-                    style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#fff',
-                        border: '1px solid #ddd',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                    }}
-                >
-                    Logout
-                </button>
-            </div>
 
             <div className="my-photos-content" style={{ padding: '20px' }}>
                 {loading ? (
