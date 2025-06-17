@@ -11,7 +11,7 @@ const GoogleLogin = ({ onLoginSuccess, onLoginError }) => {
         
         try {
             // 发送ID token到后端验证
-            const apiResponse = await axios.post('/api/auth/google/token', {
+            const apiResponse = await axios.post('https://api.picapica.app/api/auth/google/token', {
                 idToken: credentialResponse.credential
             });
 

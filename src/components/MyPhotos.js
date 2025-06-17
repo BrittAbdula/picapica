@@ -41,7 +41,7 @@ const MyPhotos = () => {
         }
 
         try {
-            await axios.delete(`/api/photos/${photoId}`, {
+            await axios.delete(`https://api.picapica.app/api/photos/${photoId}`, {
                 headers: getAuthHeaders()
             });
             // 重新获取照片列表
