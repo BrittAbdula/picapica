@@ -399,7 +399,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			const data = await response.json();
 
 			// Generate shareable link
-			const shareableLink = `https://picapica.com/share?imageurl=${data.public_url}`;
+			const shareableLink = `https://picapica.com/share?imageurl=${data.imageUrl}`;
 			setShareLink(shareableLink);
 
 			// 生成QR码URL

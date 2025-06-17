@@ -108,6 +108,7 @@ function App() {
 						<>
 							<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
 							<div className="nav-user-info">
+								<span>{username}</span>
 								<button 
 									onClick={() => {
 										handleLogout();
