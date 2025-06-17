@@ -273,9 +273,6 @@ const SharePage = () => {
         margin: '0 auto',
         marginTop: '40px'
       }}>
-        <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>
-          Shared Picapica Photo Strip
-        </h1>
         
         <div className="image-container" style={{ 
           display: 'flex',
