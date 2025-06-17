@@ -2,6 +2,119 @@ const FRAMES = {
 	none: {
 		draw: (ctx, x, y, width, height) => {}, // Empty function for no frame
 	},
+    kawaiiDoodle: {
+        draw: (ctx, x, y, width, height) => {
+            // --- 辅助绘图函数 (Helper Drawing Functions) ---
+    
+            /**
+             * 绘制脸颊腮红效果
+             * @param {number} cx - 中心点 x 坐标
+             * @param {number} cy - 中心点 y 坐标
+             * @param {number} radius - 腮红半径
+             */
+            const drawCheekBlush = (cx, cy, radius) => {
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+                gradient.addColorStop(0, "rgba(255, 105, 180, 0.6)"); // 中心为热粉色
+                gradient.addColorStop(1, "rgba(255, 182, 193, 0)"); // 边缘为透明的浅粉色
+    
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.fill();
+            };
+    
+            /**
+             * 绘制口红印（吻痕）贴纸
+             * @param {number} cx - 中心点 x 坐标
+             * @param {number} cy - 中心点 y 坐标
+             * @param {number} size - 大小
+             * @param {number} angle - 旋转角度 (弧度)
+             */
+            const drawKissMark = (cx, cy, size, angle) => {
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(angle);
+                ctx.fillStyle = "#D42A4B"; // 口红红色
+    
+                // 用两个椭圆模拟嘴唇上半部分
+                ctx.beginPath();
+                ctx.ellipse(-size * 0.5, -size * 0.2, size * 0.5, size, Math.PI * 0.1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(size * 0.5, -size * 0.2, size * 0.5, size, -Math.PI * 0.1, 0, Math.PI * 2);
+                ctx.fill();
+    
+                ctx.restore();
+            };
+    
+            /**
+             * 绘制可爱的颜文字表情 ( ^ ω ^ )
+             * @param {number} cx - 中心点 x 坐标
+             * @param {number} cy - 中心点 y 坐标
+             * @param {number} size - 大小
+             */
+            const drawKawaiiFace = (cx, cy, size) => {
+                ctx.fillStyle = "#4B4B4B"; // 深灰色用于眼睛和嘴巴
+                ctx.strokeStyle = "#4B4B4B";
+                ctx.lineWidth = size / 8;
+                
+                // 眼睛 (^)
+                ctx.beginPath();
+                ctx.moveTo(cx - size * 0.7, cy - size * 0.1);
+                ctx.lineTo(cx - size * 0.4, cy - size * 0.5);
+                ctx.lineTo(cx - size * 0.1, cy - size * 0.1);
+                ctx.stroke();
+    
+                ctx.beginPath();
+                ctx.moveTo(cx + size * 0.1, cy - size * 0.1);
+                ctx.lineTo(cx + size * 0.4, cy - size * 0.5);
+                ctx.lineTo(cx + size * 0.7, cy - size * 0.1);
+                ctx.stroke();
+    
+                // 嘴巴 (ω)
+                ctx.beginPath();
+                ctx.arc(cx, cy + size * 0.3, size * 0.3, 0, Math.PI, false);
+                ctx.stroke();
+    
+                // 脸颊上的小腮红
+                drawCheekBlush(cx - size * 0.8, cy + size * 0.2, size * 0.4);
+                drawCheekBlush(cx + size * 0.8, cy + size * 0.2, size * 0.4);
+            };
+    
+            /**
+             * 绘制手绘涂鸦风格的闪光星星
+             * @param {number} cx - 中心点 x 坐标
+             * @param {number} cy - 中心点 y 坐标
+             * @param {number} size - 大小
+             */
+            const drawDoodleSparkle = (cx, cy, size) => {
+                ctx.fillStyle = "#FFD700"; // 金黄色
+                // 绘制一个加号形状的星星
+                ctx.fillRect(cx - size / 4, cy - size, size / 2, size * 2);
+                ctx.fillRect(cx - size, cy - size / 4, size * 2, size / 2);
+            };
+    
+            // --- 开始在相框周围绘制元素 ---
+    
+            // 1. 虚拟妆容 - 在照片区域的左上和右上角绘制腮红
+            drawCheekBlush(x + 35, y + 45, 35);
+            drawCheekBlush(x + width - 35, y + 45, 35);
+            
+            // 2. 贴纸和表情 - 随机散落在相框周围
+            // 左上角
+            drawDoodleSparkle(x + 20, y + 20, 8);
+    
+            // 右上角
+            drawKawaiiFace(x + width - 45, y + 80, 20);
+    
+            // 左下角
+            drawKissMark(x + 40, y + height - 40, 15, -Math.PI / 8); // 轻微旋转的吻痕
+    
+            // 右下角
+            drawDoodleSparkle(x + width - 25, y + height - 25, 12);
+            drawKissMark(x + width - 90, y + height - 70, 10, Math.PI / 6);
+        },
+    },
 	pastel: {
 		draw: (ctx, x, y, width, height) => {
             const description = "Pastel ......";

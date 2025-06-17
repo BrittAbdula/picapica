@@ -409,7 +409,7 @@ const MyPhotos = () => {
                                                 cursor: 'pointer',
                                                 transition: 'opacity 0.2s ease'
                                             }}
-                                            onClick={() => window.open(photo.imageUrl, '_blank')}
+                                            onClick={() => window.open(`https://picapica.app/share?imageurl=${photo.imageUrl}`, '_blank')}
                                             loading="lazy"
                                             onMouseEnter={(e) => e.target.style.opacity = '0.95'}
                                             onMouseLeave={(e) => e.target.style.opacity = '1'}

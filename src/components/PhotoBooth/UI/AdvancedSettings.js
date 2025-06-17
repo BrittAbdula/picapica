@@ -9,6 +9,8 @@ const AdvancedSettings = ({
   toggleSound, 
   backgroundColor, 
   setBackgroundColor, 
+  spotlightColor,
+  setSpotlightColor,
   capturing, 
   theme 
 }) => {
@@ -140,6 +142,8 @@ const AdvancedSettings = ({
       <BackgroundLighting 
         backgroundColor={backgroundColor}
         setBackgroundColor={setBackgroundColor}
+        spotlightColor={spotlightColor}
+        setSpotlightColor={setSpotlightColor}
         theme={theme}
       />
     </div>

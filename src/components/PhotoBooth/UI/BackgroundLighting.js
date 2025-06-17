@@ -1,18 +1,18 @@
 // src/components/PhotoBooth/UI/BackgroundLighting.js
 import React, { useState } from 'react';
 
-// 预设照明颜色
+// 预设聚光灯颜色
 const LIGHTING_PRESETS = [
-  { name: "Natural Daylight", color: "#F5F5DC" }, // Beige
-  { name: "Warm Tone", color: "#FFD580" },       // Light orange
-  { name: "Cool Tone", color: "#ADD8E6" },       // Light blue
-  { name: "Studio White", color: "#FFFFFF" },    // Pure white
-  { name: "Sunset Glow", color: "#FFA07A" },     // Light salmon
-  { name: "Stage Light", color: "#E6E6FA" },     // Lavender
-  { name: "Pink Theme", color: "#FFC0CB" },      // Pink
+  { name: "Natural Daylight", color: "#F5F5DC", spotlightColor: "rgba(245, 245, 220, 0.3)" }, // Beige
+  { name: "Warm Tone", color: "#FFD580", spotlightColor: "rgba(255, 213, 128, 0.3)" },       // Light orange
+  { name: "Cool Tone", color: "#ADD8E6", spotlightColor: "rgba(173, 216, 230, 0.3)" },       // Light blue
+  { name: "Studio White", color: "#FFFFFF", spotlightColor: "rgba(255, 255, 255, 0.3)" },    // Pure white
+  { name: "Sunset Glow", color: "#FFA07A", spotlightColor: "rgba(255, 160, 122, 0.3)" },     // Light salmon
+  { name: "Stage Light", color: "#E6E6FA", spotlightColor: "rgba(230, 230, 250, 0.3)" },     // Lavender
+  { name: "Pink Theme", color: "#FFC0CB", spotlightColor: "rgba(248, 187, 217, 0.3)" },      // Pink
 ];
 
-const BackgroundLighting = ({ backgroundColor, setBackgroundColor, theme }) => {
+const BackgroundLighting = ({ backgroundColor, setBackgroundColor, spotlightColor, setSpotlightColor, theme }) => {
   const [showColorPicker, setShowColorPicker] = useState(false);
   
   // 切换颜色选择器显示
@@ -20,9 +20,26 @@ const BackgroundLighting = ({ backgroundColor, setBackgroundColor, theme }) => {
     setShowColorPicker(!showColorPicker);
   };
   
+  // 处理预设颜色选择
+  const handlePresetSelect = (preset) => {
+    setBackgroundColor(preset.color);
+    if (setSpotlightColor) {
+      setSpotlightColor(preset.spotlightColor);
+    }
+  };
+  
   // 处理自定义颜色更改
   const handleColorChange = (e) => {
-    setBackgroundColor(e.target.value);
+    const color = e.target.value;
+    setBackgroundColor(color);
+    // 自动生成对应的聚光灯颜色
+    if (setSpotlightColor) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substr(0, 2), 16);
+      const g = parseInt(hex.substr(2, 2), 16);
+      const b = parseInt(hex.substr(4, 2), 16);
+      setSpotlightColor(`rgba(${r}, ${g}, ${b}, 0.3)`);
+    }
   };
   
   // 判断颜色是亮色还是暗色（用于文字颜色）
@@ -51,16 +68,19 @@ const BackgroundLighting = ({ backgroundColor, setBackgroundColor, theme }) => {
         {LIGHTING_PRESETS.map((preset, index) => (
           <button
             key={index}
-            onClick={() => setBackgroundColor(preset.color)}
+            onClick={() => handlePresetSelect(preset)}
             style={{
               backgroundColor: preset.color,
               color: isLightColor(preset.color) ? "#000000" : "#FFFFFF",
-              border: backgroundColor === preset.color ? `2px solid ${theme.accentColor}` : "1px solid #ccc",
+              border: backgroundColor === preset.color ? `3px solid ${theme.accentColor || '#D197B8'}` : "2px solid rgba(0,0,0,0.1)",
               margin: "5px",
-              padding: "8px 12px",
-              borderRadius: "4px",
+              padding: "10px 14px",
+              borderRadius: "8px",
               cursor: "pointer",
-              fontSize: "12px"
+              fontSize: "12px",
+              fontWeight: backgroundColor === preset.color ? "600" : "500",
+              transition: "all 0.3s ease",
+              boxShadow: backgroundColor === preset.color ? "0 4px 12px rgba(0,0,0,0.15)" : "0 2px 6px rgba(0,0,0,0.1)"
             }}
           >
             {preset.name}

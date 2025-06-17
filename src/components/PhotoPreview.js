@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Meta from "./Meta";
-import FRAMES from "./Frames";
+import FrameService from "../services/frameService";
 import QRCode from 'qrcode';
 import { getAuthHeaders } from '../utils/auth';
 
@@ -32,6 +32,36 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 	// 添加新的状态变量
 	const [isRandomizing, setIsRandomizing] = useState(false);
 	const [randomSuccess, setRandomSuccess] = useState(false);
+	const [availableFrames, setAvailableFrames] = useState([]);
+	const [frameDrawFunctions, setFrameDrawFunctions] = useState({});
+	const [loadingFrames, setLoadingFrames] = useState(new Set());
+
+	// 加载可用的frames
+	useEffect(() => {
+		const loadFrames = async () => {
+			try {
+				const frames = await FrameService.getAllFrames();
+				setAvailableFrames(frames);
+				
+				// 预加载一些常用frame的draw函数
+				const drawFunctions = {};
+				for (const frame of frames) {
+					if (['none', 'pastel', 'retro', 'neon'].includes(frame.name)) {
+						drawFunctions[frame.name] = await FrameService.getFrameDrawFunction(frame.name);
+					}
+				}
+				setFrameDrawFunctions(drawFunctions);
+			} catch (error) {
+				console.error('Failed to load frames:', error);
+				// 设置默认frames作为fallback
+				setAvailableFrames([
+					{ name: 'none', description: 'No frame' },
+					{ name: 'pastel', description: 'Pastel theme' }
+				]);
+			}
+		};
+		loadFrames();
+	}, []);
 
 	// 实现随机样式选择功能
 	const handleRandomStyle = () => {
@@ -39,7 +69,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		setIsRandomizing(true);
 
 		// 随机选择框架
-		const frameKeys = Object.keys(FRAMES);
+		const frameKeys = availableFrames.map(f => f.name);
 		const randomFrameIndex = Math.floor(Math.random() * frameKeys.length);
 		const randomFrame = frameKeys[randomFrameIndex];
 
@@ -110,13 +140,64 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		}
 	}, [initialImages]);
 
+	// 应用frame的函数
+	const applyFrame = async (ctx, x, y, width, height) => {
+		if (!selectedFrame || selectedFrame === 'none') return;
+		
+		// 首先检查是否已缓存了draw函数
+		let drawFunction = frameDrawFunctions[selectedFrame];
+		
+		if (!drawFunction && !loadingFrames.has(selectedFrame)) {
+			try {
+				// 标记为正在加载，避免重复请求
+				setLoadingFrames(prev => new Set(prev.add(selectedFrame)));
+				
+				// 如果没有缓存，则动态加载
+				drawFunction = await FrameService.getFrameDrawFunction(selectedFrame);
+				
+				// 立即缓存
+				if (typeof drawFunction === 'function') {
+					setFrameDrawFunctions(prev => ({
+						...prev,
+						[selectedFrame]: drawFunction
+					}));
+				}
+				
+				// 移除加载标记
+				setLoadingFrames(prev => {
+					const newSet = new Set(prev);
+					newSet.delete(selectedFrame);
+					return newSet;
+				});
+			} catch (error) {
+				console.error(`Error loading frame ${selectedFrame}:`, error);
+				setLoadingFrames(prev => {
+					const newSet = new Set(prev);
+					newSet.delete(selectedFrame);
+					return newSet;
+				});
+				return;
+			}
+		}
+		
+		// 应用frame函数
+		if (typeof drawFunction === 'function') {
+			try {
+				drawFunction(ctx, x, y, width, height);
+			} catch (error) {
+				console.error(`Error applying frame ${selectedFrame}:`, error);
+			}
+		}
+	};
+
 	const generatePhotoStrip = useCallback(() => {
 		const canvas = stripCanvasRef.current;
 		if (!canvas) return;
 		const ctx = canvas.getContext("2d");
 
+		// 使用4:3比例
 		const imgWidth = 400;
-		const imgHeight = 300;
+		const imgHeight = 300; // 400/300 = 4:3
 		const borderSize = 40;
 		const photoSpacing = 20;
 		const textHeight = showPrediction && prediction ? 150 : 50;
@@ -144,18 +225,22 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				const img = new Image();
 				img.src = localImages[i];
 				img.onload = () => {
+					// 确保4:3比例
 					const imageRatio = img.width / img.height;
-					const targetRatio = imgWidth / imgHeight;
+					const targetRatio = 4/3; // 固定4:3比例
 
 					let sourceWidth = img.width;
 					let sourceHeight = img.height;
 					let sourceX = 0;
 					let sourceY = 0;
 
+					// 裁剪图片以适应4:3比例
 					if (imageRatio > targetRatio) {
+						// 图片太宽，裁剪左右两边
 						sourceWidth = sourceHeight * targetRatio;
 						sourceX = (img.width - sourceWidth) / 2;
 					} else {
+						// 图片太高，裁剪上下两边
 						sourceHeight = sourceWidth / targetRatio;
 						sourceY = (img.height - sourceHeight) / 2;
 					}
@@ -188,18 +273,8 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						adjustedHeight
 					);
 
-					if (
-						FRAMES[selectedFrame] &&
-						typeof FRAMES[selectedFrame].draw === "function"
-					) {
-						FRAMES[selectedFrame].draw(
-							ctx,
-							borderSize,
-							yOffset,
-							imgWidth,
-							imgHeight
-						);
-					}
+					// 应用选中的frame
+					applyFrame(ctx, borderSize, yOffset, imgWidth, imgHeight);
 
 					// 如果有预言且需要显示，在照片上添加关键词
 					if (showPrediction && prediction && prediction.keywords && prediction.keywords[i]) {
@@ -335,7 +410,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			});
 			return qrCodeDataUrl; // 返回生成的二维码图像 URL
 		} catch (error) {
-			console.error('生成二维码失败:', error);
+			console.error('generate qrcode error:', error);
 			throw error;
 		}
 	};
@@ -375,6 +450,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 			// Create form data
 			const formData = new FormData();
+			formData.append('frame', selectedFrame);
 			formData.append('image', blob, 'photostrip.png');
 
 			// Upload to server
@@ -926,59 +1002,61 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 				{customizeTab === 'frames' && (
 					<>
-						{/* PC 端多行显示框架选项 */}
-						{!isMobile && (
-							<div className="frame-options" style={{
-								display: "grid",
-								gridTemplateColumns: "repeat(3, 1fr)",
-								gap: "8px"
-							}}>
-								{Object.keys(FRAMES).map((frame) => (
-									<button
-										key={frame}
-										onClick={() => setSelectedFrame(frame)}
-										style={{
-											backgroundColor: selectedFrame === frame ? "#FF69B4" : "#f8f8f8",
-											color: selectedFrame === frame ? "white" : "black",
-											border: "1px solid #ddd",
-											borderRadius: "5px",
-											padding: "8px 5px",
-											fontSize: "12px"
-										}}
-									>
-										{frame}
-									</button>
-								))}
-							</div>
-						)}
+											{/* PC 端多行显示框架选项 */}
+					{!isMobile && (
+						<div className="frame-options" style={{
+							display: "grid",
+							gridTemplateColumns: "repeat(3, 1fr)",
+							gap: "8px"
+						}}>
+							{availableFrames.map((frame) => (
+								<button
+									key={frame.name}
+									onClick={() => setSelectedFrame(frame.name)}
+									style={{
+										backgroundColor: selectedFrame === frame.name ? "#FF69B4" : "#f8f8f8",
+										color: selectedFrame === frame.name ? "white" : "black",
+										border: "1px solid #ddd",
+										borderRadius: "5px",
+										padding: "8px 5px",
+										fontSize: "12px"
+									}}
+									title={frame.description}
+								>
+									{frame.name}
+								</button>
+							))}
+						</div>
+					)}
 
-						{/* 移动端两行网格布局的框架选项 */}
-						{isMobile && (
-							<div className="mobile-frames-grid" style={{
-								display: "grid",
-								gridTemplateColumns: "repeat(3, 1fr)",
-								gridAutoRows: "auto",
-								gap: "2px",
-							}}>
-								{Object.keys(FRAMES).map((frame) => (
-									<button
-										key={frame}
-										onClick={() => setSelectedFrame(frame)}
-										style={{
-											backgroundColor: selectedFrame === frame ? "#FF69B4" : "#f8f8f8",
-											color: selectedFrame === frame ? "white" : "black",
-											border: "1px solid #ddd",
-											borderRadius: "5px",
-											padding: "12px 0",
-											fontSize: "12px",
-											fontWeight: selectedFrame === frame ? "bold" : "normal"
-										}}
-									>
-										{frame}
-									</button>
-								))}
-							</div>
-						)}
+											{/* 移动端两行网格布局的框架选项 */}
+					{isMobile && (
+						<div className="mobile-frames-grid" style={{
+							display: "grid",
+							gridTemplateColumns: "repeat(3, 1fr)",
+							gridAutoRows: "auto",
+							gap: "2px",
+						}}>
+							{availableFrames.map((frame) => (
+								<button
+									key={frame.name}
+									onClick={() => setSelectedFrame(frame.name)}
+									style={{
+										backgroundColor: selectedFrame === frame.name ? "#FF69B4" : "#f8f8f8",
+										color: selectedFrame === frame.name ? "white" : "black",
+										border: "1px solid #ddd",
+										borderRadius: "5px",
+										padding: "12px 0",
+										fontSize: "12px",
+										fontWeight: selectedFrame === frame.name ? "bold" : "normal"
+									}}
+									title={frame.description}
+								>
+									{frame.name}
+								</button>
+							))}
+						</div>
+					)}
 					</>
 				)}
 
@@ -1601,8 +1679,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				margin: "0 auto",
 				padding: "0 0 80px", // Added extra padding at bottom for mobile
 			}}>
-				<h2 style={{ textAlign: "center", marginBottom: "20px" }}>Photo Strip Preview</h2>
-
 				{/* 主要内容区 - 响应式布局 */}
 				<div className="main-content">
 					{/* 左侧预览区 */}

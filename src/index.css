@@ -1,39 +1,293 @@
+/* 优雅的全局基础样式 */
+:root {
+  /* 继承App.css中定义的CSS变量 */
+  --primary: #F8BBD9;
+  --primary-light: #FCE4EC;
+  --primary-dark: #E1A1C7;
+  --secondary: #E8B4CB;
+  --accent: #D197B8;
+  --highlight: #F48FB1;
+  
+  --background: #FEFEFF;
+  --surface: rgba(248, 187, 217, 0.05);
+  --text: #5D4E75;
+  --text-light: #8E7A9B;
+  --text-muted: #A699B5;
+  
+  --shadow-soft: 0 4px 20px rgba(248, 187, 217, 0.15);
+  --shadow-medium: 0 8px 30px rgba(248, 187, 217, 0.25);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 全局重置 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f8f9fa;
-    text-align: center;
-  }
-  button {
-    margin: 5px;
-    padding: 10px 15px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* 优雅的按钮样式 */
+button {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  color: var(--text);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 1rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-soft);
+  position: relative;
+  overflow: hidden;
+  margin: var(--space-xs);
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+button:hover::before {
+  left: 100%;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+button:active {
+  transform: translateY(0px);
+  box-shadow: var(--shadow-soft);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button:disabled:hover {
+  transform: none;
+  box-shadow: var(--shadow-soft);
+}
+
+/* 视频和画布样式 */
+.video-feed {
+  width: 100%;
+  max-width: 800px;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  transform: scaleX(-1);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-medium);
+  transition: all var(--transition-normal);
+}
+
+.video-feed:hover {
+  box-shadow: 0 12px 40px rgba(248, 187, 217, 0.3);
+}
+
+/* 滤镜样式 */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+  margin: var(--space-lg) 0;
+}
+
+.filters button {
+  padding: var(--space-xs) var(--space-md);
+  font-size: 0.875rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--text-light);
+  border: 1px solid rgba(248, 187, 217, 0.2);
+  box-shadow: none;
+}
+
+.filters button:hover {
+  background: var(--primary);
+  color: var(--text);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.filters button.active {
+  background: var(--highlight);
+  color: white;
+  border-color: var(--highlight);
+}
+
+/* 图片网格 */
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+  padding: var(--space-md);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.captured-photo {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary);
+  box-shadow: var(--shadow-soft);
+  transition: all var(--transition-normal);
+}
+
+.captured-photo:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-medium);
+}
+
+/* 照片条预览样式 */
+.side-preview {
+  border-radius: var(--radius-md);
+  border: 2px solid var(--primary);
+  box-shadow: var(--shadow-soft);
+  transition: all var(--transition-normal);
+}
+
+.side-preview:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-medium);
+}
+
+/* 加载动画 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner {
+  border: 3px solid var(--surface);
+  border-top: 3px solid var(--highlight);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: var(--space-md) auto;
+}
+
+/* 优雅的卡片样式 */
+.elegant-card {
+  background: var(--background);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: var(--space-lg);
+  border: 1px solid rgba(248, 187, 217, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-normal);
+}
+
+.elegant-card:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
   .video-feed {
-    width: 100%;
-    max-width: 600px;
+    max-width: 100%;
+    aspect-ratio: 4 / 3;
   }
-  .filters {
-    margin-top: 10px;
-  }
+  
   .image-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: var(--space-sm);
+    padding: var(--space-sm);
   }
   
   .captured-photo {
-    width: 100px;
     height: 100px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #000;
   }
   
+  .filters {
+    gap: var(--space-xs);
+  }
   
+  .filters button {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-feed {
+    border-width: 1px;
+  }
+  
+  .image-grid {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+  
+  .captured-photo {
+    height: 80px;
+  }
+  
+  button {
+    padding: var(--space-xs) var(--space-md);
+    font-size: 0.925rem;
+  }
+}
+
+/* 深色模式支持 - 暂时禁用，保持浅色主题 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* 保持浅色主题 */
+    --background: #FEFEFF;
+    --surface: rgba(248, 187, 217, 0.05);
+    --text: #5D4E75;
+    --text-light: #8E7A9B;
+    --text-muted: #A699B5;
+  }
+}
+
+/* 动画优化 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

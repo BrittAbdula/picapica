@@ -23,6 +23,7 @@ const useCameraControl = ({ soundEnabled, filter }) => {
         video: {
           width: { ideal: 640 },
           height: { ideal: 480 },
+          aspectRatio: 4/3,
           facingMode: 'user'
         },
         audio: false
@@ -97,25 +98,29 @@ const useCameraControl = ({ soundEnabled, filter }) => {
       
       const context = canvas.getContext("2d");
 
-      const targetWidth = 1280;
-      const targetHeight = 720;
+      // 使用4:3尺寸
+      const targetWidth = 640;
+      const targetHeight = 480;
 
       canvas.width = targetWidth;
       canvas.height = targetHeight;
 
+      // 确保4:3比例
       const videoRatio = video.videoWidth / video.videoHeight;
-      const targetRatio = targetWidth / targetHeight;
+      const targetRatio = 4/3;
 
       let drawWidth = video.videoWidth;
       let drawHeight = video.videoHeight;
       let startX = 0;
       let startY = 0;
 
-      // 计算裁剪区域
+      // 计算裁剪区域以保持4:3比例
       if (videoRatio > targetRatio) {
+        // 视频太宽，裁剪左右两边
         drawWidth = drawHeight * targetRatio;
         startX = (video.videoWidth - drawWidth) / 2;
       } else {
+        // 视频太高，裁剪上下两边
         drawHeight = drawWidth / targetRatio;
         startY = (video.videoHeight - drawHeight) / 2;
       }

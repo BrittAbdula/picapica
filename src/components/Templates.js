@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import FRAMES from "./Frames";
+import FrameService from "../services/frameService";
 import Meta from "./Meta";
 
 const Templates = () => {
@@ -11,6 +11,11 @@ const Templates = () => {
     isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
     isDesktop: window.innerWidth >= 1024
   });
+  const [availableFrames, setAvailableFrames] = useState([]);
+  const [frameDrawFunctions, setFrameDrawFunctions] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [visibleFrames, setVisibleFrames] = useState(new Set());
+  const [loadingQueue, setLoadingQueue] = useState(new Set());
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,17 +31,87 @@ const Templates = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // 加载可用的frames（仅列表，不加载draw函数）
+  useEffect(() => {
+    const loadFramesList = async () => {
+      try {
+        setIsLoading(true);
+        const frames = await FrameService.getAllFrames();
+        // 过滤掉'none'类型的frame
+        const filteredFrames = frames.filter(frame => frame.name !== "none");
+        setAvailableFrames(filteredFrames);
+      } catch (error) {
+        console.error('Failed to load frames:', error);
+        // 设置默认frames作为fallback
+        setAvailableFrames([
+          { name: 'pastel', description: 'Pastel theme' },
+          { name: 'retro', description: 'Retro theme' }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadFramesList();
+  }, []);
 
-  // Extract frame types from FRAMES object, remove "none"
-  const frameTypes = Object.keys(FRAMES).filter(frameType => frameType !== "none");
+  // 获取frame类型数组
+  const frameTypes = availableFrames.map(frame => frame.name);
 
   // Add canvas refs for each frame
   if (templateRefs.current.length !== frameTypes.length) {
     templateRefs.current = Array(frameTypes.length).fill().map(() => React.createRef());
   }
 
+  // 懒加载单个frame的draw函数
+  const loadFrameDrawFunction = async (frameType) => {
+    if (frameDrawFunctions[frameType]) {
+      return frameDrawFunctions[frameType]; // 已缓存
+    }
+
+    if (loadingQueue.has(frameType)) {
+      // 如果正在加载，等待加载完成
+      while (loadingQueue.has(frameType)) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return frameDrawFunctions[frameType] || (() => {});
+    }
+
+    try {
+      // 添加到加载队列
+      setLoadingQueue(prev => new Set(prev.add(frameType)));
+      
+      const drawFunction = await FrameService.getFrameDrawFunction(frameType);
+      
+      // 缓存到state中
+      setFrameDrawFunctions(prev => ({
+        ...prev,
+        [frameType]: drawFunction
+      }));
+      
+      return drawFunction;
+    } catch (error) {
+      console.error(`Failed to lazy load draw function for ${frameType}:`, error);
+      const fallbackFunction = () => {};
+      
+      // 也缓存失败的结果，避免重复请求
+      setFrameDrawFunctions(prev => ({
+        ...prev,
+        [frameType]: fallbackFunction
+      }));
+      
+      return fallbackFunction;
+    } finally {
+      // 从加载队列中移除
+      setLoadingQueue(prev => {
+        const newQueue = new Set(prev);
+        newQueue.delete(frameType);
+        return newQueue;
+      });
+    }
+  };
+
   // Function to draw a template preview
-  const drawTemplate = (canvasRef, frameType) => {
+  const drawTemplate = async (canvasRef, frameType) => {
     if (!canvasRef.current) return;
 
     const canvas = canvasRef.current;
@@ -83,24 +158,39 @@ const Templates = () => {
         PREVIEW_WIDTH / 2,
         yOffset + imgHeight / 2
       );
+    }
 
-      // 为每张图片单独应用边框/贴纸
-      if (FRAMES[frameType] && typeof FRAMES[frameType].draw === "function") {
-        // 保存当前绘图状态
-        ctx.save();
-        // 将绘图上下文移动到当前图片的位置
-        ctx.translate(borderSize, yOffset);
-        // 在当前图片区域绘制边框
-        FRAMES[frameType].draw(
-          ctx,
-          0,  // 相对于当前图片区域的x坐标
-          0,  // 相对于当前图片区域的y坐标
-          imgWidth,
-          imgHeight
-        );
-        // 恢复绘图状态
-        ctx.restore();
+    // 异步加载并应用frame的draw函数
+    try {
+      const drawFunction = await loadFrameDrawFunction(frameType);
+      
+      if (drawFunction && typeof drawFunction === "function") {
+        // 重新绘制每张照片的frame
+        for (let i = 0; i < 4; i++) {
+          const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+          
+          // 保存当前绘图状态
+          ctx.save();
+          // 将绘图上下文移动到当前图片的位置
+          ctx.translate(borderSize, yOffset);
+          // 在当前图片区域绘制边框
+          try {
+            drawFunction(
+              ctx,
+              0,  // 相对于当前图片区域的x坐标
+              0,  // 相对于当前图片区域的y坐标
+              imgWidth,
+              imgHeight
+            );
+          } catch (error) {
+            console.error(`Error applying frame ${frameType} in template:`, error);
+          }
+          // 恢复绘图状态
+          ctx.restore();
+        }
       }
+    } catch (error) {
+      console.error(`Failed to load and apply frame ${frameType}:`, error);
     }
 
     // 添加底部签名区域
@@ -140,12 +230,46 @@ const Templates = () => {
     );
   };
 
-  // Draw all templates after component mounts
+  // 使用 Intersection Observer 实现瀑布流加载
   useEffect(() => {
-    frameTypes.forEach((frameType, index) => {
-      drawTemplate(templateRefs.current[index], frameType);
+    if (isLoading || frameTypes.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.dataset.frameIndex);
+            const frameType = frameTypes[index];
+            
+            if (frameType && !visibleFrames.has(frameType)) {
+              // 标记为可见
+              setVisibleFrames(prev => new Set(prev.add(frameType)));
+              
+              // 异步绘制模板
+              drawTemplate(templateRefs.current[index], frameType);
+            }
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '100px', // 提前100px开始加载
+        threshold: 0.1
+      }
+    );
+
+    // 观察所有canvas元素
+    templateRefs.current.forEach((ref, index) => {
+      if (ref && ref.current) {
+        ref.current.dataset.frameIndex = index;
+        observer.observe(ref.current);
+      }
     });
-  }, []);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isLoading, frameTypes, visibleFrames]);
 
   // Navigate to photobooth when template is selected
   const handleTemplateClick = (frameType) => {
@@ -173,70 +297,127 @@ const Templates = () => {
           Browse our selection of premium photo booth frames for your next event. Each frame is designed to enhance your photo booth experience and create memorable keepsakes.
         </p>
 
-        <div className="photo-booth-frames-grid" style={{
-          display: "grid",
-          gridTemplateColumns: screenSize.isDesktop
-            ? "repeat(6, 1fr)"
-            : (screenSize.isTablet ? "repeat(3, 1fr)" : "repeat(2, 1fr)"),
-          gap: screenSize.isDesktop ? "20px" : "15px",
-          maxWidth: "1200px",
-          margin: "0 auto",
-          padding: "0 10px"
-        }}>
-          {frameTypes.map((frameType, index) => (
-            <div
-              key={frameType}
-              className="photo-booth-frame-item"
-              onClick={() => handleTemplateClick(frameType)}
-              style={{
-                cursor: "pointer",
-                backgroundColor: "#ffffff",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                transition: "transform 0.3s, box-shadow 0.3s",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-                touchAction: "manipulation" // Improves touch experience on mobile
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-5px)";
-                e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-              }}
-            >
-              <canvas
-                ref={templateRefs.current[index]}
-                width={300}
-                height={Math.round(300 * 1450/480)}
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  display: "block",
-                  objectFit: "contain"
-                }}
-                aria-label={`${frameType} photo booth frame preview`}
-              />
-              <div style={{
-                padding: "15px",
-                borderTop: "1px solid #f0f0f0",
-                textAlign: "center",
-                marginTop: "auto"
-              }}>
-                <h3 style={{
-                  margin: "0 0 5px",
-                  fontSize: "14px",
-                  color: "#333"
-                }}>
-                  {frameType.charAt(0).toUpperCase() + frameType.slice(1)} 
-                </h3>
-              </div>
-            </div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div style={{
+            textAlign: "center",
+            padding: "40px",
+            color: "#666"
+          }}>
+            <div style={{
+              display: "inline-block",
+              width: "40px",
+              height: "40px",
+              border: "4px solid #f3f3f3",
+              borderTop: "4px solid #FF69B4",
+              borderRadius: "50%",
+              animation: "spin 1s linear infinite",
+              marginBottom: "20px"
+            }}></div>
+            <p>Loading photo booth frames...</p>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
+        ) : (
+          <div className="photo-booth-frames-grid" style={{
+            display: "grid",
+            gridTemplateColumns: screenSize.isDesktop
+              ? "repeat(6, 1fr)"
+              : (screenSize.isTablet ? "repeat(3, 1fr)" : "repeat(2, 1fr)"),
+            gap: screenSize.isDesktop ? "20px" : "15px",
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "0 10px"
+          }}>
+            {frameTypes.map((frameType, index) => {
+              const frameInfo = availableFrames.find(f => f.name === frameType);
+              return (
+                <div
+                  key={frameType}
+                  className="photo-booth-frame-item"
+                  onClick={() => handleTemplateClick(frameType)}
+                  style={{
+                    cursor: "pointer",
+                    backgroundColor: "#ffffff",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    transition: "transform 0.3s, box-shadow 0.3s",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                    height: "100%",
+                    touchAction: "manipulation" // Improves touch experience on mobile
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+                  }}
+                >
+                  <div style={{ position: "relative" }}>
+                    <canvas
+                      ref={templateRefs.current[index]}
+                      width={300}
+                      height={Math.round(300 * 1450/480)}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        display: "block",
+                        objectFit: "contain",
+                        backgroundColor: "#f8f8f8"
+                      }}
+                      aria-label={`${frameType} photo booth frame preview`}
+                    />
+                    
+                    {/* 如果frame还没有被渲染，显示加载提示 */}
+                    {!visibleFrames.has(frameType) && (
+                      <div style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        color: "#999",
+                        fontSize: "14px",
+                        textAlign: "center",
+                        pointer: "none"
+                      }}>
+                        <div style={{
+                          width: "20px",
+                          height: "20px",
+                          border: "2px solid #f3f3f3",
+                          borderTop: "2px solid #FF69B4",
+                          borderRadius: "50%",
+                          animation: "spin 1s linear infinite",
+                          margin: "0 auto 8px"
+                        }}></div>
+                        Loading Preview...
+                      </div>
+                    )}
+                  </div>
+                  <div style={{
+                    padding: "15px",
+                    borderTop: "1px solid #f0f0f0",
+                    textAlign: "center",
+                    marginTop: "auto"
+                  }}>
+                    <h3 style={{
+                      margin: "0 0 5px",
+                      fontSize: "14px",
+                      color: "#333"
+                    }}>
+                      {frameInfo ? frameInfo.description : frameType.charAt(0).toUpperCase() + frameType.slice(1)}
+                    </h3>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <div className="photo-booth-frames-info" style={{
           maxWidth: "800px",

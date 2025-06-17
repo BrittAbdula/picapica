@@ -62,9 +62,11 @@ function App() {
 
 	// 处理登出
 	const handleLogout = () => {
-		logout();
-		setUserAuthenticated(false);
-		setUsername(null);
+		if (window.confirm("Are you sure you want to log out?")) {
+			logout();
+			setUserAuthenticated(false);
+			setUsername(null);
+		}
 	};
 
 	// 定义使用摄像头的路由
@@ -107,17 +109,13 @@ function App() {
 					{userAuthenticated ? (
 						<>
 							<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
-							<div className="nav-user-info">
-								<span>{username}</span>
-								<button 
-									onClick={() => {
-										handleLogout();
-										setMenuOpen(false);
-									}}
-									className="logout-btn"
-								>
-									Logout
-								</button>
+							<div className="nav-user-avatar" onClick={() => {
+								handleLogout();
+								setMenuOpen(false);
+							}}>
+								<div className="user-avatar">
+									<span className="avatar-text">{username ? username.charAt(0).toUpperCase() : 'U'}</span>
+								</div>
 							</div>
 						</>
 					) : (
