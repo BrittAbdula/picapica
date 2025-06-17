@@ -391,7 +391,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			const data = await response.json();
 
 			// Generate shareable link
-			const shareableLink = `https://idolbooth.com/share?accessKey=${data.access_key}`;
+			const shareableLink = `https://picapica.com/share?imageurl=${data.public_url}`;
 			setShareLink(shareableLink);
 
 			// 生成QR码URL
