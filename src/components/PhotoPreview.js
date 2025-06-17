@@ -375,12 +375,20 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 			// Create form data
 			const formData = new FormData();
+			
+			// 只有在用户已认证时才添加userId到form data
+			const authToken = localStorage.getItem('authToken');
+			const currentUserId = localStorage.getItem('userId');
+			if (authToken && currentUserId) {
+				formData.append('userId', currentUserId);
+			}
+			
 			formData.append('image', blob, 'photostrip.png');
 
 			// Upload to server
 			const response = await fetch('https://api.picapica.app/api/photos/upload', {
 				method: 'POST',
-			headers: getAuthHeaders(false), // 不包含Content-Type让浏览器自动设置multipart/form-data
+				headers: getAuthHeaders(false), // 不包含Content-Type让浏览器自动设置multipart/form-data
 				body: formData
 			});
 
