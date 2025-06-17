@@ -1,23 +1,29 @@
 import "./App.css";
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Home from "./components/Home";
 import Welcome from "./components/Welcome";
 import PhotoBooth from "./components/PhotoBooth";
 import PhotoPreview from "./components/PhotoPreview";
 import SharePage from "./components/SharePage";
 import GalleryPage from "./components/GalleryPage";
+import MyPhotos from "./components/MyPhotos";
+import GoogleLogin from "./components/GoogleLogin";
 import GoogleAnalytics from "./components/GoogleAnalytics";
 import AnalyticsTracker from "./components/AnalyticsTracker";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsOfService from "./components/TermsOfService";
 import RouteGuard from "./utils/RouteGuard";
+import { isAuthenticated, getUsername, logout } from "./utils/auth";
 import Clarity from "@microsoft/clarity";
 import VConsoleComponent from "./utils/VConsole";
 import Templates from "./components/Templates";
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [userAuthenticated, setUserAuthenticated] = useState(isAuthenticated());
+	const [username, setUsername] = useState(getUsername());
 
 	// 在组件挂载后初始化 Clarity
 	useEffect(() => {
@@ -29,6 +35,38 @@ function App() {
 		return () => clearTimeout(timer);
 	}, []);
 
+	// 监听认证状态变化
+	useEffect(() => {
+		const checkAuthStatus = () => {
+			setUserAuthenticated(isAuthenticated());
+			setUsername(getUsername());
+		};
+
+		// 监听storage变化
+		window.addEventListener('storage', checkAuthStatus);
+		
+		// 定期检查认证状态
+		const interval = setInterval(checkAuthStatus, 1000);
+
+		return () => {
+			window.removeEventListener('storage', checkAuthStatus);
+			clearInterval(interval);
+		};
+	}, []);
+
+	// 处理登录成功
+	const handleLoginSuccess = (authData) => {
+		setUserAuthenticated(true);
+		setUsername(authData.username);
+	};
+
+	// 处理登出
+	const handleLogout = () => {
+		logout();
+		setUserAuthenticated(false);
+		setUsername(null);
+	};
+
 	// 定义使用摄像头的路由
 	const cameraRoutes = ["/photobooth"];
 
@@ -37,10 +75,11 @@ function App() {
 	};
 
 	return (
-		<div className="App">
-			{/* 添加分析工具 */}
-			<GoogleAnalytics />
-			<AnalyticsTracker />
+		<GoogleOAuthProvider clientId="462051871205-4hqqnifmm7ckp8cjn37ca0ussfa1j7g9.apps.googleusercontent.com">
+			<div className="App">
+				{/* 添加分析工具 */}
+				<GoogleAnalytics />
+				<AnalyticsTracker />
 			<nav className="navbar">
 				<Link to="/" className="logo-link">
 					<img src="/images/picapica-icon.svg" alt="Pica Pica" className="navbar-logo" />
@@ -65,6 +104,30 @@ function App() {
 					<Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
 					<Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
 					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
+					{userAuthenticated ? (
+						<>
+							<Link to="/my-photos" onClick={() => setMenuOpen(false)}>我的照片</Link>
+							<div className="nav-user-info">
+								<span>欢迎, {username}</span>
+								<button 
+									onClick={() => {
+										handleLogout();
+										setMenuOpen(false);
+									}}
+									className="logout-btn"
+								>
+									退出
+								</button>
+							</div>
+						</>
+					) : (
+						<div className="nav-login">
+							<GoogleLogin 
+								onLoginSuccess={handleLoginSuccess}
+								onLoginError={(error) => console.error('Login error:', error)}
+							/>
+						</div>
+					)}
 				</div>
 			</nav>
 
@@ -83,6 +146,7 @@ function App() {
 					/>
 					<Route path="/g" element={<GalleryPage />} />
 					<Route path="/share" element={<SharePage />} />
+					<Route path="/my-photos" element={<MyPhotos />} />
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
 					<Route path="/templates" element={<Templates />} />
@@ -102,6 +166,7 @@ function App() {
 			{/* 添加 VConsole 组件 */}
 			<VConsoleComponent />
 		</div>
+		</GoogleOAuthProvider>
 	);
 }
 

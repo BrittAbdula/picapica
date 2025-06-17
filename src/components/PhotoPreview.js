@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Meta from "./Meta";
 import FRAMES from "./Frames";
 import QRCode from 'qrcode';
+import { getAuthHeaders } from '../utils/auth';
 
 const PhotoPreview = ({ capturedImages: initialImages }) => {
 	const stripCanvasRef = useRef(null);
@@ -379,6 +380,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			// Upload to server
 			const response = await fetch('https://api.picapica.app/api/photos/upload', {
 				method: 'POST',
+			headers: getAuthHeaders(false), // 不包含Content-Type让浏览器自动设置multipart/form-data
 				body: formData
 			});
 
@@ -469,6 +471,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				// 上传到服务器
 				const response = await fetch('https://api.picapica.app/api/photos/upload', {
 					method: 'POST',
+				headers: getAuthHeaders(false), // 不包含Content-Type让浏览器自动设置multipart/form-data
 					body: formData
 				});
 

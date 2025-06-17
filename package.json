@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@microsoft/clarity": "^1.0.0",
+    "@react-oauth/google": "^0.12.1",
     "axios": "^1.7.9",
     "qrcode": "^1.5.4",
     "react": "^18.0.0",
