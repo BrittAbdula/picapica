@@ -1,12 +1,14 @@
 // src/components/PhotoBooth/CameraControl.js
 import { useRef, useState, useEffect } from 'react';
 import CameraManager from '../../utils/CameraManager';
+import GLFXFilterProcessor from './GLFXFilterProcessor';
 
-const useCameraControl = ({ soundEnabled, filter }) => {
+const useCameraControl = ({ soundEnabled, filter, filterObject }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const cameraShutterRef = useRef(new Audio('/camera-shutter.mp3'));
   const currentStream = useRef(null);
+  const glfxProcessor = useRef(null);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -68,6 +70,10 @@ const useCameraControl = ({ soundEnabled, filter }) => {
     const canvas = canvasRef.current;
 
     if (video && canvas) {
+      console.log('Starting photo capture...');
+      console.log('Filter:', filter);
+      console.log('Filter Object:', filterObject);
+      
       // 创建闪光效果
       const flash = document.createElement('div');
       flash.style.position = 'absolute';
@@ -137,17 +143,66 @@ const useCameraControl = ({ soundEnabled, filter }) => {
       );
       context.restore();
 
+      console.log('Image drawn to canvas, applying filters...');
+
       // 应用滤镜
-      if (filter !== 'none') {
-        context.filter = filter;
-        context.drawImage(canvas, 0, 0);
-        context.filter = 'none';
+      if (filter !== 'none' && filterObject) {
+        console.log('Filter type:', filterObject.type);
+        
+        if (filterObject.type === 'glfx') {
+          // 使用 GLFX 处理器应用高级滤镜
+          console.log('Applying GLFX filter:', filter);
+          if (glfxProcessor.current && glfxProcessor.current.isSupported()) {
+            try {
+              console.log('GLFX processor is ready, applying filter...');
+              glfxProcessor.current.applyFilter(canvas, filter);
+              console.log('GLFX filter applied successfully');
+            } catch (error) {
+              console.error('GLFX filter application failed:', error);
+              console.error('Error details:', error.message, error.stack);
+              // 降级为不应用滤镜
+            }
+          } else {
+            console.warn('GLFX not supported, skipping filter');
+            console.log('Processor exists:', !!glfxProcessor.current);
+            console.log('Processor supported:', glfxProcessor.current?.isSupported());
+          }
+        } else if (filterObject.type === 'css') {
+          // 使用传统的 CSS 滤镜
+          console.log('Applying CSS filter:', filter);
+          context.filter = filter;
+          context.drawImage(canvas, 0, 0);
+          context.filter = 'none';
+          console.log('CSS filter applied successfully');
+        }
+      } else {
+        console.log('No filter to apply');
       }
 
-      return canvas.toDataURL("image/png");
+      const dataURL = canvas.toDataURL("image/png");
+      console.log('Photo capture completed');
+      return dataURL;
     }
+    console.log('No video or canvas available');
     return null;
   };
+
+  // 初始化 GLFX 处理器
+  useEffect(() => {
+    // 初始化 GLFX 滤镜处理器
+    try {
+      glfxProcessor.current = new GLFXFilterProcessor();
+      console.log('GLFX Processor initialized:', glfxProcessor.current.isSupported());
+    } catch (error) {
+      console.warn('Failed to initialize GLFX processor:', error);
+    }
+
+    return () => {
+      if (glfxProcessor.current) {
+        glfxProcessor.current.destroy();
+      }
+    };
+  }, []);
 
   // 组件挂载时启动相机
   useEffect(() => {

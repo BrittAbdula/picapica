@@ -1,5 +1,6 @@
 // src/components/PhotoBooth/UI/BackgroundLighting.js
 import React, { useState } from 'react';
+import './BackgroundLighting.css';
 
 // 预设聚光灯颜色
 const LIGHTING_PRESETS = [
@@ -68,18 +69,13 @@ const BackgroundLighting = ({ backgroundColor, setBackgroundColor, spotlightColo
         {LIGHTING_PRESETS.map((preset, index) => (
           <button
             key={index}
+            className={`lighting-preset-btn lighting-btn-${index}`}
             onClick={() => handlePresetSelect(preset)}
             style={{
-              backgroundColor: preset.color,
+              '--custom-bg-color': preset.color,
               color: isLightColor(preset.color) ? "#000000" : "#FFFFFF",
               border: backgroundColor === preset.color ? `3px solid ${theme.accentColor || '#D197B8'}` : "2px solid rgba(0,0,0,0.1)",
-              margin: "5px",
-              padding: "10px 14px",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "12px",
               fontWeight: backgroundColor === preset.color ? "600" : "500",
-              transition: "all 0.3s ease",
               boxShadow: backgroundColor === preset.color ? "0 4px 12px rgba(0,0,0,0.15)" : "0 2px 6px rgba(0,0,0,0.1)"
             }}
           >
@@ -88,15 +84,10 @@ const BackgroundLighting = ({ backgroundColor, setBackgroundColor, spotlightColo
         ))}
         
         <button 
+          className="custom-color-btn"
           onClick={toggleColorPicker}
           style={{
-            margin: "5px",
-            padding: "8px 12px",
-            borderRadius: "4px",
-            cursor: "pointer",
-            backgroundColor: theme.lightPink,
-            border: "1px solid #ccc",
-            fontSize: "12px"
+            backgroundColor: theme.lightPink || '#FCE4EC'
           }}
         >
           Custom Color

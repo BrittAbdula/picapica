@@ -631,25 +631,81 @@ button:disabled:hover {
 	margin: 20px auto;
 }
 
-/* Fix Photo Strip Thumbnails - 4:3 aspect ratio */
+/* Fix Photo Strip Thumbnails - 4:3 aspect ratio with horizontal scroll */
+.preview-container {
+	position: relative;
+	margin: 15px auto 0;
+	padding: 10px;
+	background: rgba(248, 187, 217, 0.05);
+	border-radius: 12px;
+	border: 1px solid rgba(248, 187, 217, 0.1);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
 .preview-side {
 	display: flex;
 	flex-direction: row;
 	gap: 10px;
-	padding: 10px;
+	padding: 5px 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(248, 187, 217, 0.5) transparent;
+	min-height: 100px;
 	justify-content: center;
 	align-items: center;
-	flex-wrap: wrap;
+}
+
+/* 自定义滚动条样式 */
+.preview-side::-webkit-scrollbar {
+	height: 6px;
+}
+
+.preview-side::-webkit-scrollbar-track {
+	background: rgba(248, 187, 217, 0.1);
+	border-radius: 3px;
+}
+
+.preview-side::-webkit-scrollbar-thumb {
+	background: rgba(248, 187, 217, 0.5);
+	border-radius: 3px;
+	transition: background 0.3s ease;
+}
+
+.preview-side::-webkit-scrollbar-thumb:hover {
+	background: rgba(248, 187, 217, 0.7);
 }
 
 .side-preview {
 	width: 120px;
 	height: 90px;
+	min-width: 120px;
 	aspect-ratio: 4/3;
 	object-fit: cover;
-	border: 2px solid #000;
-	box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-	margin-bottom: 10px;
+	border: 2px solid rgba(248, 187, 217, 0.4);
+	border-radius: 8px;
+	box-shadow: 0px 4px 10px rgba(248, 187, 217, 0.3);
+	flex-shrink: 0;
+	transition: all 0.3s ease;
+}
+
+.side-preview:hover {
+	transform: scale(1.05);
+	box-shadow: 0px 6px 15px rgba(248, 187, 217, 0.4);
+}
+
+.side-preview-placeholder {
+	opacity: 0.7;
+	transition: all 0.3s ease;
+}
+
+.side-preview-placeholder:hover {
+	opacity: 1;
+	background-color: rgba(248, 187, 217, 0.2) !important;
 }
 
 /* Hide Captured Image Under Camera */
@@ -791,11 +847,35 @@ body {
 	.side-preview {
 		width: 80px;
 		height: 60px;
+		min-width: 80px;
 		aspect-ratio: 4/3;
+	}
+
+	.side-preview-placeholder {
+		width: 80px !important;
+		height: 60px !important;
+		min-width: 80px !important;
+		font-size: 10px !important;
+	}
+
+	.preview-container {
+		margin: 10px auto 0;
+		padding: 8px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
 	}
 
 	.preview-side {
 		gap: 5px;
+		padding: 3px 0;
+		min-height: 70px;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.preview-side::-webkit-scrollbar {
+		height: 4px;
 	}
 
 	.privacy-container {
@@ -863,6 +943,41 @@ body {
 	0% { opacity: 0; }
 	50% { opacity: 0.8; }
 	100% { opacity: 0; }
+}
+
+/* 透明倒计时动画 */
+@keyframes countdownEnter {
+	0% { 
+		opacity: 0; 
+		transform: translate(-50%, -50%) scale(0.5);
+	}
+	100% { 
+		opacity: 1; 
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+@keyframes pulseGentle {
+	0%, 100% { 
+		transform: translate(-50%, -50%) scale(1); 
+		text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4);
+	}
+	50% { 
+		transform: translate(-50%, -50%) scale(1.1); 
+		text-shadow: 0 0 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 0, 0, 0.5);
+	}
+}
+
+/* 照片从右侧滑入动画 */
+@keyframes slideInFromRight {
+	0% {
+		transform: translateX(100px);
+		opacity: 0;
+	}
+	100% {
+		transform: translateX(0);
+		opacity: 1;
+	}
 }
 
 /* 添加网站名称样式 */

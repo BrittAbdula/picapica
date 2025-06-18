@@ -1562,10 +1562,51 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
       cursor: not-allowed;
     }
     .preview-container {
-      padding: 20px;
+      padding: 10px;
       margin-bottom: 20px;
       display: flex;
       justify-content: center;
+      align-items: center;
+      /* 限制预览容器的最大高度，确保一屏内可以完整显示 */
+      max-height: 80vh;
+      min-height: 300px;
+    }
+    
+    /* 针对photostrip canvas的优化样式 */
+    .photo-strip {
+      /* 确保canvas可以自适应容器尺寸 */
+      max-width: 100% !important;
+      max-height: 75vh !important;
+      width: auto !important;
+      height: auto !important;
+      object-fit: contain;
+      /* 保持原有的阴影效果 */
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* 移动端优化 */
+    @media (max-width: 768px) {
+      .preview-container {
+        padding: 5px;
+        max-height: 70vh;
+        min-height: 250px;
+      }
+      
+      .photo-strip {
+        max-height: 65vh !important;
+      }
+    }
+    
+    /* 超小屏幕优化 */
+    @media (max-width: 480px) {
+      .preview-container {
+        max-height: 60vh;
+        min-height: 200px;
+      }
+      
+      .photo-strip {
+        max-height: 55vh !important;
+      }
     }
     .active-tab {
       color: white;
@@ -1684,11 +1725,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 					{/* 左侧预览区 */}
 					<div className="preview-panel">
 						<div className="preview-container">
-							<canvas ref={stripCanvasRef} className="photo-strip" style={{
-								maxWidth: "100%", // 确保在各种屏幕尺寸下都能完全显示
-								height: "auto",
-								boxShadow: "0 4px 8px rgba(0,0,0,0.1)"
-							}} />
+							<canvas ref={stripCanvasRef} className="photo-strip" />
 						</div>
 
 						<div className="action-buttons">

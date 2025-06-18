@@ -1,9 +1,9 @@
 // src/components/PhotoBooth/index.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Meta from "../Meta";
 import useCameraControl from "./CameraControl";
-import { FilterSelector } from "./FilterModule";
+import { FilterSelector, FilterPreviewOverlay, getFilterById } from "./FilterModule";
 import AdvancedSettings from "./UI/AdvancedSettings";
 import { themeColors, animationStyles, navigationBarUtils } from "./styles";
 
@@ -36,17 +36,19 @@ const loadFromLocalStorage = (key, defaultValue) => {
 const PhotoBooth = ({ setCapturedImages }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const previewSideRef = useRef(null);
 
     // 状态管理 - 从本地存储加载保存的设置
     const [capturedImages, setImages] = useState([]);
     const [filter, setFilter] = useState(loadFromLocalStorage(STORAGE_KEYS.FILTER, "none"));
+    const [filterObject, setFilterObject] = useState(getFilterById("none"));
     const [countdown, setCountdown] = useState(null);
     const [countdownDuration, setCountdownDuration] = useState(
         loadFromLocalStorage(STORAGE_KEYS.COUNTDOWN_DURATION, 3)
     );
     const [capturing, setCapturing] = useState(false);
     const [backgroundColor, setBackgroundColor] = useState(
-        loadFromLocalStorage(STORAGE_KEYS.BACKGROUND_COLOR, "#FFC0CB")
+        loadFromLocalStorage(STORAGE_KEYS.BACKGROUND_COLOR, "#FFFFFF")
     );
     const [spotlightColor, setSpotlightColor] = useState(
         loadFromLocalStorage('photobooth_spotlight_color', "rgba(248, 187, 217, 0.3)")
@@ -57,6 +59,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
     const [frameType, setFrameType] = useState(
         location.state?.frameType || localStorage.getItem("selectedFrame") || "none"
     );
+    const [showAllFilters, setShowAllFilters] = useState(false);
 
     // 使用相机控制钩子
     const {
@@ -67,7 +70,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
         cameraActive,
         startCamera,
         capturePhoto
-    } = useCameraControl({ soundEnabled, filter });
+    } = useCameraControl({ soundEnabled, filter, filterObject });
 
     // 导航函数
     const navigateTo = (path, state) => {
@@ -101,10 +104,19 @@ const PhotoBooth = ({ setCapturedImages }) => {
     };
 
     // 设置滤镜 - 保存到本地存储
-    const handleSetFilter = (newFilter) => {
+    const handleSetFilter = (newFilter, newFilterObject) => {
         setFilter(newFilter);
+        setFilterObject(newFilterObject || getFilterById("none"));
         saveToLocalStorage(STORAGE_KEYS.FILTER, newFilter);
     };
+
+    // 确保 filter 和 filterObject 保持同步
+    useEffect(() => {
+        const newFilterObject = getFilterById(filter);
+        if (newFilterObject.id !== filterObject.id) {
+            setFilterObject(newFilterObject);
+        }
+    }, [filter]);
 
     // 组件挂载/更新时更新导航栏颜色
     useEffect(() => {
@@ -176,7 +188,16 @@ const PhotoBooth = ({ setCapturedImages }) => {
                         const imageUrl = capturePhoto();
                         if (imageUrl) {
                             newCapturedImages.push(imageUrl);
-                            setImages((prevImages) => [...prevImages, imageUrl]);
+                            setImages((prevImages) => {
+                                const newImages = [...prevImages, imageUrl];
+                                // 第一张照片居中，后续照片自动滚动到最新位置
+                                setTimeout(() => {
+                                    if (previewSideRef.current && newImages.length > 1) {
+                                        previewSideRef.current.scrollLeft = previewSideRef.current.scrollWidth;
+                                    }
+                                }, 600); // 等待动画完成后再滚动
+                                return newImages;
+                            });
                         }
                         photosTaken += 1;
                         setTimeout(captureSequence, 1000);
@@ -554,7 +575,11 @@ const PhotoBooth = ({ setCapturedImages }) => {
                             muted
                             className="video-feed"
                             style={{
-                                filter,
+                                filter: filterObject?.type === 'css' 
+                                    ? filter 
+                                    : filterObject?.type === 'glfx' && filterObject?.cssPreview 
+                                        ? filterObject.cssPreview 
+                                        : 'none',
                                 border: "2px solid rgba(248, 187, 217, 0.3)",
                                 borderRadius: "12px",
                                 boxShadow: "0 8px 30px rgba(248, 187, 217, 0.3), 0 0 50px rgba(255, 255, 255, 0.1)",
@@ -572,7 +597,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                         />
                         <canvas ref={canvasRef} className="hidden" style={{ display: 'none' }} />
 
-                        {/* 倒计时显示 */}
+                        {/* 倒计时显示 - 透明背景 */}
                         {countdown !== null && (
                             <div className="countdown-display-overlay" style={{
                                 position: "absolute",
@@ -582,7 +607,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 fontSize: typeof countdown === "string" ? "44px" : "120px",
                                 fontWeight: "700",
                                 color: "#FFFFFF",
-                                textShadow: "0 4px 20px rgba(248, 187, 217, 0.5)",
+                                textShadow: "0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)",
                                 zIndex: 100,
                                 animation: `countdownEnter 0.3s ease-out, pulseGentle 1s infinite`,
                                 display: "flex",
@@ -590,51 +615,111 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 alignItems: "center",
                                 width: "160px",
                                 height: "160px",
-                                borderRadius: "50%",
-                                background: "linear-gradient(135deg, rgba(248, 187, 217, 0.9) 0%, rgba(232, 180, 203, 0.95) 100%)",
-                                backdropFilter: "blur(10px)",
-                                border: "2px solid rgba(255, 255, 255, 0.3)",
-                                boxShadow: "0 8px 30px rgba(248, 187, 217, 0.4)",
                                 pointerEvents: "none",
-                                letterSpacing: "2px"
+                                letterSpacing: "2px",
+                                WebkitTextStroke: "2px rgba(0, 0, 0, 0.5)"
                             }}>
                                 {countdown}
                             </div>
                         )}
                     </div>
 
-                    {/* 已拍摄照片预览 */}
-                    <div className="preview-side" style={{
-                        display: "flex",
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "10px",
-                        width: "100%",
-                        maxWidth: "800px",
-                        boxSizing: "border-box",
-                    }}>
-                        {capturedImages.map((image, index) => (
-                            <img
-                                key={index}
-                                src={image}
-                                alt={`Captured ${index + 1}`}
-                                className="side-preview"
+                    {/* 已拍摄照片预览 - 左右滑动，仅在有照片时显示 */}
+                    {capturedImages.length > 0 && (
+                        <div className="preview-container" style={{
+                            width: "100%",
+                            maxWidth: "800px",
+                            boxSizing: "border-box",
+                            overflow: "hidden",
+                            position: "relative",
+                            animation: "fadeInUp 0.5s ease-out"
+                        }}>
+                            {/* 拍摄进度 */}
+                            <div style={{
+                                position: "absolute",
+                                top: "5px",
+                                left: "10px",
+                                background: "rgba(248, 187, 217, 0.8)",
+                                color: "#5D4E75",
+                                padding: "2px 8px",
+                                borderRadius: "12px",
+                                fontSize: "10px",
+                                fontWeight: "600",
+                                zIndex: 10,
+                                pointerEvents: "none"
+                            }}>
+                                {capturedImages.length}/4 Photos
+                            </div>
+                            <div 
+                                ref={previewSideRef}
+                                className="preview-side" 
                                 style={{
-                                    width: "120px",
-                                    height: "90px",
-                                    border: "2px solid rgba(248, 187, 217, 0.4)",
-                                    borderRadius: "8px",
-                                    boxShadow: "0 4px 12px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)",
-                                    objectFit: "cover",
-                                    aspectRatio: "4/3",
-                                    boxSizing: "border-box",
-                                    filter: "brightness(1.05) contrast(1.02)",
-                                    transition: "all 0.3s ease"
-                                }}
-                            />
-                        ))}
-                    </div>
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    overflowX: "auto",
+                                    overflowY: "hidden",
+                                    padding: "10px 0",
+                                    scrollBehavior: "smooth",
+                                    WebkitOverflowScrolling: "touch",
+                                    scrollbarWidth: "thin",
+                                    scrollbarColor: "rgba(248, 187, 217, 0.5) transparent",
+                                    justifyContent: "center"
+                                }}>
+                                {capturedImages.map((image, index) => (
+                                    <img
+                                        key={index}
+                                        src={image}
+                                        alt={`Captured ${index + 1}`}
+                                        className="side-preview"
+                                        style={{
+                                            width: "120px",
+                                            height: "90px",
+                                            minWidth: "120px",
+                                            border: "2px solid rgba(248, 187, 217, 0.4)",
+                                            borderRadius: "8px",
+                                            boxShadow: "0 4px 12px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)",
+                                            objectFit: "cover",
+                                            aspectRatio: "4/3",
+                                            boxSizing: "border-box",
+                                            filter: "brightness(1.05) contrast(1.02)",
+                                            transition: "all 0.3s ease",
+                                            flexShrink: 0,
+                                            animation: index === capturedImages.length - 1 ? "slideInFromRight 0.5s ease-out" : "none"
+                                        }}
+                                    />
+                                ))}
+                                {/* 显示剩余拍摄位置的占位符，仅在有照片时显示 */}
+                                {capturedImages.length > 0 && capturedImages.length < 4 && Array.from({ length: Math.max(0, 4 - capturedImages.length) }, (_, index) => (
+                                    <div
+                                        key={`placeholder-${index}`}
+                                        className="side-preview-placeholder"
+                                        style={{
+                                            width: "120px",
+                                            height: "90px",
+                                            minWidth: "120px",
+                                            border: "2px dashed rgba(248, 187, 217, 0.4)",
+                                            borderRadius: "8px",
+                                            backgroundColor: "rgba(248, 187, 217, 0.1)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            aspectRatio: "4/3",
+                                            boxSizing: "border-box",
+                                            flexShrink: 0,
+                                            color: "rgba(248, 187, 217, 0.6)",
+                                            fontSize: "12px",
+                                            fontWeight: "500",
+                                            opacity: 0.7
+                                        }}
+                                    >
+                                        {capturedImages.length + index + 1}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* 拍照按钮 */}
@@ -685,6 +770,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                             activeFilter={filter}
                             onFilterChange={handleSetFilter}
                             theme={themeColors}
+                            onShowMoreFilters={() => setShowAllFilters(true)}
                         />
                     </div>
                 </div>
@@ -781,6 +867,15 @@ const PhotoBooth = ({ setCapturedImages }) => {
                     <p>Welcome to our free online photo booth! Capture your favorite moments with ease and apply fun filters to create beautiful photo strips. Our online photo booth is perfect for any occasion, offering a seamless experience for both mobile and desktop users. Try our free photo booth online today and enjoy capturing memories!</p>
                 </div>
             </div>
+
+            {/* 滤镜预览覆盖层 - 放在最外层确保全屏显示 */}
+            <FilterPreviewOverlay
+                isOpen={showAllFilters}
+                onClose={() => setShowAllFilters(false)}
+                activeFilter={filter}
+                onFilterChange={handleSetFilter}
+                videoRef={videoRef}
+            />
         </>
     );
 };

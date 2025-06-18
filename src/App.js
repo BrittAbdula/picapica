@@ -15,6 +15,7 @@ import AnalyticsTracker from "./components/AnalyticsTracker";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import TermsOfService from "./components/TermsOfService";
 import RouteGuard from "./utils/RouteGuard";
+import ScrollToTop from "./utils/ScrollToTop";
 import { isAuthenticated, getUsername, logout } from "./utils/auth";
 import Clarity from "@microsoft/clarity";
 import VConsoleComponent from "./utils/VConsole";
@@ -82,6 +83,7 @@ function App() {
 				{/* 添加分析工具 */}
 				<GoogleAnalytics />
 				<AnalyticsTracker />
+				<ScrollToTop />
 			<nav className="navbar">
 				<Link to="/" className="logo-link">
 					<img src="/images/picapica-icon.svg" alt="Pica Pica" className="navbar-logo" />

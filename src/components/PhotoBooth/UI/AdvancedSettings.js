@@ -115,7 +115,7 @@ const AdvancedSettings = ({
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: soundEnabled ? theme.accentColor : "#ccc",
+                backgroundColor: soundEnabled ? theme.accentColor : "#FFFFFF",
                 borderRadius: "34px",
                 transition: "0.4s",
               }}
