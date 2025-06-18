@@ -20,6 +20,9 @@ import { isAuthenticated, getUsername, logout } from "./utils/auth";
 import Clarity from "@microsoft/clarity";
 import VConsoleComponent from "./utils/VConsole";
 import Templates from "./components/Templates";
+import FrameMaker from "./components/FrameMaker";
+import MyFrames from "./components/MyFrames";
+
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -104,13 +107,14 @@ function App() {
 
 				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
 					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-					<Link to="/templates" onClick={() => setMenuOpen(false)}>Frames</Link>
 					<Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
 					<Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
-					<Link to="/share" onClick={() => setMenuOpen(false)}>Share</Link>
+					<Link to="/frames" onClick={() => setMenuOpen(false)}>Frames</Link>
+					<Link to="/frame-maker" onClick={() => setMenuOpen(false)}>AI Frame Maker</Link>
+					<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
+					<Link to="/my-frames" onClick={() => setMenuOpen(false)}>My Frames</Link>
 					{userAuthenticated ? (
 						<>
-							<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
 							<div className="nav-user-avatar" onClick={() => {
 								handleLogout();
 								setMenuOpen(false);
@@ -150,6 +154,9 @@ function App() {
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
 					<Route path="/templates" element={<Templates />} />
+					<Route path="/frames" element={<Templates />} />
+					<Route path="/frame-maker" element={<FrameMaker />} />
+					<Route path="/my-frames" element={<MyFrames />	} />
 				</Routes>
 			</RouteGuard>
 

@@ -27,8 +27,8 @@ const BASE_FILTERS = [
     name: 'Film', 
     value: 'pelicula-antigua',
     type: 'glfx',
-    description: 'Classic film effect',
-    cssPreview: 'sepia(60%) brightness(110%) contrast(120%) saturate(90%)',
+    description: 'Classic vintage film effect with grain and vignette',
+    cssPreview: 'sepia(85%) brightness(112%) contrast(135%) saturate(75%) drop-shadow(0 0 8px rgba(139, 69, 19, 0.3))',
     isPopular: true
   },
   { 
@@ -36,8 +36,8 @@ const BASE_FILTERS = [
     name: 'Rose Gold', 
     value: 'coctel',
     type: 'glfx',
-    description: 'Warm rose gold tone',
-    cssPreview: 'hue-rotate(-10deg) saturate(140%) brightness(115%) contrast(125%)',
+    description: 'Warm romantic rose gold tone with soft curves',
+    cssPreview: 'hue-rotate(-12deg) saturate(165%) brightness(118%) contrast(128%) drop-shadow(0 0 6px rgba(255, 182, 193, 0.4))',
     isPopular: false
   },
   { 
@@ -45,8 +45,8 @@ const BASE_FILTERS = [
     name: 'Cool Blue', 
     value: 'camara-espia',
     type: 'glfx',
-    description: 'Cool blue tone',
-    cssPreview: 'hue-rotate(40deg) saturate(130%) brightness(95%) contrast(130%)',
+    description: 'Cool surveillance camera style with blue tint',
+    cssPreview: 'hue-rotate(55deg) saturate(150%) brightness(92%) contrast(145%) drop-shadow(0 0 4px rgba(0, 150, 255, 0.3))',
     isPopular: false
   },
   { 
@@ -54,8 +54,8 @@ const BASE_FILTERS = [
     name: 'Dreamy', 
     value: 'purpura',
     type: 'glfx',
-    description: 'Purple dreamy effect',
-    cssPreview: 'hue-rotate(-30deg) saturate(150%) brightness(110%) contrast(115%)',
+    description: 'Soft dreamy purple with gentle blur',
+    cssPreview: 'hue-rotate(-35deg) saturate(175%) brightness(112%) contrast(122%) blur(0.4px) drop-shadow(0 0 8px rgba(147, 112, 219, 0.3))',
     isPopular: false
   },
   { 
@@ -63,8 +63,8 @@ const BASE_FILTERS = [
     name: 'Soft Focus', 
     value: 'bokeh',
     type: 'glfx',
-    description: 'Soft bokeh green tone',
-    cssPreview: 'hue-rotate(15deg) saturate(130%) brightness(110%) blur(0.5px)',
+    description: 'Green-tinted bokeh with depth of field',
+    cssPreview: 'hue-rotate(18deg) saturate(155%) brightness(110%) contrast(115%) blur(0.6px) drop-shadow(0 0 6px rgba(34, 139, 34, 0.25))',
     isPopular: false
   },
   { 
@@ -72,8 +72,8 @@ const BASE_FILTERS = [
     name: 'Warm Glow', 
     value: 'fisiograma',
     type: 'glfx',
-    description: 'Warm orange glow',
-    cssPreview: 'hue-rotate(5deg) saturate(140%) brightness(120%) contrast(120%)',
+    description: 'Warm orange glow with enhanced luminosity',
+    cssPreview: 'hue-rotate(6deg) saturate(170%) brightness(122%) contrast(132%) drop-shadow(0 0 10px rgba(255, 165, 0, 0.4))',
     isPopular: false
   },
   { 
@@ -81,8 +81,8 @@ const BASE_FILTERS = [
     name: 'High Contrast', 
     value: 'peligro',
     type: 'glfx',
-    description: 'Bold high contrast',
-    cssPreview: 'contrast(180%) saturate(60%) brightness(100%)',
+    description: 'Dramatic high contrast with desaturated look',
+    cssPreview: 'brightness(108%) contrast(230%) saturate(30%) drop-shadow(0 0 4px rgba(0, 0, 0, 0.6))',
     isPopular: false
   },
   { 
@@ -90,8 +90,8 @@ const BASE_FILTERS = [
     name: 'Rainbow', 
     value: 'arcoiris',
     type: 'glfx',
-    description: 'Colorful rainbow effect',
-    cssPreview: 'hue-rotate(20deg) saturate(180%) brightness(110%) contrast(130%)',
+    description: 'Vibrant rainbow with enhanced color saturation',
+    cssPreview: 'hue-rotate(25deg) saturate(220%) brightness(115%) contrast(140%) drop-shadow(0 0 8px rgba(255, 105, 180, 0.3))',
     isPopular: false
   },
   { 
@@ -99,8 +99,8 @@ const BASE_FILTERS = [
     name: 'Ocean Blue', 
     value: 'solo-azul',
     type: 'glfx',
-    description: 'Pure blue tone',
-    cssPreview: 'hue-rotate(50deg) saturate(160%) brightness(105%) contrast(140%)',
+    description: 'Pure deep ocean blue with enhanced blue channel',
+    cssPreview: 'hue-rotate(65deg) saturate(185%) brightness(105%) contrast(150%) drop-shadow(0 0 6px rgba(0, 105, 148, 0.4))',
     isPopular: false
   },
   // Warm sunlight effect

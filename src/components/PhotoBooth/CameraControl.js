@@ -136,48 +136,90 @@ const useCameraControl = ({ soundEnabled, filter, filterObject }) => {
       context.translate(canvas.width, 0);
       context.scale(-1, 1);
 
-      context.drawImage(
-        video,
-        startX, startY, drawWidth, drawHeight,  
-        0, 0, targetWidth, targetHeight        
-      );
-      context.restore();
-
-      console.log('Image drawn to canvas, applying filters...');
-
-      // 应用滤镜
+      // 应用滤镜 - 修复CSS滤镜应用方式
       if (filter !== 'none' && filterObject) {
         console.log('Filter type:', filterObject.type);
         
-        if (filterObject.type === 'glfx') {
-          // 使用 GLFX 处理器应用高级滤镜
-          console.log('Applying GLFX filter:', filter);
-          if (glfxProcessor.current && glfxProcessor.current.isSupported()) {
-            try {
-              console.log('GLFX processor is ready, applying filter...');
-              glfxProcessor.current.applyFilter(canvas, filter);
-              console.log('GLFX filter applied successfully');
-            } catch (error) {
-              console.error('GLFX filter application failed:', error);
-              console.error('Error details:', error.message, error.stack);
-              // 降级为不应用滤镜
-            }
-          } else {
-            console.warn('GLFX not supported, skipping filter');
-            console.log('Processor exists:', !!glfxProcessor.current);
-            console.log('Processor supported:', glfxProcessor.current?.isSupported());
-          }
-        } else if (filterObject.type === 'css') {
-          // 使用传统的 CSS 滤镜
+        if (filterObject.type === 'css') {
+          // 对于CSS滤镜，先应用滤镜再绘制
           console.log('Applying CSS filter:', filter);
           context.filter = filter;
-          context.drawImage(canvas, 0, 0);
+          context.drawImage(
+            video,
+            startX, startY, drawWidth, drawHeight,  
+            0, 0, targetWidth, targetHeight        
+          );
           context.filter = 'none';
           console.log('CSS filter applied successfully');
+        } else {
+          // 对于非CSS滤镜，先绘制再处理
+          context.drawImage(
+            video,
+            startX, startY, drawWidth, drawHeight,  
+            0, 0, targetWidth, targetHeight        
+          );
         }
       } else {
-        console.log('No filter to apply');
+        // 无滤镜，直接绘制
+        context.drawImage(
+          video,
+          startX, startY, drawWidth, drawHeight,  
+          0, 0, targetWidth, targetHeight        
+        );
       }
+      
+      context.restore();
+
+      console.log('Image drawn to canvas, applying advanced filters...');
+
+             // 应用GLFX滤镜（仅适用于GLFX类型）
+       if (filter !== 'none' && filterObject && filterObject.type === 'glfx') {
+         console.log('Applying GLFX filter:', filter);
+         if (glfxProcessor.current && glfxProcessor.current.isSupported()) {
+           try {
+             console.log('GLFX processor is ready, applying filter...');
+             glfxProcessor.current.applyFilter(canvas, filter);
+             console.log('GLFX filter applied successfully');
+           } catch (error) {
+             console.error('GLFX filter application failed:', error);
+             console.error('Error details:', error.message, error.stack);
+             // 降级为CSS滤镜
+             if (filterObject.cssPreview) {
+               console.log('Falling back to CSS filter preview:', filterObject.cssPreview);
+               const tempCanvas = document.createElement('canvas');
+               const tempContext = tempCanvas.getContext('2d');
+               tempCanvas.width = canvas.width;
+               tempCanvas.height = canvas.height;
+               tempContext.filter = filterObject.cssPreview;
+               tempContext.drawImage(canvas, 0, 0);
+               // 清除原canvas并应用CSS滤镜版本
+               context.clearRect(0, 0, canvas.width, canvas.height);
+               context.drawImage(tempCanvas, 0, 0);
+               console.log('CSS fallback filter applied');
+             }
+           }
+         } else {
+           console.warn('GLFX not supported, falling back to CSS preview');
+           console.log('Processor exists:', !!glfxProcessor.current);
+           console.log('Processor supported:', glfxProcessor.current?.isSupported());
+           // 降级为CSS滤镜
+           if (filterObject.cssPreview) {
+             console.log('Using CSS filter as fallback:', filterObject.cssPreview);
+             const tempCanvas = document.createElement('canvas');
+             const tempContext = tempCanvas.getContext('2d');
+             tempCanvas.width = canvas.width;
+             tempCanvas.height = canvas.height;
+             tempContext.filter = filterObject.cssPreview;
+             tempContext.drawImage(canvas, 0, 0);
+             // 清除原canvas并应用CSS滤镜版本
+             context.clearRect(0, 0, canvas.width, canvas.height);
+             context.drawImage(tempCanvas, 0, 0);
+             console.log('CSS fallback filter applied');
+           }
+         }
+       } else {
+         console.log('No filter to apply or CSS filter already applied');
+       }
 
       const dataURL = canvas.toDataURL("image/png");
       console.log('Photo capture completed');

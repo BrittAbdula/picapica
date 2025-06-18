@@ -211,7 +211,7 @@ const Templates = () => {
     
     // 添加照片条标识
     ctx.fillText(
-      "PicaPica Photo Booth",
+      "PicaPica.app",
       PREVIEW_WIDTH / 2,
       textY - 10
     );
@@ -296,6 +296,59 @@ const Templates = () => {
         }}>
           Browse our selection of premium photo booth frames for your next event. Each frame is designed to enhance your photo booth experience and create memorable keepsakes.
         </p>
+
+        {/* AI Frame Maker Banner */}
+        <div style={{
+          backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          padding: "30px",
+          borderRadius: "12px",
+          textAlign: "center",
+          margin: "0 auto 40px",
+          maxWidth: "800px",
+          color: "white",
+          boxShadow: "0 8px 32px rgba(102, 126, 234, 0.3)"
+        }}>
+          <h2 style={{ 
+            margin: "0 0 15px", 
+            fontSize: "28px", 
+            fontWeight: "bold" 
+          }}>
+            ✨ Create Your Own Frame with AI
+          </h2>
+          <p style={{ 
+            margin: "0 0 25px", 
+            fontSize: "16px", 
+            opacity: "0.9" 
+          }}>
+            Can't find the perfect frame? Describe your vision and let our AI create a custom frame just for you!
+          </p>
+          <button
+            onClick={() => navigate("/frame-maker")}
+            style={{
+              padding: "15px 30px",
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              border: "2px solid rgba(255, 255, 255, 0.3)",
+              borderRadius: "50px",
+              color: "white",
+              fontSize: "16px",
+              fontWeight: "600",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              backdropFilter: "blur(10px)"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "rgba(255, 255, 255, 0.3)";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
+              e.target.style.transform = "translateY(0)";
+            }}
+          >
+            🎨 Try AI Frame Maker
+          </button>
+        </div>
 
         {isLoading ? (
           <div style={{

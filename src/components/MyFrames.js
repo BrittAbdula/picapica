@@ -1,0 +1,726 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { isAuthenticated, getAuthHeaders, getUsername } from "../utils/auth";
+import FrameService from "../services/frameService";
+import Meta from "./Meta";
+
+const MyFrames = () => {
+  const navigate = useNavigate();
+  const [userAuthenticated, setUserAuthenticated] = useState(false);
+  const [username, setUsername] = useState("");
+  const [frames, setFrames] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [frameDrawFunctions, setFrameDrawFunctions] = useState({});
+  const [loadingQueue, setLoadingQueue] = useState(new Set());
+  const [renderedFrames, setRenderedFrames] = useState(new Set());
+  const canvasRefs = useRef([]);
+
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = isAuthenticated();
+      setUserAuthenticated(authenticated);
+      if (authenticated) {
+        setUsername(getUsername() || "");
+        loadUserFrames();
+      } else {
+        // 不强制跳转，让用户看到需要登录的提示
+        setIsLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // 管理canvas引用，确保与frames数组长度一致
+  useEffect(() => {
+    if (canvasRefs.current.length !== frames.length) {
+      canvasRefs.current = Array(frames.length).fill().map(() => React.createRef());
+    }
+  }, [frames.length]);
+
+  // 使用 Intersection Observer 实现懒加载，参考Templates.js
+  useEffect(() => {
+    if (isLoading || frames.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const index = parseInt(entry.target.dataset.frameIndex);
+            const frame = frames[index];
+            
+            if (frame && canvasRefs.current[index]) {
+              // 异步绘制frame预览
+              drawFramePreview(canvasRefs.current[index], frame);
+            }
+          }
+        });
+      },
+      {
+        root: null,
+        rootMargin: '100px', // 提前100px开始加载
+        threshold: 0.1
+      }
+    );
+
+    // 观察所有canvas元素
+    canvasRefs.current.forEach((ref, index) => {
+      if (ref && ref.current) {
+        ref.current.dataset.frameIndex = index;
+        observer.observe(ref.current);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isLoading, frames]);
+
+  // 实现加载用户frames的功能
+  const loadUserFrames = async () => {
+    try {
+      // 清除已渲染状态
+      setRenderedFrames(new Set());
+      
+      const response = await fetch('https://api.picapica.app/api/ai/frames/user', {
+        headers: getAuthHeaders()
+      });
+      const result = await response.json();
+      if (result.success) {
+        setFrames(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to load frames:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 懒加载单个frame的draw函数，参考Templates.js
+  const loadFrameDrawFunction = async (frameCode) => {
+    if (frameDrawFunctions[frameCode]) {
+      return frameDrawFunctions[frameCode]; // 已缓存
+    }
+
+    if (loadingQueue.has(frameCode)) {
+      // 如果正在加载，等待加载完成
+      while (loadingQueue.has(frameCode)) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return frameDrawFunctions[frameCode] || (() => {});
+    }
+
+    try {
+      // 添加到加载队列
+      setLoadingQueue(prev => new Set(prev.add(frameCode)));
+      
+      // 使用FrameService创建draw函数
+      const drawFunction = FrameService.createFrameDrawFunction(frameCode);
+      
+      // 缓存到state中
+      setFrameDrawFunctions(prev => ({
+        ...prev,
+        [frameCode]: drawFunction
+      }));
+      
+      return drawFunction;
+    } catch (error) {
+      console.error(`Failed to create draw function for frame:`, error);
+      const fallbackFunction = () => {};
+      
+      // 也缓存失败的结果，避免重复请求
+      setFrameDrawFunctions(prev => ({
+        ...prev,
+        [frameCode]: fallbackFunction
+      }));
+      
+      return fallbackFunction;
+    } finally {
+      // 从加载队列中移除
+      setLoadingQueue(prev => {
+        const newQueue = new Set(prev);
+        newQueue.delete(frameCode);
+        return newQueue;
+      });
+    }
+  };
+
+  // 绘制frame预览，参考Templates.js
+  const drawFramePreview = async (canvasRef, frame) => {
+    if (!canvasRef.current || !frame) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    // 保持与 Templates.js 相同的比例
+    const PREVIEW_WIDTH = 300;
+    const ASPECT_RATIO = 1450/480; // ≈ 3.02
+    const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH * ASPECT_RATIO);
+
+    // 设置画布尺寸
+    canvas.width = PREVIEW_WIDTH;
+    canvas.height = PREVIEW_HEIGHT;
+
+    // 计算预览中的图片尺寸和间距
+    const borderSize = Math.round((40 * PREVIEW_WIDTH) / 480); // 比例缩放边框
+    const imgWidth = PREVIEW_WIDTH - (borderSize * 2);
+    const imgHeight = Math.round((300 * PREVIEW_WIDTH) / 480);
+    const photoSpacing = Math.round((20 * PREVIEW_WIDTH) / 480);
+
+    // 填充背景
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 绘制4张预览图片
+    for (let i = 0; i < 4; i++) {
+      const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+      
+      // 绘制占位符背景
+      ctx.fillStyle = "#f0f0f0";
+      ctx.fillRect(
+        borderSize,
+        yOffset,
+        imgWidth,
+        imgHeight
+      );
+
+      // 添加占位符文本
+      ctx.fillStyle = "#999999";
+      ctx.font = `${Math.round(14 * PREVIEW_WIDTH / 480)}px Arial`;
+      ctx.textAlign = "center";
+      ctx.fillText(
+        "Photo Preview",
+        PREVIEW_WIDTH / 2,
+        yOffset + imgHeight / 2
+      );
+    }
+
+    // 异步加载并应用frame的draw函数
+    try {
+      const drawFunction = await loadFrameDrawFunction(frame.code);
+      
+      if (drawFunction && typeof drawFunction === "function") {
+        // 重新绘制每张照片的frame
+        for (let i = 0; i < 4; i++) {
+          const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+          
+          // 保存当前绘图状态
+          ctx.save();
+          // 将绘图上下文移动到当前图片的位置
+          ctx.translate(borderSize, yOffset);
+          // 在当前图片区域绘制边框
+          try {
+            drawFunction(
+              ctx,
+              0,  // 相对于当前图片区域的x坐标
+              0,  // 相对于当前图片区域的y坐标
+              imgWidth,
+              imgHeight
+            );
+          } catch (error) {
+            console.error(`Error applying frame in preview:`, error);
+          }
+          // 恢复绘图状态
+          ctx.restore();
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to load and apply frame:`, error);
+    }
+
+    // 添加底部签名区域
+    const footerY = borderSize + (imgHeight + photoSpacing) * 4;
+    const footerHeight = PREVIEW_HEIGHT - footerY - borderSize;
+    
+    // 添加优雅的分隔线
+    ctx.fillStyle = "#e2e8f0";
+    ctx.fillRect(borderSize, footerY - 2, imgWidth, 1);
+
+    // 添加签名文本
+    ctx.fillStyle = "#718096";
+    ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
+    ctx.textAlign = "center";
+    
+    // 计算文本位置
+    const textY = footerY + footerHeight / 2;
+    
+    // 添加照片条标识
+    ctx.fillText(
+      "PicaPica.app",
+      PREVIEW_WIDTH / 2,
+      textY - 10
+    );
+    
+    // 添加日期占位符
+    const today = new Date();
+    const date = today.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    ctx.font = `${Math.round(10 * PREVIEW_WIDTH / 480)}px Arial`;
+    ctx.fillText(
+      date,
+      PREVIEW_WIDTH / 2,
+      textY + 10
+    );
+
+    // 标记frame为已渲染，隐藏加载动画
+    setRenderedFrames(prev => new Set(prev.add(frame.id)));
+  };
+
+  // 使用frame功能，参考FrameMaker.js
+  const handleUseFrame = (frame) => {
+    // Store the frame temporarily for photobooth to use
+    localStorage.setItem("generatedFrame", JSON.stringify(frame));
+    localStorage.setItem("selectedFrame", "generated"); // 特殊标识符表示使用生成的框架
+    
+    // Navigate to photobooth page
+    navigate("/photobooth", { 
+      state: { 
+        frameType: "generated",
+        generatedFrame: frame 
+      } 
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px" }}>
+        <div style={{
+          width: "40px",
+          height: "40px",
+          border: "4px solid #f3f3f3",
+          borderTop: "4px solid #FF69B4",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite",
+          margin: "0 auto 20px"
+        }}></div>
+        <p>Loading...</p>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  if (!userAuthenticated) {
+    return (
+      <>
+        <Meta
+          title="My AI Generated Frames - PicaPica"
+          description="View and manage your custom AI-generated photo booth frames"
+          canonicalUrl="/my-frames"
+        />
+        <div style={{ 
+          textAlign: "center", 
+          padding: "40px",
+          maxWidth: "600px",
+          margin: "0 auto"
+        }}>
+          <h1 style={{ marginBottom: "20px", color: "#333" }}>My Frames</h1>
+          <div style={{
+            padding: "30px",
+            backgroundColor: "#fff5f5",
+            borderRadius: "12px",
+            border: "1px solid #fed7d7"
+          }}>
+            <p style={{ 
+              color: "#c53030", 
+              fontSize: "18px", 
+              marginBottom: "20px" 
+            }}>
+              🔒 Please login to view your custom frames
+            </p>
+            <p style={{ 
+              color: "#666", 
+              marginBottom: "25px" 
+            }}>
+              You need to be logged in to access your AI-generated frames collection.
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#3182ce",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#2c5282"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#3182ce"}
+            >
+              Go to Homepage & Login
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Meta
+        title="My AI Generated Frames - PicaPica"
+        description="View and manage your custom AI-generated photo booth frames"
+        canonicalUrl="/my-frames"
+      />
+
+      <div className="my-frames-container" style={{ 
+        padding: "20px", 
+        maxWidth: "1200px", 
+        margin: "0 auto" 
+      }}>
+        <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
+          My AI Generated Frames
+        </h1>
+        
+        <p style={{
+          textAlign: "center",
+          maxWidth: "800px",
+          margin: "0 auto 40px",
+          color: "#666",
+          fontSize: "16px",
+          lineHeight: "1.6"
+        }}>
+          Welcome back, {username}! Here are your custom AI-generated frames.
+        </p>
+
+        {/* 操作按钮 */}
+        <div style={{ textAlign: "center", marginBottom: "30px" }}>
+          <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
+            <button
+              onClick={() => navigate("/frame-maker")}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#3182ce",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#2c5282"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#3182ce"}
+            >
+              ➕ Create New Frame
+            </button>
+            <button
+              onClick={() => navigate("/frames")}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#38a169",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#2f855a"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#38a169"}
+            >
+              🔍 Browse All Frames
+            </button>
+          </div>
+        </div>
+
+        {/* Frames 列表 */}
+        {frames.length === 0 ? (
+          <div style={{
+            textAlign: "center",
+            margin: "40px auto",
+            padding: "40px",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "12px",
+            border: "2px dashed #dee2e6"
+          }}>
+            <h3 style={{ color: "#6c757d", marginBottom: "15px" }}>
+              🎨 No Custom Frames Yet
+            </h3>
+            <p style={{ color: "#6c757d", marginBottom: "20px" }}>
+              You haven't created any custom frames yet. Create your first frame with AI Frame Maker!
+            </p>
+            <button
+              onClick={() => navigate("/frame-maker")}
+              style={{
+                padding: "12px 24px",
+                backgroundColor: "#3182ce",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                fontSize: "16px",
+                fontWeight: "600",
+                cursor: "pointer",
+                transition: "background-color 0.2s"
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = "#2c5282"}
+              onMouseLeave={(e) => e.target.style.backgroundColor = "#3182ce"}
+            >
+              Create Your First Frame
+            </button>
+          </div>
+        ) : (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: window.innerWidth >= 1200 ? "repeat(3, 1fr)" : 
+                               window.innerWidth >= 768 ? "repeat(2, 1fr)" : "1fr",
+            gap: "20px",
+            marginBottom: "40px"
+          }}>
+                         {frames.map((frame, index) => (
+               <div key={frame.id} style={{
+                 backgroundColor: "white",
+                 borderRadius: "12px",
+                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                 overflow: "hidden",
+                 transition: "transform 0.2s, box-shadow 0.2s"
+               }}
+               onMouseEnter={(e) => {
+                 e.currentTarget.style.transform = "translateY(-2px)";
+                 e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
+               }}
+               onMouseLeave={(e) => {
+                 e.currentTarget.style.transform = "translateY(0)";
+                 e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+               }}>
+                 {/* Frame 预览区域 */}
+                 <div style={{
+                   position: "relative",
+                   backgroundColor: "#f8f9fa"
+                 }}>
+                   <canvas
+                     ref={canvasRefs.current[index]}
+                     width={300}
+                     height={Math.round(300 * 1450/480)}
+                     style={{
+                       width: "100%",
+                       height: "auto",
+                       display: "block",
+                       objectFit: "contain",
+                       backgroundColor: "#f8f8f8"
+                     }}
+                     aria-label={`${frame.name} frame preview`}
+                   />
+                   
+                   {/* 加载提示 - 只在未渲染时显示 */}
+                   {!renderedFrames.has(frame.id) && (
+                     <div style={{
+                       position: "absolute",
+                       top: "50%",
+                       left: "50%",
+                       transform: "translate(-50%, -50%)",
+                       color: "#999",
+                       fontSize: "14px",
+                       textAlign: "center",
+                       pointerEvents: "none"
+                     }}>
+                       <div style={{
+                         width: "20px",
+                         height: "20px",
+                         border: "2px solid #f3f3f3",
+                         borderTop: "2px solid #FF69B4",
+                         borderRadius: "50%",
+                         animation: "spin 1s linear infinite",
+                         margin: "0 auto 8px"
+                       }}></div>
+                       Loading Preview...
+                     </div>
+                   )}
+
+                   {/* 使用次数标签 */}
+                   <div style={{
+                     position: "absolute",
+                     bottom: "10px",
+                     right: "10px",
+                     backgroundColor: "rgba(0,0,0,0.7)",
+                     color: "white",
+                     padding: "4px 8px",
+                     borderRadius: "4px",
+                     fontSize: "12px"
+                   }}>
+                     Used {frame.usage_count} times
+                   </div>
+                 </div>
+                
+                {/* Frame 信息 */}
+                <div style={{ padding: "20px" }}>
+                  <h3 style={{
+                    margin: "0 0 10px 0",
+                    fontSize: "18px",
+                    color: "#2d3748",
+                    lineHeight: "1.4"
+                  }}>
+                    {frame.name}
+                  </h3>
+                  
+                  {frame.description && (
+                    <p style={{
+                      margin: "0 0 15px 0",
+                      fontSize: "14px",
+                      color: "#4a5568",
+                      lineHeight: "1.5",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden"
+                    }}>
+                      {frame.description}
+                    </p>
+                  )}
+                  
+                  <div style={{
+                    fontSize: "12px",
+                    color: "#718096",
+                    marginBottom: "15px"
+                  }}>
+                    Created: {new Date(frame.created_at).toLocaleDateString()}
+                    {frame.is_public ? (
+                      <span style={{
+                        marginLeft: "10px",
+                        backgroundColor: "#green.100",
+                        color: "#green.800",
+                        padding: "2px 6px",
+                        borderRadius: "4px",
+                        fontSize: "10px"
+                      }}>
+                        PUBLIC
+                      </span>
+                    ) : (
+                        <span style={{
+                          marginLeft: "10px",
+                          backgroundColor: "#green.100",
+                          color: "#green.800",
+                          padding: "2px 6px",
+                          borderRadius: "4px",
+                          fontSize: "10px"
+                        }}>
+                          PRIVATE
+                        </span>
+                      )}
+                  </div>
+                  
+                  {/* 操作按钮 */}
+                  <div style={{
+                    display: "flex",
+                    gap: "10px",
+                    justifyContent: "space-between"
+                  }}>
+                    <button
+                      onClick={() => handleUseFrame(frame)}
+                      style={{
+                        flex: "1",
+                        padding: "10px 16px",
+                        backgroundColor: "#38a169",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        transition: "background-color 0.2s"
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = "#2f855a"}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = "#38a169"}
+                    >
+                      📸 Use Frame
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 功能说明 */}
+        <div style={{
+          marginTop: "50px",
+          padding: "30px",
+          backgroundColor: "#f0f7ff",
+          borderRadius: "12px",
+          textAlign: "center"
+        }}>
+          <h2 style={{ marginTop: 0, color: "#2c5282", marginBottom: "20px" }}>
+            Available Features
+          </h2>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: window.innerWidth >= 768 ? "repeat(3, 1fr)" : "1fr",
+            gap: "20px",
+            marginTop: "30px"
+          }}>
+            <div style={{
+              padding: "20px",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+              <h4 style={{ color: "#2d3748", marginBottom: "10px" }}>📚 Frame Library</h4>
+              <p style={{ color: "#4a5568", fontSize: "14px", margin: 0 }}>
+                View all your AI-generated frames in one organized collection
+              </p>
+            </div>
+            <div style={{
+              padding: "20px",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+              <h4 style={{ color: "#2d3748", marginBottom: "10px" }}>📸 Quick Use</h4>
+              <p style={{ color: "#4a5568", fontSize: "14px", margin: 0 }}>
+                Instantly use any saved frame in the photo booth with one click
+              </p>
+            </div>
+            <div style={{
+              padding: "20px",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+              <h4 style={{ color: "#2d3748", marginBottom: "10px" }}>📊 Usage Stats</h4>
+              <p style={{ color: "#4a5568", fontSize: "14px", margin: 0 }}>
+                Track how often your frames are used in photo sessions
+              </p>
+            </div>
+          </div>
+          
+          {/* 更多功能即将推出 */}
+          <div style={{
+            marginTop: "30px",
+            padding: "20px",
+            backgroundColor: "rgba(49, 130, 206, 0.1)",
+            borderRadius: "8px",
+            border: "1px dashed #3182ce"
+          }}>
+            <h3 style={{ color: "#2c5282", marginBottom: "10px", fontSize: "16px" }}>
+              🚀 Coming Soon
+            </h3>
+            <p style={{ color: "#4a5568", fontSize: "14px", margin: 0 }}>
+              Frame editing, sharing with community, and advanced management features
+            </p>
+          </div>
+        </div>
+        
+        {/* CSS动画样式 */}
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    </>
+  );
+};
+
+export default MyFrames;

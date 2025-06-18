@@ -634,22 +634,6 @@ const PhotoBooth = ({ setCapturedImages }) => {
                             position: "relative",
                             animation: "fadeInUp 0.5s ease-out"
                         }}>
-                            {/* 拍摄进度 */}
-                            <div style={{
-                                position: "absolute",
-                                top: "5px",
-                                left: "10px",
-                                background: "rgba(248, 187, 217, 0.8)",
-                                color: "#5D4E75",
-                                padding: "2px 8px",
-                                borderRadius: "12px",
-                                fontSize: "10px",
-                                fontWeight: "600",
-                                zIndex: 10,
-                                pointerEvents: "none"
-                            }}>
-                                {capturedImages.length}/4 Photos
-                            </div>
                             <div 
                                 ref={previewSideRef}
                                 className="preview-side" 

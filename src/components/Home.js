@@ -44,12 +44,22 @@ const Home = () => {
           className="photobooth-strip"
         />
         
-        <button 
-          onClick={() => navigate("/photobooth")} 
-          className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition"
-        >
-          START YOUR PHOTO BOOTH
-        </button>
+        {/* Two button options for hero section */}
+        <div className="flex flex-col sm:flex-row gap-4 mt-6">
+          <button 
+            onClick={() => navigate("/photobooth")} 
+            className="bg-white text-pink-500 px-6 py-3 rounded-lg border-2 border-pink-500 hover:bg-pink-50 transition font-semibold"
+          >
+            Take a Photo
+          </button>
+
+          <button 
+            onClick={() => navigate("/templates")} 
+            className="bg-pink-500 text-white px-6 py-3 rounded-lg hover:bg-pink-600 transition font-semibold"
+          >
+            Select a Frame
+          </button>
+        </div>
 
         {/* Survey Section */}
         <section className="py-12 px-4 sm:px-6 lg:px-8">

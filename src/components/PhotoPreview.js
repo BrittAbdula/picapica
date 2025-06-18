@@ -41,7 +41,24 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		const loadFrames = async () => {
 			try {
 				const frames = await FrameService.getAllFrames();
-				setAvailableFrames(frames);
+				let allFrames = [...frames];
+				
+				// 检查是否有生成的框架
+				const generatedFrameData = localStorage.getItem('generatedFrame');
+				if (generatedFrameData) {
+					try {
+						const frameData = JSON.parse(generatedFrameData);
+						// 将生成的框架添加到列表顶部
+						allFrames.unshift({
+							name: 'generated',
+							description: `AI Generated: ${frameData.description || 'Custom Frame'}`
+						});
+					} catch (error) {
+						console.error('Error parsing generated frame data:', error);
+					}
+				}
+				
+				setAvailableFrames(allFrames);
 				
 				// 预加载一些常用frame的draw函数
 				const drawFunctions = {};
@@ -54,14 +71,64 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			} catch (error) {
 				console.error('Failed to load frames:', error);
 				// 设置默认frames作为fallback
-				setAvailableFrames([
+				let fallbackFrames = [
 					{ name: 'none', description: 'No frame' },
 					{ name: 'pastel', description: 'Pastel theme' }
-				]);
+				];
+				
+				// 即使在错误情况下也检查生成的框架
+				const generatedFrameData = localStorage.getItem('generatedFrame');
+				if (generatedFrameData) {
+					try {
+						const frameData = JSON.parse(generatedFrameData);
+						fallbackFrames.unshift({
+							name: 'generated',
+							description: `AI Generated: ${frameData.description || 'Custom Frame'}`
+						});
+					} catch (error) {
+						console.error('Error parsing generated frame data:', error);
+					}
+				}
+				
+				setAvailableFrames(fallbackFrames);
 			}
 		};
 		loadFrames();
 	}, []);
+	
+	// 监听页面focus事件，当用户返回页面时重新检查生成的框架
+	useEffect(() => {
+		const handleFocus = () => {
+			// 重新加载框架列表以包含新生成的框架
+			const checkGeneratedFrame = () => {
+				const generatedFrameData = localStorage.getItem('generatedFrame');
+				if (generatedFrameData) {
+					try {
+						const frameData = JSON.parse(generatedFrameData);
+						const hasGeneratedFrame = availableFrames.some(f => f.name === 'generated');
+						
+						if (!hasGeneratedFrame) {
+							// 如果还没有生成的框架在列表中，添加它
+							setAvailableFrames(prev => [
+								{
+									name: 'generated',
+									description: `AI Generated: ${frameData.description || 'Custom Frame'}`
+								},
+								...prev
+							]);
+						}
+					} catch (error) {
+						console.error('Error parsing generated frame data:', error);
+					}
+				}
+			};
+			
+			checkGeneratedFrame();
+		};
+		
+		window.addEventListener('focus', handleFocus);
+		return () => window.removeEventListener('focus', handleFocus);
+	}, [availableFrames]);
 
 	// 实现随机样式选择功能
 	const handleRandomStyle = () => {
@@ -143,6 +210,34 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 	// 应用frame的函数
 	const applyFrame = async (ctx, x, y, width, height) => {
 		if (!selectedFrame || selectedFrame === 'none') return;
+		
+		// 检查是否是生成的框架
+		if (selectedFrame === 'generated') {
+			try {
+				// 从 localStorage 获取生成的框架数据
+				const generatedFrameData = localStorage.getItem('generatedFrame');
+				if (generatedFrameData) {
+					const frameData = JSON.parse(generatedFrameData);
+					console.log('Using generated frame:', frameData);
+					
+					// 使用 FrameService 创建 draw 函数
+					const drawFunction = FrameService.createFrameDrawFunction(frameData.code);
+					if (typeof drawFunction === 'function') {
+						try {
+							drawFunction(ctx, x, y, width, height);
+						} catch (error) {
+							console.error('Error executing generated frame function:', error);
+						}
+						return;
+					}
+				}
+				console.warn('No generated frame data found in localStorage');
+				return;
+			} catch (error) {
+				console.error('Error applying generated frame:', error);
+				return;
+			}
+		}
 		
 		// 首先检查是否已缓存了draw函数
 		let drawFunction = frameDrawFunctions[selectedFrame];
@@ -273,8 +368,11 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						adjustedHeight
 					);
 
-					// 应用选中的frame
-					applyFrame(ctx, borderSize, yOffset, imgWidth, imgHeight);
+					// 应用选中的frame - 使用正确的坐标转换
+					ctx.save();
+					ctx.translate(borderSize, yOffset);
+					applyFrame(ctx, 0, 0, imgWidth, imgHeight);
+					ctx.restore();
 
 					// 如果有预言且需要显示，在照片上添加关键词
 					if (showPrediction && prediction && prediction.keywords && prediction.keywords[i]) {
@@ -348,6 +446,12 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 					borderSize + imgWidth / 2,
 					yOffset + imgHeight / 2
 				);
+
+				// 为空白位置也应用框架
+				ctx.save();
+				ctx.translate(borderSize, yOffset);
+				applyFrame(ctx, 0, 0, imgWidth, imgHeight);
+				ctx.restore();
 			}
 		}
 
