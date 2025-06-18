@@ -606,8 +606,8 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 transform: "translate(-50%, -50%)",
                                 fontSize: typeof countdown === "string" ? "44px" : "120px",
                                 fontWeight: "700",
-                                color: "#FFFFFF",
-                                textShadow: "0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4)",
+                                color: "rgba(255, 255, 255, 0.75)",
+                                textShadow: "0 0 10px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 0, 0, 0.2)",
                                 zIndex: 100,
                                 animation: `countdownEnter 0.3s ease-out, pulseGentle 1s infinite`,
                                 display: "flex",
@@ -617,7 +617,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 height: "160px",
                                 pointerEvents: "none",
                                 letterSpacing: "2px",
-                                WebkitTextStroke: "2px rgba(0, 0, 0, 0.5)"
+                                WebkitTextStroke: "1px rgba(0, 0, 0, 0.3)"
                             }}>
                                 {countdown}
                             </div>
