@@ -1,14 +1,18 @@
-// src/components/PhotoBooth/FilterModule.js
+
+//src/components/PhotoBooth/FilterModule.js
 import React, { useState, useEffect, useRef } from 'react';
 
-// 扁平化滤镜列表 - 包含 CSS 滤镜和 GLFX 滤镜
+// 扁平化滤镜列表 - 包含 CSS 滤镜和 GLFX 滤镜，全部使用英文名称
 const BASE_FILTERS = [
   { id: 'none', name: 'Original', value: 'none', type: 'css', isPopular: true },
   
-  // 原有滤镜保持不变...
+  // CSS 滤镜 (保留原有的)
   { id: 'grayscale', name: 'Black & White', value: 'grayscale(100%)', type: 'css', isPopular: false },
   { id: 'sepia', name: 'Sepia', value: 'sepia(100%)', type: 'css', isPopular: false },
+  // B&W
   { id: 'b&w', name: 'B&W', value: 'grayscale(100%)', type: 'css', isPopular: true },
+  
+  // Vintage and effect filters
   { 
     id: 'vintage', 
     name: 'Vintage', 
@@ -17,7 +21,7 @@ const BASE_FILTERS = [
     isPopular: true
   },
   
-  // 原有 GLFX 滤镜
+  // 新的 GLFX 滤镜 - 女生最爱的滤镜
   { 
     id: 'pelicula-antigua', 
     name: 'Film', 
@@ -36,229 +40,6 @@ const BASE_FILTERS = [
     cssPreview: 'hue-rotate(-10deg) saturate(140%) brightness(115%) contrast(125%)',
     isPopular: false
   },
-  
-  // 新增特色滤镜 - 参考 webcamtoy
-  { 
-    id: 'libro-comico', 
-    name: 'Comic Book', 
-    value: 'libro-comico',
-    type: 'glfx',
-    description: 'Comic book style',
-    cssPreview: 'contrast(200%) saturate(150%) brightness(110%)',
-    isPopular: false,
-    category: 'artistic'
-  },
-  { 
-    id: 'mono-cuatro', 
-    name: 'Mono Four', 
-    value: 'mono-cuatro',
-    type: 'glfx',
-    description: 'Four panel black & white',
-    cssPreview: 'grayscale(100%) contrast(200%) brightness(110%)',
-    isPopular: false,
-    category: 'grid'
-  },
-  { 
-    id: 'lomo-cuatro', 
-    name: 'Lomo Four', 
-    value: 'lomo-cuatro',
-    type: 'glfx',
-    description: 'Four panel vintage',
-    cssPreview: 'sepia(40%) contrast(130%) saturate(120%) vignette(0.4, 0.3)',
-    isPopular: false,
-    category: 'grid'
-  },
-  { 
-    id: 'historietas', 
-    name: 'Comics', 
-    value: 'historietas',
-    type: 'glfx',
-    description: 'Comic strip style',
-    cssPreview: 'contrast(180%) saturate(200%) brightness(120%)',
-    isPopular: false,
-    category: 'artistic'
-  },
-  { 
-    id: 'revista', 
-    name: 'Magazine', 
-    value: 'revista',
-    type: 'glfx',
-    description: 'Magazine style',
-    cssPreview: 'contrast(130%) brightness(115%) saturate(110%)',
-    isPopular: false,
-    category: 'professional'
-  },
-  { 
-    id: 'blanco-negro', 
-    name: 'High Contrast B&W', 
-    value: 'blanco-negro',
-    type: 'glfx',
-    description: 'Black & white high contrast',
-    cssPreview: 'grayscale(100%) contrast(250%) brightness(105%)',
-    isPopular: false,
-    category: 'monochrome'
-  },
-  { 
-    id: 'caricatura', 
-    name: 'Cartoon', 
-    value: 'caricatura',
-    type: 'glfx',
-    description: 'Cartoon style',
-    cssPreview: 'contrast(150%) saturate(180%) brightness(125%)',
-    isPopular: false,
-    category: 'artistic'
-  },
-  { 
-    id: 'termica', 
-    name: 'Thermal', 
-    value: 'termica',
-    type: 'glfx',
-    description: 'Thermal camera',
-    cssPreview: 'hue-rotate(280deg) saturate(200%) brightness(130%) contrast(180%)',
-    isPopular: false,
-    category: 'special'
-  },
-  { 
-    id: 'xray', 
-    name: 'X-Ray', 
-    value: 'xray',
-    type: 'glfx',
-    description: 'X-Ray vision',
-    cssPreview: 'invert(100%) grayscale(100%) contrast(150%) brightness(120%)',
-    isPopular: false,
-    category: 'special'
-  },
-  { 
-    id: 'oleo', 
-    name: 'Oil Painting', 
-    value: 'oleo',
-    type: 'glfx',
-    description: 'Oil painting effect',
-    cssPreview: 'contrast(140%) saturate(120%) brightness(110%)',
-    isPopular: false,
-    category: 'artistic'
-  },
-  { 
-    id: 'acuarela', 
-    name: 'Watercolor', 
-    value: 'acuarela',
-    type: 'glfx',
-    description: 'Watercolor painting',
-    cssPreview: 'contrast(80%) saturate(110%) brightness(130%) blur(0.3px)',
-    isPopular: false,
-    category: 'artistic'
-  },
-  { 
-    id: 'espejo', 
-    name: 'Mirror', 
-    value: 'espejo',
-    type: 'glfx',
-    description: 'Mirror effect',
-    cssPreview: 'brightness(110%) contrast(110%)',
-    isPopular: false,
-    category: 'special'
-  },
-  
-  // 更多 webcam toy 风格滤镜
-  { 
-    id: 'caleidoscopio', 
-    name: 'Kaleidoscope', 
-    value: 'hue-rotate(0deg) saturate(150%) brightness(110%) contrast(120%)',
-    type: 'css',
-    isPopular: false,
-    category: 'special',
-    animated: true  // 可以添加动画
-  },
-  { 
-    id: 'psicodelico', 
-    name: 'Psychedelic', 
-    value: 'hue-rotate(180deg) saturate(300%) brightness(120%) contrast(150%)',
-    type: 'css',
-    isPopular: false,
-    category: 'special'
-  },
-  { 
-    id: 'infrarrojo', 
-    name: 'Infrared', 
-    value: 'hue-rotate(180deg) saturate(200%) brightness(110%) contrast(140%) sepia(100%)',
-    type: 'css',
-    isPopular: false,
-    category: 'special'
-  },
-  { 
-    id: 'cyberpunk', 
-    name: 'Cyberpunk', 
-    value: 'hue-rotate(270deg) saturate(200%) brightness(110%) contrast(160%)',
-    type: 'css',
-    isPopular: false,
-    category: 'modern'
-  },
-  { 
-    id: 'vaporwave', 
-    name: 'Vaporwave', 
-    value: 'hue-rotate(300deg) saturate(150%) brightness(120%) contrast(110%)',
-    type: 'css',
-    isPopular: false,
-    category: 'modern'
-  },
-  { 
-    id: 'polaroid', 
-    name: 'Polaroid', 
-    value: 'contrast(110%) brightness(110%) saturate(90%) sepia(10%)',
-    type: 'css',
-    isPopular: false,
-    category: 'vintage'
-  },
-  { 
-    id: 'duotono-rosa', 
-    name: 'Pink Duotone', 
-    value: 'grayscale(100%) brightness(110%) contrast(130%) sepia(100%) hue-rotate(300deg) saturate(160%)',
-    type: 'css',
-    isPopular: false,
-    category: 'duotone'
-  },
-  { 
-    id: 'duotono-azul', 
-    name: 'Blue Duotone', 
-    value: 'grayscale(100%) brightness(110%) contrast(130%) sepia(100%) hue-rotate(180deg) saturate(160%)',
-    type: 'css',
-    isPopular: false,
-    category: 'duotone'
-  },
-  { 
-    id: 'duotono-verde', 
-    name: 'Green Duotone', 
-    value: 'grayscale(100%) brightness(110%) contrast(130%) sepia(100%) hue-rotate(90deg) saturate(160%)',
-    type: 'css',
-    isPopular: false,
-    category: 'duotone'
-  },
-  { 
-    id: 'glitch-rgb', 
-    name: 'RGB Glitch', 
-    value: 'contrast(150%) saturate(200%) hue-rotate(90deg) brightness(110%)',
-    type: 'css',
-    isPopular: false,
-    category: 'glitch'
-  },
-  { 
-    id: 'vhs', 
-    name: 'VHS', 
-    value: 'contrast(130%) brightness(110%) saturate(80%) hue-rotate(5deg) blur(0.2px)',
-    type: 'css',
-    isPopular: false,
-    category: 'retro'
-  },
-  { 
-    id: 'gameboy', 
-    name: 'Game Boy', 
-    value: 'grayscale(100%) brightness(120%) contrast(200%) sepia(100%) hue-rotate(90deg) saturate(50%)',
-    type: 'css',
-    isPopular: false,
-    category: 'retro'
-  },
-  
-  // 保留原有的其他滤镜...
   { 
     id: 'camara-espia', 
     name: 'Cool Blue', 
@@ -322,54 +103,248 @@ const BASE_FILTERS = [
     cssPreview: 'hue-rotate(50deg) saturate(160%) brightness(105%) contrast(140%)',
     isPopular: false
   },
-  
-  // 保留原有的其他滤镜（简化版）...
-  { id: 'soleado', name: 'Sunny', value: 'brightness(120%) contrast(110%) saturate(130%) sepia(30%) hue-rotate(10deg)', type: 'css', isPopular: false },
-  { id: 'enfoqueSuave', name: 'Soft', value: 'brightness(105%) contrast(95%) blur(0.7px)', type: 'css', isPopular: true },
-  { id: 'rosa', name: 'Pink', value: 'brightness(105%) contrast(110%) saturate(130%) hue-rotate(-30deg)', type: 'css', isPopular: true },
-  { id: 'retro', name: 'Retro', value: 'brightness(100%) contrast(120%) saturate(110%) hue-rotate(180deg) sepia(20%)', type: 'css', isPopular: false },
-  { id: 'cacao', name: 'Cocoa', value: 'sepia(60%) brightness(105%) contrast(110%) saturate(90%)', type: 'css', isPopular: false },
-  { id: 'proX', name: 'Pro', value: 'brightness(110%) contrast(115%) saturate(120%) hue-rotate(5deg)', type: 'css', isPopular: false },
-  { id: 'envidia', name: 'Emerald', value: 'brightness(105%) contrast(110%) saturate(120%) hue-rotate(70deg)', type: 'css', isPopular: false },
-  { id: 'zinc', name: 'Zinc', value: 'grayscale(90%) brightness(110%) contrast(110%) saturate(20%)', type: 'css', isPopular: false },
-  { id: 'vivid', name: 'Vivid', value: 'brightness(120%) contrast(120%) saturate(150%) hue-rotate(20deg)', type: 'css', isPopular: true },
-  { id: 'moody', name: 'Moody', value: 'brightness(90%) contrast(110%) saturate(90%) hue-rotate(-10deg)', type: 'css', isPopular: false },
-  { id: 'portrait', name: 'Portrait', value: 'brightness(110%) contrast(130%) saturate(120%) hue-rotate(5deg) blur(0.2px)', type: 'css', isPopular: false },
-  { id: 'alienígena', name: 'Alien', value: 'hue-rotate(120deg) saturate(200%) brightness(120%) contrast(150%)', type: 'css', isPopular: false },
-  { id: 'baya', name: 'Berry', value: 'hue-rotate(-20deg) saturate(160%) brightness(110%) contrast(130%)', type: 'css', isPopular: false },
-  { id: 'luz', name: 'Light', value: 'brightness(140%) contrast(110%) saturate(120%)', type: 'css', isPopular: false },
-  { id: 'cítrico', name: 'Citrus', value: 'hue-rotate(30deg) saturate(170%) brightness(115%) contrast(120%)', type: 'css', isPopular: false },
-  { id: 'disco', name: 'Disco', value: 'hue-rotate(180deg) saturate(200%) brightness(130%) contrast(140%)', type: 'css', isPopular: false },
-  { id: 'fuego', name: 'Fire', value: 'hue-rotate(-30deg) saturate(180%) brightness(120%) contrast(140%)', type: 'css', isPopular: false },
-  { id: 'ojo-de-pez', name: 'Fisheye', value: 'brightness(110%) contrast(130%) saturate(140%)', type: 'css', isPopular: false },
-  { id: 'glitch', name: 'Glitch', value: 'hue-rotate(90deg) saturate(300%) brightness(120%) contrast(200%)', type: 'css', isPopular: false },
-  { id: 'aureola', name: 'Halo', value: 'brightness(130%) contrast(90%) saturate(80%) blur(0.3px)', type: 'css', isPopular: false },
-  { id: 'lomo', name: 'Lomo', value: 'contrast(130%) brightness(110%) saturate(140%) sepia(20%)', type: 'css', isPopular: false },
-  { id: 'menta', name: 'Mint', value: 'hue-rotate(60deg) saturate(130%) brightness(115%) contrast(110%)', type: 'css', isPopular: false },
-  { id: 'neón', name: 'Neon', value: 'saturate(200%) brightness(130%) contrast(160%) hue-rotate(45deg)', type: 'css', isPopular: false },
-  { id: 'visión-nocturna', name: 'Night Vision', value: 'hue-rotate(80deg) saturate(300%) brightness(130%) contrast(150%)', type: 'css', isPopular: false },
-  { id: 'pop-art', name: 'Pop Art', value: 'contrast(200%) saturate(250%) brightness(110%)', type: 'css', isPopular: false },
-  { id: 'destello', name: 'Sparkle', value: 'brightness(140%) contrast(120%) saturate(150%)', type: 'css', isPopular: false },
-  { id: 'espectro', name: 'Spectrum', value: 'hue-rotate(270deg) saturate(200%) brightness(120%) contrast(140%)', type: 'css', isPopular: false },
-  { id: 'subacuático', name: 'Underwater', value: 'hue-rotate(180deg) saturate(150%) brightness(90%) contrast(120%)', type: 'css', isPopular: false },
-  { id: 'rayos-x', name: 'X-Ray Basic', value: 'invert(100%) contrast(200%) brightness(150%)', type: 'css', isPopular: false }
+  // Warm sunlight effect
+  { 
+    id: 'soleado', 
+    name: 'Sunny', 
+    value: 'brightness(120%) contrast(110%) saturate(130%) sepia(30%) hue-rotate(10deg)',
+    type: 'css',
+    isPopular: false
+  },
+  // Soft focus effect
+  { 
+    id: 'enfoqueSuave', 
+    name: 'Soft', 
+    value: 'brightness(105%) contrast(95%) blur(0.7px)',
+    type: 'css',
+    isPopular: true
+  },
+  // Pink effect
+  { 
+    id: 'rosa', 
+    name: 'Pink', 
+    value: 'brightness(105%) contrast(110%) saturate(130%) hue-rotate(-30deg)',
+    type: 'css',
+    isPopular: true
+  },
+  // Vintage blue tone
+  { 
+    id: 'retro', 
+    name: 'Retro', 
+    value: 'brightness(100%) contrast(120%) saturate(110%) hue-rotate(180deg) sepia(20%)',
+    type: 'css',
+    isPopular: false
+  },
+  // Cocoa tone
+  { 
+    id: 'cacao', 
+    name: 'Cocoa', 
+    value: 'sepia(60%) brightness(105%) contrast(110%) saturate(90%)',
+    type: 'css',
+    isPopular: false
+  },
+  // Professional filter
+  { 
+    id: 'proX', 
+    name: 'Pro', 
+    value: 'brightness(110%) contrast(115%) saturate(120%) hue-rotate(5deg)',
+    type: 'css',
+    isPopular: false
+  },
+  // Green filter
+  { 
+    id: 'envidia', 
+    name: 'Emerald', 
+    value: 'brightness(105%) contrast(110%) saturate(120%) hue-rotate(70deg)',
+    type: 'css',
+    isPopular: false
+  },
+  // Zinc gray effect
+  { 
+    id: 'zinc', 
+    name: 'Zinc', 
+    value: 'grayscale(90%) brightness(110%) contrast(110%) saturate(20%)',
+    type: 'css',
+    isPopular: false
+  },
+  // Vivid filter
+  { 
+    id: 'vivid', 
+    name: 'Vivid', 
+    value: 'brightness(120%) contrast(120%) saturate(150%) hue-rotate(20deg)',
+    type: 'css',
+    isPopular: true
+  },
+  // Moody filter
+  { 
+    id: 'moody', 
+    name: 'Moody', 
+    value: 'brightness(90%) contrast(110%) saturate(90%) hue-rotate(-10deg)',
+    type: 'css',
+    isPopular: false
+  },
+  // Portrait filter
+  { 
+    id: 'portrait', 
+    name: 'Portrait', 
+    value: 'brightness(110%) contrast(130%) saturate(120%) hue-rotate(5deg) blur(0.2px)',
+    type: 'css',
+    isPopular: false
+  },
+  // 更多类似 webcam toy 的滤镜效果
+  { 
+    id: 'alienígena', 
+    name: 'Alien', 
+    value: 'hue-rotate(120deg) saturate(200%) brightness(120%) contrast(150%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'baya', 
+    name: 'Berry', 
+    value: 'hue-rotate(-20deg) saturate(160%) brightness(110%) contrast(130%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'luz', 
+    name: 'Light', 
+    value: 'brightness(140%) contrast(110%) saturate(120%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'caricatura', 
+    name: 'Cartoon', 
+    value: 'contrast(150%) saturate(180%) brightness(110%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'cítrico', 
+    name: 'Citrus', 
+    value: 'hue-rotate(30deg) saturate(170%) brightness(115%) contrast(120%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'disco', 
+    name: 'Disco', 
+    value: 'hue-rotate(180deg) saturate(200%) brightness(130%) contrast(140%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'fuego', 
+    name: 'Fire', 
+    value: 'hue-rotate(-30deg) saturate(180%) brightness(120%) contrast(140%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'ojo-de-pez', 
+    name: 'Fisheye', 
+    value: 'brightness(110%) contrast(130%) saturate(140%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'glitch', 
+    name: 'Glitch', 
+    value: 'hue-rotate(90deg) saturate(300%) brightness(120%) contrast(200%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'aureola', 
+    name: 'Halo', 
+    value: 'brightness(130%) contrast(90%) saturate(80%) blur(0.3px)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'lomo', 
+    name: 'Lomo', 
+    value: 'contrast(130%) brightness(110%) saturate(140%) sepia(20%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'menta', 
+    name: 'Mint', 
+    value: 'hue-rotate(60deg) saturate(130%) brightness(115%) contrast(110%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'neón', 
+    name: 'Neon', 
+    value: 'saturate(200%) brightness(130%) contrast(160%) hue-rotate(45deg)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'visión-nocturna', 
+    name: 'Night Vision', 
+    value: 'hue-rotate(80deg) saturate(300%) brightness(130%) contrast(150%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'pop-art', 
+    name: 'Pop Art', 
+    value: 'contrast(200%) saturate(250%) brightness(110%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'destello', 
+    name: 'Sparkle', 
+    value: 'brightness(140%) contrast(120%) saturate(150%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'espectro', 
+    name: 'Spectrum', 
+    value: 'hue-rotate(270deg) saturate(200%) brightness(120%) contrast(140%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'termal', 
+    name: 'Thermal', 
+    value: 'hue-rotate(200deg) saturate(300%) brightness(110%) contrast(180%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'subacuático', 
+    name: 'Underwater', 
+    value: 'hue-rotate(180deg) saturate(150%) brightness(90%) contrast(120%)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'acuarela', 
+    name: 'Watercolor', 
+    value: 'contrast(90%) saturate(120%) brightness(110%) blur(0.4px)',
+    type: 'css',
+    isPopular: false
+  },
+  { 
+    id: 'rayos-x', 
+    name: 'X-Ray', 
+    value: 'invert(100%) contrast(200%) brightness(150%)',
+    type: 'css',
+    isPopular: false
+  }
 ];
 
-// 分类获取滤镜
-const getFiltersByCategory = (category) => {
-  return BASE_FILTERS.filter(filter => filter.category === category);
-};
-
-// 获取所有分类
-const getCategories = () => {
-  const categories = [...new Set(BASE_FILTERS.map(filter => filter.category).filter(Boolean))];
-  return categories;
-};
-
-// 获取常用滤镜 - 女生最爱的滤镜
+// 获取常用滤镜 - 女生最爱的4个
 const getPopularFilters = () => BASE_FILTERS.filter(filter => filter.isPopular);
 
-// 获取其他滤镜
+// 获取其他滤镜 - 除了常用的其他滤镜
 const getOtherFilters = () => BASE_FILTERS.filter(filter => !filter.isPopular);
 
 // 实际显示的滤镜列表（添加了随机滤镜）
@@ -389,53 +364,47 @@ const getFilterById = (filterId) => {
 
 // 随机选择滤镜（不包括 none 和 random）
 const getRandomFilter = () => {
+  // 过滤掉 none 滤镜和 random 滤镜
   const filterPool = BASE_FILTERS.filter(filter => filter.id !== 'none');
   const randomIndex = Math.floor(Math.random() * filterPool.length);
   return filterPool[randomIndex];
 };
 
-// 保留原有的组件代码...
-// FilterPreviewOverlay 组件保持不变
+// 滤镜预览覆盖层组件 - 导出供外部使用
 const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, videoRef }) => {
-  // ... 原有代码保持不变
   const previewVideoRefs = useRef({});
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [allOtherFilters, setAllOtherFilters] = useState([]);
-  const [filterCategory, setFilterCategory] = useState('all'); // 新增分类状态
 
   // 初始化其他滤镜列表
   useEffect(() => {
-    let filters;
-    if (filterCategory === 'all') {
-      filters = getOtherFilters();
-    } else {
-      filters = getFiltersByCategory(filterCategory);
-    }
-    setAllOtherFilters(filters);
-    setCurrentPage(0); // 切换分类时重置页码
-  }, [filterCategory]);
+    const otherFilters = getOtherFilters();
+    setAllOtherFilters(otherFilters);
+  }, []);
 
-  // 选择要展示的滤镜 - 永远最多9个，不重复
+  // 选择要展示的 9 个滤镜
   useEffect(() => {
     if (isOpen && allOtherFilters.length > 0) {
       const startIndex = currentPage * 9;
       const endIndex = startIndex + 9;
       const pageFilters = allOtherFilters.slice(startIndex, endIndex);
       
-      console.log(`Filter selection: page ${currentPage + 1}, showing ${pageFilters.length} filters out of ${allOtherFilters.length} total (max 9 per page)`);
+      // 如果当前页不足9个，用之前的滤镜补齐
+      while (pageFilters.length < 9 && allOtherFilters.length > 0) {
+        const remainingIndex = pageFilters.length + startIndex - allOtherFilters.length;
+        if (remainingIndex >= 0) {
+          pageFilters.push(allOtherFilters[remainingIndex % allOtherFilters.length]);
+        } else {
+          break;
+        }
+      }
       
-      // 确保最多只显示9个滤镜，不进行重复填充
-      // 如果滤镜数量不足9个，就显示实际数量
       setSelectedFilters(pageFilters);
-    } else {
-      console.log('No filters available or overlay closed');
-      // 如果没有滤镜，设置为空数组
-      setSelectedFilters([]);
     }
   }, [isOpen, currentPage, allOtherFilters]);
 
-  const totalPages = Math.max(1, Math.ceil(allOtherFilters.length / 9));
+  const totalPages = Math.ceil(allOtherFilters.length / 9);
 
   const goToPrevPage = () => {
     setCurrentPage(prev => prev === 0 ? totalPages - 1 : prev - 1);
@@ -456,11 +425,11 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
       bottom: 0,
       background: 'linear-gradient(135deg, rgba(254, 254, 255, 0.98), rgba(248, 187, 217, 0.95), rgba(252, 228, 236, 0.98))',
       backdropFilter: 'blur(20px)',
-      zIndex: 99999,
+      zIndex: 99999, // 提高层级确保在最顶层
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: 'center', // 垂直居中
+      alignItems: 'center', // 水平居中
       padding: '0',
       boxSizing: 'border-box',
       overflow: 'hidden'
@@ -489,39 +458,6 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text'
         }}>Choose Your Filter</h2>
-        
-        {/* 分类选择器 */}
-        <div className="filter-category-selector" style={{
-          display: 'flex',
-          gap: '8px',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            style={{
-              background: 'rgba(248, 187, 217, 0.2)',
-              border: '2px solid rgba(248, 187, 217, 0.3)',
-              borderRadius: '8px',
-              padding: '8px 12px',
-              color: '#5D4E75',
-              fontSize: '14px',
-              cursor: 'pointer',
-              outline: 'none'
-            }}
-          >
-            <option value="all">All Filters</option>
-            <option value="artistic">Artistic</option>
-            <option value="vintage">Vintage</option>
-            <option value="modern">Modern</option>
-            <option value="special">Special Effects</option>
-            <option value="monochrome">Black & White</option>
-            <option value="duotone">Duotone</option>
-            <option value="retro">Retro</option>
-          </select>
-        </div>
-        
         <button
           onClick={onClose}
           className="filter-preview-close"
@@ -570,42 +506,20 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
         backdropFilter: 'blur(10px)',
         boxShadow: '0 8px 32px rgba(248, 187, 217, 0.2)'
       }}>
-        {/* 滤镜网格 - 自适应布局，最多9个，始终居中 */}
+        {/* 3x3 滤镜网格 */}
         <div className="filter-preview-grid" style={{
           display: 'grid',
-          gridTemplateColumns: selectedFilters.length <= 3 ? `repeat(${selectedFilters.length}, 1fr)` : 'repeat(3, 1fr)',
-          gridTemplateRows: selectedFilters.length <= 3 ? '1fr' : 
-                           selectedFilters.length <= 6 ? 'repeat(2, 1fr)' : 
-                           'repeat(3, 1fr)',
-          gap: '16px',
-          padding: '24px',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gridTemplateRows: 'repeat(3, 1fr)',
+          gap: '16px', // 固定间距
+          padding: '24px', // 增加内边距
           overflow: 'hidden',
           width: '100%',
-          maxWidth: '900px',
+          maxWidth: '900px', // 限制网格最大宽度
           alignItems: 'center',
-          justifyItems: 'center',
-          minHeight: selectedFilters.length <= 3 ? '200px' : 
-                    selectedFilters.length <= 6 ? '400px' : '600px',
-          /* 确保网格内容始终居中 */
-          placeContent: 'center',
-          margin: '0 auto'
+          justifyItems: 'center'
         }}>
-        {selectedFilters.length === 0 ? (
-          // 空状态提示
-          <div style={{
-            gridColumn: '1 / -1',
-            textAlign: 'center',
-            padding: '40px',
-            color: '#8E7A9B',
-            fontSize: '16px'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎨</div>
-            <div>No filters available in this category</div>
-            <div style={{ fontSize: '14px', marginTop: '8px', opacity: 0.7 }}>
-              Try selecting a different category
-            </div>
-          </div>
-        ) : selectedFilters.map((filter, index) => {
+        {selectedFilters.map((filter, index) => {
           const isSelected = activeFilter === filter.value;
           
           return (
@@ -621,16 +535,16 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
                 overflow: 'hidden',
                 cursor: 'pointer',
                 border: isSelected ? '3px solid #F8BBD9' : '2px solid rgba(255, 255, 255, 0.3)',
-                borderRadius: '16px',
+                borderRadius: '16px', // 增加圆角
                 boxShadow: isSelected 
                   ? '0 8px 32px rgba(248, 187, 217, 0.6), inset 0 0 20px rgba(248, 187, 217, 0.2)' 
                   : '0 6px 24px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2)',
                 transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                 transform: isSelected ? 'scale(0.98)' : 'scale(1)',
                 background: 'rgba(0, 0, 0, 0.3)',
-                aspectRatio: '4/3',
+                aspectRatio: '4/3', // 确保4:3比例
                 width: '100%',
-                maxWidth: '280px',
+                maxWidth: '280px', // 限制最大宽度
                 height: 'auto',
                 backdropFilter: 'blur(4px)'
               }}
@@ -649,10 +563,11 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
                 }
               }}
             >
-              {/* 实时视频预览 */}
+              {/* 实时视频预览 - 4:3尺寸 */}
               <video
                 ref={(el) => {
                   if (el && videoRef?.current) {
+                    // 克隆主视频流到预览视频
                     el.srcObject = videoRef.current.srcObject;
                     el.play().catch(() => {});
                   }
@@ -664,9 +579,9 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
                   width: '100%',
                   height: '100%',
                   objectFit: 'cover',
-                  aspectRatio: '4/3',
-                  transform: 'scaleX(-1)',
-                  borderRadius: '8px',
+                  aspectRatio: '4/3', // 强制4:3比例
+                  transform: 'scaleX(-1)', // 镜像效果
+                  borderRadius: '8px', // 内容圆角稍小
                   filter: (() => {
                     if (filter.type === 'css' && filter.value !== 'none') {
                       return filter.value;
@@ -690,13 +605,13 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
                 pointerEvents: 'none'
               }} />
 
-              {/* 滤镜名称覆盖层 */}
+                            {/* 滤镜名称覆盖层 */}
               <div className="filter-preview-name" style={{
                 position: 'absolute',
                 bottom: 0,
                 left: 0,
                 right: 0,
-                background: 'transparent',
+                background: 'transparent', // 移除背景，使用渐变遮罩
                 color: 'white',
                 padding: '8px 6px',
                 textAlign: 'center',
@@ -711,7 +626,7 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
                 }}>
                   {filter.name}
                 </div>
-              </div>
+                </div>
 
               {/* 选中指示器 */}
               {isSelected && (
@@ -735,6 +650,7 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
                   }}>
                     ✓
                   </div>
+                  {/* 选中边框动画 */}
                   <div style={{
                     position: 'absolute',
                     top: '0',
@@ -779,7 +695,7 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
         background: 'rgba(248, 187, 217, 0.1)',
         backdropFilter: 'blur(10px)',
         display: 'flex',
-        justifyContent: totalPages > 1 ? 'space-between' : 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
         maxWidth: '1200px',
@@ -788,39 +704,37 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
         borderTop: 'none',
         marginTop: '-1px'
       }}>
-        {/* 左箭头 - 只在多页时显示 */}
-        {totalPages > 1 && (
-          <button
-            onClick={goToPrevPage}
-            style={{
-              background: 'linear-gradient(135deg, #F8BBD9, #E8B4CB)',
-              border: '2px solid rgba(248, 187, 217, 0.3)',
-              borderRadius: '50%',
-              width: '50px',
-              height: '50px',
-              color: '#5D4E75',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 12px rgba(248, 187, 217, 0.3)'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #E8B4CB, #D197B8)';
-              e.target.style.transform = 'scale(1.1)';
-              e.target.style.boxShadow = '0 6px 16px rgba(248, 187, 217, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #F8BBD9, #E8B4CB)';
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 4px 12px rgba(248, 187, 217, 0.3)';
-            }}
-          >
-            ←
-          </button>
-        )}
+        {/* 左箭头 */}
+        <button
+          onClick={goToPrevPage}
+          style={{
+            background: 'linear-gradient(135deg, #F8BBD9, #E8B4CB)',
+            border: '2px solid rgba(248, 187, 217, 0.3)',
+            borderRadius: '50%',
+            width: '50px',
+            height: '50px',
+            color: '#5D4E75',
+            fontSize: '20px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(248, 187, 217, 0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'linear-gradient(135deg, #E8B4CB, #D197B8)';
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 16px rgba(248, 187, 217, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'linear-gradient(135deg, #F8BBD9, #E8B4CB)';
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 12px rgba(248, 187, 217, 0.3)';
+          }}
+        >
+          ←
+        </button>
 
         {/* 页面指示器和提示文字 */}
         <div style={{
@@ -829,46 +743,44 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
           fontSize: '14px'
         }}>
           <div style={{ marginBottom: '5px', fontWeight: '500' }}>
-            {selectedFilters.length === 0 ? 'No filters to display' : 'Tap any filter to apply it instantly'}
+            Tap any filter to apply it instantly
           </div>
           <div style={{ fontSize: '12px', opacity: 0.7, color: '#8E7A9B' }}>
-            {totalPages > 1 ? `Page ${currentPage + 1} of ${totalPages} • ` : ''}{allOtherFilters.length} filters{selectedFilters.length > 0 && selectedFilters.length < 9 ? ` (${selectedFilters.length} shown)` : ''}
+            Page {currentPage + 1} of {totalPages}
           </div>
         </div>
 
-        {/* 右箭头 - 只在多页时显示 */}
-        {totalPages > 1 && (
-          <button
-            onClick={goToNextPage}
-            style={{
-              background: 'linear-gradient(135deg, #F8BBD9, #E8B4CB)',
-              border: '2px solid rgba(248, 187, 217, 0.3)',
-              borderRadius: '50%',
-              width: '50px',
-              height: '50px',
-              color: '#5D4E75',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 12px rgba(248, 187, 217, 0.3)'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #E8B4CB, #D197B8)';
-              e.target.style.transform = 'scale(1.1)';
-              e.target.style.boxShadow = '0 6px 16px rgba(248, 187, 217, 0.4)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'linear-gradient(135deg, #F8BBD9, #E8B4CB)';
-              e.target.style.transform = 'scale(1)';
-              e.target.style.boxShadow = '0 4px 12px rgba(248, 187, 217, 0.3)';
-            }}
-          >
-            →
-          </button>
-        )}
+        {/* 右箭头 */}
+        <button
+          onClick={goToNextPage}
+          style={{
+            background: 'linear-gradient(135deg, #F8BBD9, #E8B4CB)',
+            border: '2px solid rgba(248, 187, 217, 0.3)',
+            borderRadius: '50%',
+            width: '50px',
+            height: '50px',
+            color: '#5D4E75',
+            fontSize: '20px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 12px rgba(248, 187, 217, 0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = 'linear-gradient(135deg, #E8B4CB, #D197B8)';
+            e.target.style.transform = 'scale(1.1)';
+            e.target.style.boxShadow = '0 6px 16px rgba(248, 187, 217, 0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'linear-gradient(135deg, #F8BBD9, #E8B4CB)';
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 4px 12px rgba(248, 187, 217, 0.3)';
+          }}
+        >
+          →
+        </button>
       </div>
 
       <style>
@@ -891,58 +803,75 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
           /* 移动端优化 */
           @media (max-width: 768px) {
             .filter-preview-overlay {
-              padding: 8px !important;
+              padding: 10px !important;
             }
             
             .filter-preview-grid {
               gap: 12px !important;
               padding: 16px !important;
               max-width: 95vw !important;
-              justify-items: center !important;
-              align-items: center !important;
-              /* 移动端保持居中布局，适当调整间距 */
-              grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
-              grid-auto-rows: auto !important;
-              min-height: auto !important;
             }
             
             .filter-preview-item {
               border-radius: 12px !important;
-              max-width: 140px !important;
-              width: 100% !important;
-              aspect-ratio: 4/3 !important;
-              /* 确保视频流居中显示 */
-              margin: 0 auto !important;
+              max-width: none !important;
             }
             
             .filter-preview-header {
-              padding: 12px 16px !important;
+              padding: 15px 20px !important;
               border-radius: 12px 12px 0 0 !important;
-              flex-direction: column !important;
-              gap: 12px !important;
             }
             
             .filter-preview-header h2 {
-              font-size: 20px !important;
-              margin: 0 !important;
+              font-size: 22px !important;
             }
             
             .filter-preview-close {
-              width: 36px !important;
-              height: 36px !important;
-              font-size: 18px !important;
-              position: absolute !important;
-              top: 12px !important;
-              right: 12px !important;
+              width: 40px !important;
+              height: 40px !important;
+              font-size: 20px !important;
+            }
+            
+            .filter-preview-name {
+              font-size: 11px !important;
+              padding: 6px 4px !important;
+            }
+            
+            .filter-preview-enhanced {
+              font-size: 10px !important;
+            }
+            
+            .filter-preview-selected {
+              width: 28px !important;
+              height: 28px !important;
+              font-size: 14px !important;
+              top: 8px !important;
+              right: 8px !important;
+            }
+          }
+          
+          @media (max-width: 480px) {
+            .filter-preview-overlay {
+              padding: 8px !important;
+            }
+            
+            .filter-preview-grid {
+              gap: 10px !important;
+              padding: 14px !important;
+              max-width: 98vw !important;
+            }
+            
+            .filter-preview-item {
+              border-radius: 10px !important;
             }
             
             .filter-preview-name {
               font-size: 10px !important;
-              padding: 4px 2px !important;
+              padding: 6px 4px !important;
             }
             
             .filter-preview-enhanced {
-              font-size: 8px !important;
+              font-size: 9px !important;
             }
             
             .filter-preview-selected {
@@ -953,139 +882,19 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
               right: 6px !important;
             }
             
-            /* 移动端分类选择器优化 */
-            .filter-category-selector {
-              width: 100% !important;
-              justify-content: center !important;
-            }
-            
-            .filter-preview-header select {
-              font-size: 12px !important;
-              padding: 6px 8px !important;
-              width: auto !important;
-              max-width: 200px !important;
-              min-width: 150px !important;
-            }
-          }
-          
-          @media (max-width: 480px) {
-            .filter-preview-overlay {
-              padding: 6px !important;
-            }
-            
-            .filter-preview-grid {
-              gap: 8px !important;
-              padding: 12px !important;
-              max-width: 98vw !important;
-              /* 小屏幕保持居中，使用更紧凑的布局 */
-              grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
-              justify-items: center !important;
-              align-items: center !important;
-            }
-            
-            .filter-preview-item {
-              border-radius: 10px !important;
-              max-width: 110px !important;
-              width: 100% !important;
-              /* 确保小屏幕视频流居中 */
-              margin: 0 auto !important;
-            }
-            
-            .filter-preview-name {
-              font-size: 9px !important;
-              padding: 3px 2px !important;
-              line-height: 1.2 !important;
-            }
-            
-            .filter-preview-enhanced {
-              font-size: 8px !important;
-            }
-            
-            .filter-preview-selected {
-              width: 20px !important;
-              height: 20px !important;
-              font-size: 10px !important;
-              top: 4px !important;
-              right: 4px !important;
-            }
-            
             .filter-preview-header {
-              padding: 10px 12px !important;
+              padding: 12px 16px !important;
               border-radius: 10px 10px 0 0 !important;
-              position: relative !important;
             }
             
             .filter-preview-header h2 {
-              font-size: 18px !important;
-              text-align: center !important;
-              padding-right: 40px !important;
+              font-size: 20px !important;
             }
             
             .filter-preview-close {
-              width: 32px !important;
-              height: 32px !important;
-              font-size: 16px !important;
-              position: absolute !important;
-              top: 8px !important;
-              right: 8px !important;
-            }
-            
-            /* 小屏幕分类选择器 */
-            .filter-category-selector {
-              width: 100% !important;
-              justify-content: center !important;
-              margin-top: 8px !important;
-            }
-            
-            .filter-preview-header select {
-              font-size: 11px !important;
-              padding: 4px 6px !important;
-              width: auto !important;
-              min-width: 120px !important;
-            }
-            
-            /* 小屏幕底部导航优化 */
-            .filter-preview-overlay > div:last-child {
-              padding: 12px 16px !important;
-            }
-            
-            .filter-preview-overlay button {
               width: 36px !important;
               height: 36px !important;
-              font-size: 16px !important;
-            }
-          }
-          
-          /* 超小屏幕优化 (320px以下) */
-          @media (max-width: 320px) {
-            .filter-preview-grid {
-              gap: 6px !important;
-              padding: 8px !important;
-              /* 超小屏幕使用2列布局确保居中 */
-              grid-template-columns: repeat(2, 1fr) !important;
-              justify-items: center !important;
-              align-items: center !important;
-            }
-            
-            .filter-preview-item {
-              max-width: 90px !important;
-              border-radius: 8px !important;
-              /* 确保超小屏幕视频流完全居中 */
-              margin: 0 auto !important;
-            }
-            
-            .filter-preview-name {
-              font-size: 8px !important;
-              padding: 2px 1px !important;
-            }
-            
-            .filter-preview-header h2 {
-              font-size: 16px !important;
-            }
-            
-            .filter-preview-header select {
-              font-size: 10px !important;
-              padding: 3px 4px !important;
+              font-size: 18px !important;
             }
           }
         `}
@@ -1094,7 +903,7 @@ const FilterPreviewOverlay = ({ isOpen, onClose, activeFilter, onFilterChange, v
   );
 };
 
-// FilterSelector 组件保持原样...
+// 滤镜选择器组件 - 移除内部的FilterPreviewOverlay
 const FilterSelector = ({ activeFilter, onFilterChange, theme, onShowMoreFilters }) => {
   const [isRollingDice, setIsRollingDice] = useState(false);
   const [diceValue, setDiceValue] = useState('⚀');
@@ -1102,13 +911,15 @@ const FilterSelector = ({ activeFilter, onFilterChange, theme, onShowMoreFilters
   
   // 骰子动画效果
   const rollDice = () => {
+    // 骰子面
     const diceValues = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
     setIsRollingDice(true);
     
     let rollCount = 0;
-    const maxRolls = 10;
+    const maxRolls = 10; // 滚动次数
     
     const rollInterval = setInterval(() => {
+      // 随机选择一个骰子面
       const randomIndex = Math.floor(Math.random() * diceValues.length);
       setDiceValue(diceValues[randomIndex]);
       
@@ -1117,22 +928,25 @@ const FilterSelector = ({ activeFilter, onFilterChange, theme, onShowMoreFilters
         clearInterval(rollInterval);
         setIsRollingDice(false);
         
+        // 选择一个随机滤镜
         const randomFilter = getRandomFilter();
         onFilterChange(randomFilter.value, randomFilter);
       }
-    }, 100);
+    }, 100); // 每100毫秒切换一次骰子
   };
 
   // 处理滤镜改变
   const handleFilterChange = (filterValue, filterOption) => {
+    // 如果选择了随机滤镜
     if (filterOption && filterOption.id === 'random') {
       rollDice();
     } else {
+      // 应用选定的滤镜
       onFilterChange(filterValue, filterOption);
     }
   };
 
-  // 获取要显示的滤镜列表
+  // 获取要显示的滤镜列表（女生最爱的4个 + Random）
   const popularFilters = [
     { id: 'random', name: 'Random', value: 'random', isSpecial: true },
     ...getPopularFilters()
@@ -1168,10 +982,10 @@ const FilterSelector = ({ activeFilter, onFilterChange, theme, onShowMoreFilters
         {`
           @media (max-width: 768px) {
             .filter-button {
-              flex-basis: calc(50% - 20px);
-              margin: 4px !important;
-              padding: 8px 5px !important;
-              font-size: 13px !important;
+              flex-basis: calc(50% - 20px); /* Adjust based on gap and desired spacing */
+              margin: 4px !important; /* Reduce margin for tighter fit */
+              padding: 8px 5px !important; /* Adjust padding if needed */
+              font-size: 13px !important; /* Slightly smaller font for mobile */
               text-align: center;
             }
           }
@@ -1410,20 +1224,11 @@ const FilterSelector = ({ activeFilter, onFilterChange, theme, onShowMoreFilters
             position: 'relative'
           }}
         >
-          🌈 More Filters ({getOtherFilters().length}+)
+          🌈 More Filters
         </button>
       </div>
     </div>
   );
 };
 
-export { 
-  FilterSelector, 
-  FilterPreviewOverlay, 
-  FILTERS, 
-  getAllFilters, 
-  getFilterById, 
-  getRandomFilter,
-  getFiltersByCategory,
-  getCategories 
-};
+export { FilterSelector, FilterPreviewOverlay, FILTERS, getAllFilters, getFilterById, getRandomFilter };
