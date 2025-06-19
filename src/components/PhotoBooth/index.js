@@ -6,6 +6,7 @@ import useCameraControl from "./CameraControl";
 import { FilterSelector, FilterPreviewOverlay, getFilterById } from "./FilterModule";
 import AdvancedSettings from "./UI/AdvancedSettings";
 import { themeColors, animationStyles, navigationBarUtils } from "./styles";
+import FrameService from "../../services/frameService";
 
 // 本地存储工具函数
 const STORAGE_KEYS = {
@@ -60,8 +61,13 @@ const PhotoBooth = ({ setCapturedImages }) => {
         location.state?.frameType || localStorage.getItem("selectedFrame") || "none"
     );
     const [showAllFilters, setShowAllFilters] = useState(false);
+    
+    // Frame预览相关状态 - 独立于拍摄和合成流程
+    const [previewFrameDrawFunction, setPreviewFrameDrawFunction] = useState(null);
+    const [isLoadingPreviewFrame, setIsLoadingPreviewFrame] = useState(false);
+    const frameOverlayCanvasRef = useRef(null);
 
-    // 使用相机控制钩子
+    // 使用相机控制钩子 - 拍摄功能保持独立，不受frame预览影响
     const {
         videoRef,
         canvasRef,
@@ -117,6 +123,192 @@ const PhotoBooth = ({ setCapturedImages }) => {
             setFilterObject(newFilterObject);
         }
     }, [filter]);
+
+    // 加载选中的 frame 预览绘制函数 - 仅用于实时预览，不影响拍摄和合成
+    useEffect(() => {
+        const loadPreviewFrameFunction = async () => {
+            if (frameType && frameType !== 'none') {
+                setIsLoadingPreviewFrame(true);
+                try {
+                    if (frameType === 'generated') {
+                        // 处理生成的 frame 预览
+                        const generatedFrameData = localStorage.getItem('generatedFrame');
+                        if (generatedFrameData) {
+                            const frameData = JSON.parse(generatedFrameData);
+                            const drawFunction = FrameService.createPreviewFrameFunction(frameData.code);
+                            setPreviewFrameDrawFunction(() => drawFunction);
+                        }
+                    } else {
+                        // 处理预定义的 frame 预览
+                        const drawFunction = await FrameService.getPreviewFrameDrawFunction(frameType);
+                        setPreviewFrameDrawFunction(() => drawFunction);
+                    }
+                } catch (error) {
+                    console.error('Failed to load preview frame function:', error);
+                    setPreviewFrameDrawFunction(null);
+                } finally {
+                    setIsLoadingPreviewFrame(false);
+                }
+            } else {
+                setPreviewFrameDrawFunction(null);
+                setIsLoadingPreviewFrame(false);
+            }
+        };
+
+        loadPreviewFrameFunction();
+    }, [frameType]);
+
+    // 绘制 frame 预览叠加层的函数 - 仅用于预览，不影响拍摄
+    const drawPreviewFrameOverlay = async () => {
+        if (!frameOverlayCanvasRef.current || !previewFrameDrawFunction || !videoRef.current) return;
+        
+        const canvas = frameOverlayCanvasRef.current;
+        const video = videoRef.current;
+        const ctx = canvas.getContext('2d');
+        
+        // 获取视频的实际显示尺寸（考虑CSS样式和容器限制）
+        const videoRect = video.getBoundingClientRect();
+        const canvasRect = canvas.getBoundingClientRect();
+        
+        // 使用标准的4:3比例，确保一致性
+        const aspectRatio = 4 / 3;
+        let canvasWidth = 640;
+        let canvasHeight = 480;
+        
+        // 如果视频已经加载，使用视频的原始尺寸但保持4:3比例
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+            const videoAspectRatio = video.videoWidth / video.videoHeight;
+            
+            if (videoAspectRatio > aspectRatio) {
+                // 视频太宽，以高度为准
+                canvasHeight = video.videoHeight;
+                canvasWidth = Math.round(canvasHeight * aspectRatio);
+            } else {
+                // 视频太高，以宽度为准
+                canvasWidth = video.videoWidth;
+                canvasHeight = Math.round(canvasWidth / aspectRatio);
+            }
+        }
+        
+        // 设置画布的内部尺寸（实际像素）
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        
+        // 清除画布
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // 绘制预览frame - 注意这只是预览，不影响实际拍摄
+        try {
+            await previewFrameDrawFunction(ctx, 0, 0, canvas.width, canvas.height);
+        } catch (error) {
+            console.error('Error drawing preview frame overlay:', error);
+        }
+    };
+
+    // 调整Frame叠加层位置以精确匹配视频
+    const adjustFrameOverlayPosition = () => {
+        if (!frameOverlayCanvasRef.current || !videoRef.current) return;
+        
+        const canvas = frameOverlayCanvasRef.current;
+        const video = videoRef.current;
+        
+        // 获取视频的实际显示尺寸和位置
+        const videoRect = video.getBoundingClientRect();
+        const containerRect = video.parentElement.getBoundingClientRect();
+        
+        // 计算视频在容器中的实际位置（考虑object-fit和aspect-ratio）
+        const videoAspectRatio = video.videoWidth / video.videoHeight || 4/3;
+        const containerAspectRatio = containerRect.width / containerRect.height;
+        
+        let displayWidth, displayHeight, offsetX = 0, offsetY = 0;
+        
+        if (containerAspectRatio > videoAspectRatio) {
+            // 容器比视频宽，视频会有左右边距
+            displayHeight = containerRect.height;
+            displayWidth = displayHeight * videoAspectRatio;
+            offsetX = (containerRect.width - displayWidth) / 2;
+        } else {
+            // 容器比视频高，视频会有上下边距
+            displayWidth = containerRect.width;
+            displayHeight = displayWidth / videoAspectRatio;
+            offsetY = (containerRect.height - displayHeight) / 2;
+        }
+        
+        // 设置Canvas样式以精确匹配视频显示区域
+        Object.assign(canvas.style, {
+            position: "absolute",
+            left: `${offsetX}px`,
+            top: `${offsetY}px`,
+            width: `${displayWidth}px`,
+            height: `${displayHeight}px`,
+            transform: "scaleX(-1)", // 保持镜像效果
+            transformOrigin: "center center"
+        });
+    };
+
+    // 当视频加载完成时开始绘制 frame 预览叠加层 - 仅预览用，不影响拍摄
+    useEffect(() => {
+        if (videoRef.current && previewFrameDrawFunction) {
+            const video = videoRef.current;
+            
+            const handleLoadedMetadata = async () => {
+                adjustFrameOverlayPosition();
+                await drawPreviewFrameOverlay();
+            };
+            
+            const handleResize = async () => {
+                adjustFrameOverlayPosition();
+                await drawPreviewFrameOverlay();
+            };
+            
+            const handleTimeUpdate = async () => {
+                // 每秒更新一次 frame 预览叠加层（降低性能开销）
+                if (Math.floor(video.currentTime) % 1 === 0) {
+                    await drawPreviewFrameOverlay();
+                }
+            };
+            
+            // 使用 ResizeObserver 来监视视频元素的尺寸变化
+            let resizeObserver;
+            if (window.ResizeObserver) {
+                resizeObserver = new ResizeObserver(async (entries) => {
+                    for (const entry of entries) {
+                        if (entry.target === video) {
+                            adjustFrameOverlayPosition();
+                            await drawPreviewFrameOverlay();
+                        }
+                    }
+                });
+                resizeObserver.observe(video);
+            }
+            
+            video.addEventListener('loadedmetadata', handleLoadedMetadata);
+            video.addEventListener('timeupdate', handleTimeUpdate);
+            window.addEventListener('resize', handleResize);
+            
+            // 立即调整位置并绘制预览
+            const initialSetup = async () => {
+                adjustFrameOverlayPosition();
+                if (video.videoWidth > 0) {
+                    await drawPreviewFrameOverlay();
+                }
+            };
+            
+            // 尝试多次初始化，确保视频完全加载
+            setTimeout(initialSetup, 100);
+            setTimeout(initialSetup, 300);
+            setTimeout(initialSetup, 500);
+            
+            return () => {
+                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+                video.removeEventListener('timeupdate', handleTimeUpdate);
+                window.removeEventListener('resize', handleResize);
+                if (resizeObserver) {
+                    resizeObserver.disconnect();
+                }
+            };
+        }
+    }, [previewFrameDrawFunction]);
 
     // 组件挂载/更新时更新导航栏颜色
     useEffect(() => {
@@ -475,6 +667,51 @@ const PhotoBooth = ({ setCapturedImages }) => {
                          opacity: 0.7;
                      }
                  }
+                 
+                 /* Frame预览相关动画 */
+                 @keyframes fadeIn {
+                     from { opacity: 0; transform: translateY(-10px); }
+                     to { opacity: 1; transform: translateY(0); }
+                 }
+                 
+                 @keyframes frameLoad {
+                     0% { opacity: 0; transform: scale(0.9); }
+                     100% { opacity: 0.7; transform: scale(1); }
+                 }
+                 
+                 .frame-overlay-canvas {
+                     animation: frameLoad 0.5s ease-out;
+                 }
+                 
+                 /* 相机容器定位修复 */
+                 .camera-container {
+                     display: flex;
+                     justify-content: center;
+                     align-items: center;
+                 }
+                 
+                 .video-feed {
+                     display: block;
+                 }
+                 
+                 /* 确保Frame叠加层与视频精确对齐 */
+                 @media (max-width: 768px) {
+                     .camera-container {
+                         max-width: 100%;
+                         padding: 0 10px;
+                     }
+                     
+                     .video-feed {
+                         width: 100%;
+                         max-width: none;
+                     }
+                 }
+                 
+                 @media (min-width: 769px) {
+                     .camera-container {
+                         max-width: 640px;
+                     }
+                 }
                 `}
             </style>
             <div className={`photo-booth ${capturing ? 'capturing' : ''}`} style={{
@@ -595,6 +832,41 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 transform: "scaleX(-1)" // 镜像效果
                             }}
                         />
+                        
+                        {/* Frame 预览叠加层 - 仅用于视觉预览，不影响实际拍摄和合成 */}
+                        {frameType && frameType !== 'none' && (
+                            <canvas
+                                ref={frameOverlayCanvasRef}
+                                className="frame-overlay-canvas"
+                                style={{
+                                    position: "absolute",
+                                    borderRadius: "12px",
+                                    pointerEvents: "none",
+                                    zIndex: 3,
+                                    opacity: isLoadingPreviewFrame ? 0.3 : 0.7,
+                                    boxSizing: "border-box"
+                                }}
+                            />
+                        )}
+                        
+                        {/* Frame 预览加载指示器 */}
+                        {isLoadingPreviewFrame && (
+                            <div style={{
+                                position: "absolute",
+                                top: "10px",
+                                right: "10px",
+                                background: "rgba(0, 0, 0, 0.7)",
+                                color: "white",
+                                padding: "5px 10px",
+                                borderRadius: "15px",
+                                fontSize: "12px",
+                                zIndex: 4,
+                                animation: "fadeIn 0.3s ease-out"
+                            }}>
+                                🎨 Loading frame preview...
+                            </div>
+                        )}
+                        
                         <canvas ref={canvasRef} className="hidden" style={{ display: 'none' }} />
 
                         {/* 倒计时显示 - 透明背景 */}
@@ -739,7 +1011,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                     </button>
 
                     {/* 滤镜选择器 */}
-                    {/* 滤镜选择器区域，调整为更宽松的布局 */}
+                    {/* 滤镜与Frame选择器区域 */}
                     <div className="filters-section elegant-card" style={{
                         marginTop: "32px",
                         background: "rgba(248, 187, 217, 0.05)",
@@ -750,6 +1022,70 @@ const PhotoBooth = ({ setCapturedImages }) => {
                         backdropFilter: "blur(10px)",
                         boxShadow: "0 4px 20px rgba(248, 187, 217, 0.15)",
                     }}>
+                        {/* Frame选择器 */}
+                        {frameType && frameType !== 'none' && (
+                            <div style={{ marginBottom: "20px" }}>
+                                <div style={{
+                                    fontSize: "16px",
+                                    fontWeight: "600",
+                                    color: "#5D4E75",
+                                    marginBottom: "12px",
+                                    textAlign: "center"
+                                }}>
+                                    🖼️ Current Frame: {frameType === 'generated' ? "Custom Frame" : frameType}
+                                </div>
+                                <div style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    gap: "10px"
+                                }}>
+                                    <button
+                                        onClick={() => navigateTo("/templates")}
+                                        style={{
+                                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                            color: "white",
+                                            padding: "8px 16px",
+                                            borderRadius: "20px",
+                                            border: "none",
+                                            fontSize: "14px",
+                                            cursor: "pointer",
+                                            transition: "transform 0.2s ease"
+                                        }}
+                                        onMouseOver={(e) => e.target.style.transform = "scale(1.05)"}
+                                        onMouseOut={(e) => e.target.style.transform = "scale(1)"}
+                                    >
+                                        Change Frame
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setFrameType("none");
+                                            localStorage.setItem("selectedFrame", "none");
+                                        }}
+                                        style={{
+                                            background: "rgba(248, 187, 217, 0.2)",
+                                            color: "#5D4E75",
+                                            padding: "8px 16px",
+                                            borderRadius: "20px",
+                                            border: "1px solid rgba(248, 187, 217, 0.3)",
+                                            fontSize: "14px",
+                                            cursor: "pointer",
+                                            transition: "all 0.2s ease"
+                                        }}
+                                        onMouseOver={(e) => {
+                                            e.target.style.background = "rgba(248, 187, 217, 0.3)";
+                                            e.target.style.transform = "scale(1.05)";
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.target.style.background = "rgba(248, 187, 217, 0.2)";
+                                            e.target.style.transform = "scale(1)";
+                                        }}
+                                    >
+                                        Remove Frame
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                        
                         <FilterSelector
                             activeFilter={filter}
                             onFilterChange={handleSetFilter}

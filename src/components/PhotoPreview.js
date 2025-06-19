@@ -33,10 +33,8 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 	const [isRandomizing, setIsRandomizing] = useState(false);
 	const [randomSuccess, setRandomSuccess] = useState(false);
 	const [availableFrames, setAvailableFrames] = useState([]);
-	const [frameDrawFunctions, setFrameDrawFunctions] = useState({});
-	const [loadingFrames, setLoadingFrames] = useState(new Set());
 
-	// 加载可用的frames
+	// 加载可用的frames并预加载常用frames
 	useEffect(() => {
 		const loadFrames = async () => {
 			try {
@@ -60,14 +58,25 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				
 				setAvailableFrames(allFrames);
 				
-				// 预加载一些常用frame的draw函数
-				const drawFunctions = {};
-				for (const frame of frames) {
-					if (['none', 'pastel', 'retro', 'neon'].includes(frame.name)) {
-						drawFunctions[frame.name] = await FrameService.getFrameDrawFunction(frame.name);
-					}
+				// 使用 FrameService 的预加载功能
+				const frameNames = frames.map(f => f.name);
+				
+				// 预加载前5个最常用的 frames
+				const priorityFrames = ['none', 'pastel', 'retro', 'neon', 'vintage'].filter(name => 
+					frameNames.includes(name)
+				);
+				if (priorityFrames.length > 0) {
+					await FrameService.preloadFrames(priorityFrames);
 				}
-				setFrameDrawFunctions(drawFunctions);
+				
+				// 后台预加载剩余的 frames
+				const remainingFrames = frameNames.filter(name => !priorityFrames.includes(name));
+				if (remainingFrames.length > 0) {
+					setTimeout(() => {
+						FrameService.preloadFrames(remainingFrames.slice(0, 10)); // 限制预加载数量
+					}, 1000);
+				}
+				
 			} catch (error) {
 				console.error('Failed to load frames:', error);
 				// 设置默认frames作为fallback
@@ -207,9 +216,11 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		}
 	}, [initialImages]);
 
-	// 应用frame的函数
-	const applyFrame = async (ctx, x, y, width, height) => {
-		if (!selectedFrame || selectedFrame === 'none') return;
+	// 应用frame的函数（优化版本）
+	const applyFrame = useCallback(async (ctx, x, y, width, height) => {
+		if (!selectedFrame || selectedFrame === 'none') {
+			return;
+		}
 		
 		// 检查是否是生成的框架
 		if (selectedFrame === 'generated') {
@@ -218,74 +229,41 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				const generatedFrameData = localStorage.getItem('generatedFrame');
 				if (generatedFrameData) {
 					const frameData = JSON.parse(generatedFrameData);
-					console.log('Using generated frame:', frameData);
+					console.log('PhotoPreview: Using generated frame for composition');
 					
 					// 使用 FrameService 创建 draw 函数
 					const drawFunction = FrameService.createFrameDrawFunction(frameData.code);
 					if (typeof drawFunction === 'function') {
 						try {
-							drawFunction(ctx, x, y, width, height);
+							await drawFunction(ctx, x, y, width, height);
+							console.log('PhotoPreview: Generated frame applied successfully');
 						} catch (error) {
-							console.error('Error executing generated frame function:', error);
+							console.error('PhotoPreview: Error executing generated frame function:', error);
 						}
 						return;
 					}
 				}
-				console.warn('No generated frame data found in localStorage');
+				console.warn('PhotoPreview: No generated frame data found');
 				return;
 			} catch (error) {
-				console.error('Error applying generated frame:', error);
-				return;
-			}
-		}
-		
-		// 首先检查是否已缓存了draw函数
-		let drawFunction = frameDrawFunctions[selectedFrame];
-		
-		if (!drawFunction && !loadingFrames.has(selectedFrame)) {
-			try {
-				// 标记为正在加载，避免重复请求
-				setLoadingFrames(prev => new Set(prev.add(selectedFrame)));
-				
-				// 如果没有缓存，则动态加载
-				drawFunction = await FrameService.getFrameDrawFunction(selectedFrame);
-				
-				// 立即缓存
-				if (typeof drawFunction === 'function') {
-					setFrameDrawFunctions(prev => ({
-						...prev,
-						[selectedFrame]: drawFunction
-					}));
-				}
-				
-				// 移除加载标记
-				setLoadingFrames(prev => {
-					const newSet = new Set(prev);
-					newSet.delete(selectedFrame);
-					return newSet;
-				});
-			} catch (error) {
-				console.error(`Error loading frame ${selectedFrame}:`, error);
-				setLoadingFrames(prev => {
-					const newSet = new Set(prev);
-					newSet.delete(selectedFrame);
-					return newSet;
-				});
+				console.error('PhotoPreview: Error applying generated frame:', error);
 				return;
 			}
 		}
 		
-		// 应用frame函数
-		if (typeof drawFunction === 'function') {
-			try {
-				drawFunction(ctx, x, y, width, height);
-			} catch (error) {
-				console.error(`Error applying frame ${selectedFrame}:`, error);
+		// 使用 FrameService 的全局缓存，无需本地状态管理
+		try {
+			const drawFunction = await FrameService.getFrameDrawFunction(selectedFrame);
+			
+			if (typeof drawFunction === 'function') {
+				await drawFunction(ctx, x, y, width, height);
 			}
+		} catch (error) {
+			console.error(`PhotoPreview: Error applying frame ${selectedFrame}:`, error);
 		}
-	};
+	}, [selectedFrame]);
 
-	const generatePhotoStrip = useCallback(() => {
+	const generatePhotoStrip = useCallback(async () => {
 		const canvas = stripCanvasRef.current;
 		if (!canvas) return;
 		const ctx = canvas.getContext("2d");
@@ -301,11 +279,28 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 		canvas.width = imgWidth + borderSize * 2;
 		canvas.height = totalHeight;
-		// 整体大小: 400 * （300*4+20*3+40*2+150）= 400*1640
 
 		// 先填充背景颜色
 		ctx.fillStyle = stripColor;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+		// 预加载 frame 函数，减少重复调用
+		let frameDrawFunction = null;
+		if (selectedFrame && selectedFrame !== 'none') {
+			try {
+				if (selectedFrame === 'generated') {
+					const generatedFrameData = localStorage.getItem('generatedFrame');
+					if (generatedFrameData) {
+						const frameData = JSON.parse(generatedFrameData);
+						frameDrawFunction = FrameService.createFrameDrawFunction(frameData.code);
+					}
+				} else {
+					frameDrawFunction = await FrameService.getFrameDrawFunction(selectedFrame);
+				}
+			} catch (error) {
+				console.error('Error preloading frame function:', error);
+			}
+		}
 
 		// 计算有多少实际照片需要加载
 		const actualImages = localImages.filter(img => img !== null);
@@ -319,7 +314,7 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				// 绘制有照片的位置
 				const img = new Image();
 				img.src = localImages[i];
-				img.onload = () => {
+				img.onload = async () => {
 					// 确保4:3比例
 					const imageRatio = img.width / img.height;
 					const targetRatio = 4/3; // 固定4:3比例
@@ -368,11 +363,17 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						adjustedHeight
 					);
 
-					// 应用选中的frame - 使用正确的坐标转换
-					ctx.save();
-					ctx.translate(borderSize, yOffset);
-					applyFrame(ctx, 0, 0, imgWidth, imgHeight);
-					ctx.restore();
+					// 应用预加载的frame函数
+					if (frameDrawFunction && typeof frameDrawFunction === 'function') {
+						ctx.save();
+						ctx.translate(borderSize, yOffset);
+						try {
+							await frameDrawFunction(ctx, 0, 0, imgWidth, imgHeight);
+						} catch (error) {
+							console.error(`Error applying frame at position ${i}:`, error);
+						}
+						ctx.restore();
+					}
 
 					// 如果有预言且需要显示，在照片上添加关键词
 					if (showPrediction && prediction && prediction.keywords && prediction.keywords[i]) {
@@ -400,12 +401,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 						// 添加预言总结
 						if (showPrediction && prediction && prediction.summary) {
 							const summaryY = borderSize + (imgHeight + photoSpacing) * 4 - 10;
-
-							// 添加标题 - 改为居中
-							// ctx.fillStyle = "#9C27B0";
-							// ctx.font = "bold 18px Arial";
-							// ctx.textAlign = "center"; // 改为居中
-							// ctx.fillText("✨ Your Four Moments ✨", borderSize + imgWidth / 2, summaryY + 25);
 
 							// 添加预言文本 - 自动换行
 							ctx.fillStyle = "#333333";
@@ -447,11 +442,17 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 					yOffset + imgHeight / 2
 				);
 
-				// 为空白位置也应用框架
-				ctx.save();
-				ctx.translate(borderSize, yOffset);
-				applyFrame(ctx, 0, 0, imgWidth, imgHeight);
-				ctx.restore();
+				// 使用预加载的frame函数
+				if (frameDrawFunction && typeof frameDrawFunction === 'function') {
+					ctx.save();
+					ctx.translate(borderSize, yOffset);
+					try {
+						await frameDrawFunction(ctx, 0, 0, imgWidth, imgHeight);
+					} catch (error) {
+						console.error(`Error applying frame at empty position ${i}:`, error);
+					}
+					ctx.restore();
+				}
 			}
 		}
 
@@ -503,6 +504,18 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 			generatePhotoStrip();
 		}, 100);
 	}, [localImages, stripColor, selectedFrame, generatePhotoStrip, borderWidth]);
+
+	// 开发环境下显示缓存统计
+	useEffect(() => {
+		if (process.env.NODE_ENV === 'development') {
+			const interval = setInterval(() => {
+				const stats = FrameService.getCacheStats();
+				console.log('FrameService Cache Stats:', stats);
+			}, 30000); // 30秒输出一次
+
+			return () => clearInterval(interval);
+		}
+	}, []);
 
 	// 生成QR码
 	const generateQRCode = async (url) => {

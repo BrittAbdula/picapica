@@ -175,7 +175,7 @@ const Templates = () => {
           ctx.translate(borderSize, yOffset);
           // 在当前图片区域绘制边框
           try {
-            drawFunction(
+            await drawFunction(
               ctx,
               0,  // 相对于当前图片区域的x坐标
               0,  // 相对于当前图片区域的y坐标
@@ -463,7 +463,7 @@ const Templates = () => {
                       fontSize: "14px",
                       color: "#333"
                     }}>
-                      {frameInfo ? frameInfo.description : frameType.charAt(0).toUpperCase() + frameType.slice(1)}
+                      {frameInfo ? frameInfo.name : frameType.charAt(0).toUpperCase() + frameType.slice(1)}
                     </h3>
                   </div>
                 </div>

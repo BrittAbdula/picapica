@@ -12,8 +12,27 @@ const MyFrames = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [frameDrawFunctions, setFrameDrawFunctions] = useState({});
   const [loadingQueue, setLoadingQueue] = useState(new Set());
-  const [renderedFrames, setRenderedFrames] = useState(new Set());
+  const [visibleFrames, setVisibleFrames] = useState(new Set());
   const canvasRefs = useRef([]);
+  const [screenSize, setScreenSize] = useState({
+    isMobile: window.innerWidth < 768,
+    isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
+    isDesktop: window.innerWidth >= 1024
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setScreenSize({
+        isMobile: width < 768,
+        isTablet: width >= 768 && width < 1024,
+        isDesktop: width >= 1024
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const checkAuth = () => {
@@ -49,7 +68,10 @@ const MyFrames = () => {
             const index = parseInt(entry.target.dataset.frameIndex);
             const frame = frames[index];
             
-            if (frame && canvasRefs.current[index]) {
+            if (frame && !visibleFrames.has(frame.id)) {
+              // 标记为可见
+              setVisibleFrames(prev => new Set(prev.add(frame.id)));
+              
               // 异步绘制frame预览
               drawFramePreview(canvasRefs.current[index], frame);
             }
@@ -74,13 +96,13 @@ const MyFrames = () => {
     return () => {
       observer.disconnect();
     };
-  }, [isLoading, frames]);
+  }, [isLoading, frames, visibleFrames]);
 
   // 实现加载用户frames的功能
   const loadUserFrames = async () => {
     try {
-      // 清除已渲染状态
-      setRenderedFrames(new Set());
+      // 清除已可见状态
+      setVisibleFrames(new Set());
       
       const response = await fetch('https://api.picapica.app/api/ai/frames/user', {
         headers: getAuthHeaders()
@@ -210,7 +232,7 @@ const MyFrames = () => {
           ctx.translate(borderSize, yOffset);
           // 在当前图片区域绘制边框
           try {
-            drawFunction(
+            await drawFunction(
               ctx,
               0,  // 相对于当前图片区域的x坐标
               0,  // 相对于当前图片区域的y坐标
@@ -266,10 +288,10 @@ const MyFrames = () => {
     );
 
     // 标记frame为已渲染，隐藏加载动画
-    setRenderedFrames(prev => new Set(prev.add(frame.id)));
+    setVisibleFrames(prev => new Set(prev.add(frame.id)));
   };
 
-  // 使用frame功能，参考FrameMaker.js
+  // 使用frame功能，与Templates保持一致的导航方式
   const handleUseFrame = (frame) => {
     // Store the frame temporarily for photobooth to use
     localStorage.setItem("generatedFrame", JSON.stringify(frame));
@@ -286,17 +308,22 @@ const MyFrames = () => {
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: "center", padding: "40px" }}>
+      <div style={{
+        textAlign: "center",
+        padding: "40px",
+        color: "#666"
+      }}>
         <div style={{
+          display: "inline-block",
           width: "40px",
           height: "40px",
           border: "4px solid #f3f3f3",
           borderTop: "4px solid #FF69B4",
           borderRadius: "50%",
           animation: "spin 1s linear infinite",
-          margin: "0 auto 20px"
+          marginBottom: "20px"
         }}></div>
-        <p>Loading...</p>
+        <p>Loading your custom frames...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -471,34 +498,43 @@ const MyFrames = () => {
             </button>
           </div>
         ) : (
-          <div style={{
+          <div className="my-frames-grid" style={{
             display: "grid",
-            gridTemplateColumns: window.innerWidth >= 1200 ? "repeat(3, 1fr)" : 
-                               window.innerWidth >= 768 ? "repeat(2, 1fr)" : "1fr",
-            gap: "20px",
+            gridTemplateColumns: screenSize.isDesktop
+              ? "repeat(6, 1fr)"
+              : (screenSize.isTablet ? "repeat(3, 1fr)" : "repeat(2, 1fr)"),
+            gap: screenSize.isDesktop ? "20px" : "15px",
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "0 10px",
             marginBottom: "40px"
           }}>
                          {frames.map((frame, index) => (
-               <div key={frame.id} style={{
-                 backgroundColor: "white",
-                 borderRadius: "12px",
-                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                 overflow: "hidden",
-                 transition: "transform 0.2s, box-shadow 0.2s"
-               }}
-               onMouseEnter={(e) => {
-                 e.currentTarget.style.transform = "translateY(-2px)";
-                 e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)";
-               }}
-               onMouseLeave={(e) => {
-                 e.currentTarget.style.transform = "translateY(0)";
-                 e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-               }}>
-                 {/* Frame 预览区域 */}
-                 <div style={{
-                   position: "relative",
-                   backgroundColor: "#f8f9fa"
+               <div 
+                 key={frame.id} 
+                 className="my-frame-item"
+                 onClick={() => handleUseFrame(frame)}
+                 style={{
+                   cursor: "pointer",
+                   backgroundColor: "#ffffff",
+                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                   transition: "transform 0.3s, box-shadow 0.3s",
+                   overflow: "hidden",
+                   display: "flex",
+                   flexDirection: "column",
+                   height: "100%",
+                   touchAction: "manipulation" // Improves touch experience on mobile
+                 }}
+                 onMouseEnter={(e) => {
+                   e.currentTarget.style.transform = "translateY(-5px)";
+                   e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.15)";
+                 }}
+                 onMouseLeave={(e) => {
+                   e.currentTarget.style.transform = "translateY(0)";
+                   e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
                  }}>
+                 {/* Frame 预览区域 */}
+                 <div style={{ position: "relative" }}>
                    <canvas
                      ref={canvasRefs.current[index]}
                      width={300}
@@ -513,8 +549,8 @@ const MyFrames = () => {
                      aria-label={`${frame.name} frame preview`}
                    />
                    
-                   {/* 加载提示 - 只在未渲染时显示 */}
-                   {!renderedFrames.has(frame.id) && (
+                   {/* 如果frame还没有被渲染，显示加载提示 */}
+                   {!visibleFrames.has(frame.id) && (
                      <div style={{
                        position: "absolute",
                        top: "50%",
@@ -554,24 +590,28 @@ const MyFrames = () => {
                  </div>
                 
                 {/* Frame 信息 */}
-                <div style={{ padding: "20px" }}>
+                <div style={{
+                  padding: "15px",
+                  borderTop: "1px solid #f0f0f0",
+                  textAlign: "center",
+                  marginTop: "auto"
+                }}>
                   <h3 style={{
-                    margin: "0 0 10px 0",
-                    fontSize: "18px",
-                    color: "#2d3748",
-                    lineHeight: "1.4"
+                    margin: "0 0 5px",
+                    fontSize: "14px",
+                    color: "#333"
                   }}>
                     {frame.name}
                   </h3>
                   
                   {frame.description && (
                     <p style={{
-                      margin: "0 0 15px 0",
-                      fontSize: "14px",
-                      color: "#4a5568",
-                      lineHeight: "1.5",
+                      margin: "0 0 8px 0",
+                      fontSize: "12px",
+                      color: "#666",
+                      lineHeight: "1.4",
                       display: "-webkit-box",
-                      WebkitLineClamp: 2,
+                      WebkitLineClamp: 1,
                       WebkitBoxOrient: "vertical",
                       overflow: "hidden"
                     }}>
@@ -580,62 +620,48 @@ const MyFrames = () => {
                   )}
                   
                   <div style={{
-                    fontSize: "12px",
-                    color: "#718096",
-                    marginBottom: "15px"
+                    fontSize: "10px",
+                    color: "#999",
+                    marginBottom: "8px"
                   }}>
-                    Created: {new Date(frame.created_at).toLocaleDateString()}
-                    {frame.is_public ? (
+                    {new Date(frame.created_at).toLocaleDateString()}
+                    {frame.is_public && (
                       <span style={{
-                        marginLeft: "10px",
-                        backgroundColor: "#green.100",
-                        color: "#green.800",
-                        padding: "2px 6px",
-                        borderRadius: "4px",
-                        fontSize: "10px"
+                        marginLeft: "8px",
+                        backgroundColor: "#e6fffa",
+                        color: "#047857",
+                        padding: "1px 4px",
+                        borderRadius: "3px",
+                        fontSize: "9px"
                       }}>
                         PUBLIC
                       </span>
-                    ) : (
-                        <span style={{
-                          marginLeft: "10px",
-                          backgroundColor: "#green.100",
-                          color: "#green.800",
-                          padding: "2px 6px",
-                          borderRadius: "4px",
-                          fontSize: "10px"
-                        }}>
-                          PRIVATE
-                        </span>
-                      )}
+                    )}
                   </div>
                   
-                  {/* 操作按钮 */}
-                  <div style={{
-                    display: "flex",
-                    gap: "10px",
-                    justifyContent: "space-between"
-                  }}>
-                    <button
-                      onClick={() => handleUseFrame(frame)}
-                      style={{
-                        flex: "1",
-                        padding: "10px 16px",
-                        backgroundColor: "#38a169",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "6px",
-                        fontSize: "14px",
-                        fontWeight: "600",
-                        cursor: "pointer",
-                        transition: "background-color 0.2s"
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = "#2f855a"}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = "#38a169"}
-                    >
-                      📸 Use Frame
-                    </button>
-                  </div>
+                  {/* 操作按钮 - 简化 */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUseFrame(frame);
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "6px 12px",
+                      backgroundColor: "#3182ce",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: "500",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = "#2b6cb0"}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = "#3182ce"}
+                  >
+                    Use Frame
+                  </button>
                 </div>
               </div>
             ))}
