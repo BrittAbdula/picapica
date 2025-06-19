@@ -119,49 +119,56 @@ const MyFrames = () => {
   };
 
   // 懒加载单个frame的draw函数，参考Templates.js
-  const loadFrameDrawFunction = async (frameCode) => {
-    if (frameDrawFunctions[frameCode]) {
-      return frameDrawFunctions[frameCode]; // 已缓存
+  const loadFrameDrawFunction = async (frame) => {
+    // 使用完整的frame对象而不是只有code
+    const cacheKey = `frame_${frame.id}`;
+    
+    if (frameDrawFunctions[cacheKey]) {
+      return frameDrawFunctions[cacheKey];
     }
-
-    if (loadingQueue.has(frameCode)) {
-      // 如果正在加载，等待加载完成
-      while (loadingQueue.has(frameCode)) {
+  
+    if (loadingQueue.has(cacheKey)) {
+      while (loadingQueue.has(cacheKey)) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
-      return frameDrawFunctions[frameCode] || (() => {});
+      return frameDrawFunctions[cacheKey] || (() => {});
     }
-
+  
     try {
-      // 添加到加载队列
-      setLoadingQueue(prev => new Set(prev.add(frameCode)));
+      setLoadingQueue(prev => new Set(prev.add(cacheKey)));
       
-      // 使用FrameService创建draw函数
-      const drawFunction = FrameService.createFrameDrawFunction(frameCode);
+      // 检查frame是否有有效的code
+      if (!frame.code || typeof frame.code !== 'string' || frame.code.trim() === '') {
+        console.warn(`Frame ${frame.name} has no valid code`);
+        const fallbackFunction = () => {};
+        setFrameDrawFunctions(prev => ({
+          ...prev,
+          [cacheKey]: fallbackFunction
+        }));
+        return fallbackFunction;
+      }
       
-      // 缓存到state中
+      console.log('Creating draw function for frame:', frame.name);
+      const drawFunction = FrameService.createFrameDrawFunction(frame.code);
+      
       setFrameDrawFunctions(prev => ({
         ...prev,
-        [frameCode]: drawFunction
+        [cacheKey]: drawFunction
       }));
       
       return drawFunction;
     } catch (error) {
-      console.error(`Failed to create draw function for frame:`, error);
+      console.error(`Failed to create draw function for frame ${frame.name}:`, error);
       const fallbackFunction = () => {};
-      
-      // 也缓存失败的结果，避免重复请求
       setFrameDrawFunctions(prev => ({
         ...prev,
-        [frameCode]: fallbackFunction
+        [cacheKey]: fallbackFunction
       }));
-      
       return fallbackFunction;
     } finally {
-      // 从加载队列中移除
       setLoadingQueue(prev => {
         const newQueue = new Set(prev);
-        newQueue.delete(frameCode);
+        newQueue.delete(cacheKey);
         return newQueue;
       });
     }
@@ -219,7 +226,7 @@ const MyFrames = () => {
 
     // 异步加载并应用frame的draw函数
     try {
-      const drawFunction = await loadFrameDrawFunction(frame.code);
+      const drawFunction = await loadFrameDrawFunction(frame);
       
       if (drawFunction && typeof drawFunction === "function") {
         // 重新绘制每张照片的frame
@@ -268,7 +275,7 @@ const MyFrames = () => {
     
     // 添加照片条标识
     ctx.fillText(
-      "PicaPica.app",
+      "Picapica.app",
       PREVIEW_WIDTH / 2,
       textY - 10
     );

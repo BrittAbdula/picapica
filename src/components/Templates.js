@@ -211,7 +211,7 @@ const Templates = () => {
     
     // 添加照片条标识
     ctx.fillText(
-      "PicaPica.app",
+      "Picapica.app",
       PREVIEW_WIDTH / 2,
       textY - 10
     );
