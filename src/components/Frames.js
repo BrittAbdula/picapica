@@ -2631,9 +2631,9 @@ const FRAMES = {
         }
     },
     colorfulDots: {
-        draw: (ctx, x, y, width, height, stripColor) => {
+        draw: (ctx, x, y, width, height) => {
             // 彩色圆点框架，轻松活泼
-            const bgColor = stripColor || "white";
+            const bgColor =  "white";
             
             // 定义与每种背景色相协调的圆点颜色
             const dotPalettes = {

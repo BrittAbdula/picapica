@@ -666,6 +666,19 @@ const PhotoBooth = ({ setCapturedImages }) => {
                          height: 140%;
                          opacity: 0.7;
                      }
+                     
+                     /* 移动端倒计时样式调整 */
+                     .countdown-display-header {
+                         font-size: 36px !important;
+                         padding: 15px 25px !important;
+                         height: 60px !important;
+                         min-width: 120px !important;
+                         letter-spacing: 2px !important;
+                     }
+                     
+                     .countdown-display-header[style*="32px"] {
+                         font-size: 24px !important;
+                     }
                  }
                  
                  /* Frame预览相关动画 */
@@ -681,6 +694,45 @@ const PhotoBooth = ({ setCapturedImages }) => {
                  
                  .frame-overlay-canvas {
                      animation: frameLoad 0.5s ease-out;
+                 }
+                 
+                 /* 倒计时动画 - 参考 Mac Photo Booth 风格 */
+                 @keyframes countdownEnter {
+                     0% { 
+                         opacity: 0; 
+                         transform: translateY(-10px) scale(0.9); 
+                     }
+                     100% { 
+                         opacity: 1; 
+                         transform: translateY(0) scale(1); 
+                     }
+                 }
+                 
+                 @keyframes fadeInUp {
+                     0% {
+                         opacity: 0;
+                         transform: translateY(20px);
+                     }
+                     100% {
+                         opacity: 1;
+                         transform: translateY(0);
+                     }
+                 }
+                 
+                 @keyframes pulseGentle {
+                     0% { 
+                         transform: scale(1); 
+                         box-shadow: 0 8px 24px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1);
+                     }
+                     50% { 
+                         transform: scale(1.05); 
+                         box-shadow: 0 12px 32px rgba(248, 187, 217, 0.5), 0 0 30px rgba(255, 255, 255, 0.2);
+                         background: linear-gradient(135deg, #E8B4CB 0%, #F8BBD9 100%);
+                     }
+                     100% { 
+                         transform: scale(1); 
+                         box-shadow: 0 8px 24px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1);
+                     }
                  }
                  
                  /* 相机容器定位修复 */
@@ -724,21 +776,57 @@ const PhotoBooth = ({ setCapturedImages }) => {
                 minHeight: "100vh",
                 transition: "background 0.5s ease"
             }}>
-                <h1 style={{ 
+                {/* 标题区域 - 拍照时显示倒计时，平时显示标题 */}
+                <div style={{ 
                     textAlign: 'center', 
-                    marginBottom: '32px', 
-                    fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-                    fontWeight: '700',
-                    color: '#5D4E75',
-                    letterSpacing: '-0.02em',
-                    background: 'linear-gradient(135deg, #F8BBD9 0%, #E8B4CB 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    animation: 'fadeInUp 0.8s ease-out'
+                    marginBottom: '32px',
+                    minHeight: '60px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                 }}>
-                    ✨ Online Photo Booth
-                </h1>
+                    {countdown !== null ? (
+                        /* 倒计时显示 - 替代H1位置 */
+                        <div className="countdown-display-header" style={{
+                            fontSize: typeof countdown === "string" ? "32px" : "64px",
+                            fontWeight: "700",
+                            color: "#5D4E75",
+                            textShadow: "0 2px 8px rgba(248, 187, 217, 0.4)",
+                            animation: `countdownEnter 0.3s ease-out, pulseGentle 1s infinite`,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "80px",
+                            pointerEvents: "none",
+                            letterSpacing: "4px",
+                            background: "linear-gradient(135deg, #F8BBD9 0%, #E8B4CB 100%)",
+                            borderRadius: "20px",
+                            padding: "20px 40px",
+                            boxShadow: "0 8px 24px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)",
+                            border: "2px solid rgba(248, 187, 217, 0.4)",
+                            minWidth: "150px",
+                            backdropFilter: "blur(10px)"
+                        }}>
+                            {countdown}
+                        </div>
+                    ) : (
+                        /* 正常标题显示 */
+                        <h1 style={{ 
+                            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+                            fontWeight: '700',
+                            color: '#5D4E75',
+                            letterSpacing: '-0.02em',
+                            background: 'linear-gradient(135deg, #F8BBD9 0%, #E8B4CB 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                            animation: 'fadeInUp 0.8s ease-out',
+                            margin: 0
+                        }}>
+                            ✨ Online Photo Booth
+                        </h1>
+                    )}
+                </div>
                 <div className="photo-container" style={{
                     display: "flex",
                     flexDirection: "column",
@@ -869,32 +957,10 @@ const PhotoBooth = ({ setCapturedImages }) => {
                         
                         <canvas ref={canvasRef} className="hidden" style={{ display: 'none' }} />
 
-                        {/* 倒计时显示 - 透明背景 */}
-                        {countdown !== null && (
-                            <div className="countdown-display-overlay" style={{
-                                position: "absolute",
-                                top: "50%",
-                                left: "50%",
-                                transform: "translate(-50%, -50%)",
-                                fontSize: typeof countdown === "string" ? "44px" : "120px",
-                                fontWeight: "700",
-                                color: "rgba(255, 255, 255, 0.75)",
-                                textShadow: "0 0 10px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 0, 0, 0.3), 0 0 30px rgba(0, 0, 0, 0.2)",
-                                zIndex: 100,
-                                animation: `countdownEnter 0.3s ease-out, pulseGentle 1s infinite`,
-                                display: "flex",
-                                justifyContent: "center",
-                                alignItems: "center",
-                                width: "160px",
-                                height: "160px",
-                                pointerEvents: "none",
-                                letterSpacing: "2px",
-                                WebkitTextStroke: "1px rgba(0, 0, 0, 0.3)"
-                            }}>
-                                {countdown}
-                            </div>
-                        )}
+                        {/* 倒计时显示 - 移至底部控制区域 */}
                     </div>
+
+
 
                     {/* 已拍摄照片预览 - 左右滑动，仅在有照片时显示 */}
                     {capturedImages.length > 0 && (
@@ -989,6 +1055,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                     padding: "0 15px",
                     boxSizing: "border-box"
                 }}>
+
                     <button
                         onClick={startCountdown}
                         disabled={capturing}
