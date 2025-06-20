@@ -281,7 +281,7 @@ const FrameMaker = () => {
             maxWidth: "600px",
             fontSize: "14px"
           }}>
-            ✅ Welcome back, {username}! You can generate and save custom frames.
+            ✅  generate and save custom frames.
           </div>
         ) : (
           <div style={{
@@ -332,7 +332,7 @@ const FrameMaker = () => {
                 transition: "border-color 0.2s",
                 boxSizing: "border-box"
               }}
-              onFocus={(e) => e.target.style.borderColor = "#3182ce"}
+              onFocus={(e) => e.target.style.borderColor = "#e91e63"}
               onBlur={(e) => e.target.style.borderColor = "#e2e8f0"}
             />
 
@@ -343,7 +343,7 @@ const FrameMaker = () => {
                 width: "100%",
                 padding: "15px",
                 marginTop: "20px",
-                backgroundColor: (isGenerating || !prompt.trim() || !userAuthenticated) ? "#cbd5e0" : "#3182ce",
+                backgroundColor: (isGenerating || !prompt.trim() || !userAuthenticated) ? "#cbd5e0" : "#e91e63",
                 color: "white",
                 border: "none",
                 borderRadius: "8px",
@@ -511,7 +511,7 @@ const FrameMaker = () => {
                     width: "60px",
                     height: "60px",
                     border: "4px solid #e2e8f0",
-                    borderTop: "4px solid #3182ce",
+                                          borderTop: "4px solid #e91e63",
                     borderRadius: "50%",
                     animation: "spin 1s linear infinite",
                     margin: "0 auto 20px"
@@ -533,7 +533,7 @@ const FrameMaker = () => {
                   <div style={{
                     marginTop: "15px",
                     padding: "10px 20px",
-                    backgroundColor: "rgba(49, 130, 206, 0.1)",
+                    backgroundColor: "rgba(233, 30, 99, 0.1)",
                     borderRadius: "20px",
                     display: "inline-block"
                   }}>
@@ -548,7 +548,7 @@ const FrameMaker = () => {
                       <div style={{
                         width: "30px",
                         height: "100%",
-                        backgroundColor: "#3182ce",
+                        backgroundColor: "#e91e63",
                         borderRadius: "2px",
                         animation: "progress 2s ease-in-out infinite"
                       }}></div>
@@ -631,11 +631,11 @@ const FrameMaker = () => {
         <div style={{
           marginTop: "50px",
           padding: "30px",
-          backgroundColor: "#f0f7ff",
+          backgroundColor: "#fce4ec",
           borderRadius: "12px",
           textAlign: "center"
         }}>
-          <h2 style={{ marginTop: 0, color: "#2c5282" }}>
+          <h2 style={{ marginTop: 0, color: "#ad1457" }}>
             How It Works
           </h2>
           <div style={{
@@ -648,7 +648,7 @@ const FrameMaker = () => {
               <div style={{
                 width: "60px",
                 height: "60px",
-                backgroundColor: "#3182ce",
+                backgroundColor: "#e91e63",
                 borderRadius: "50%",
                 margin: "0 auto 15px",
                 display: "flex",
@@ -669,7 +669,7 @@ const FrameMaker = () => {
               <div style={{
                 width: "60px",
                 height: "60px",
-                backgroundColor: "#3182ce",
+                backgroundColor: "#e91e63",
                 borderRadius: "50%",
                 margin: "0 auto 15px",
                 display: "flex",
@@ -690,7 +690,7 @@ const FrameMaker = () => {
               <div style={{
                 width: "60px",
                 height: "60px",
-                backgroundColor: "#3182ce",
+                backgroundColor: "#e91e63",
                 borderRadius: "50%",
                 margin: "0 auto 15px",
                 display: "flex",
