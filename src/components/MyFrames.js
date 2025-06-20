@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { isAuthenticated, getAuthHeaders, getUsername } from "../utils/auth";
 import FrameService from "../services/frameService";
 import Meta from "./Meta";
+import DebugHelper from "../utils/debugHelper";
 
 const MyFrames = () => {
   const navigate = useNavigate();
@@ -47,6 +48,8 @@ const MyFrames = () => {
       }
     };
 
+    // 🔥 在生产环境中记录环境信息，帮助调试
+    DebugHelper.logEnvironmentInfo();
     checkAuth();
   }, []);
 
@@ -69,27 +72,31 @@ const MyFrames = () => {
             const frame = frames[index];
             
             if (frame && !visibleFrames.has(frame.id)) {
-              // 🔥 关键修复：确保状态更新后再绘制
-              setVisibleFrames(prev => new Set(prev.add(frame.id)));
-              
-              // 延迟绘制，确保DOM更新完成
-              setTimeout(() => {
-                drawFramePreview(canvasRefs.current[index], frame);
-              }, 100);
+              // 🔥 关键修复：使用RAF确保DOM准备就绪
+              requestAnimationFrame(() => {
+                setVisibleFrames(prev => new Set(prev.add(frame.id)));
+                
+                // 🔥 增加延迟，确保生产环境DOM完全准备
+                setTimeout(() => {
+                  if (canvasRefs.current[index] && canvasRefs.current[index].current) {
+                    drawFramePreview(canvasRefs.current[index], frame);
+                  }
+                }, 300); // 增加延迟到300ms
+              });
             }
           }
         });
       },
       {
         root: null,
-        rootMargin: '50px', // 减少提前加载距离
+        rootMargin: '100px', // 增加预加载距离
         threshold: 0.1
       }
     );
 
-    // 观察所有canvas元素
+    // 观察所有canvas元素 - 增加检查
     canvasRefs.current.forEach((ref, index) => {
-      if (ref && ref.current) {
+      if (ref && ref.current && frames[index]) {
         ref.current.dataset.frameIndex = index;
         observer.observe(ref.current);
       }
@@ -98,6 +105,29 @@ const MyFrames = () => {
     return () => {
       observer.disconnect();
     };
+  }, [isLoading, frames, visibleFrames]);
+
+  // 🔥 添加fallback机制：如果Intersection Observer在生产环境中失效，使用超时渲染
+  useEffect(() => {
+    if (isLoading || frames.length === 0) return;
+
+    const fallbackTimer = setTimeout(() => {
+      console.log('Fallback rendering: Intersection Observer may have failed');
+      
+      frames.forEach((frame, index) => {
+        if (!visibleFrames.has(frame.id) && canvasRefs.current[index]?.current) {
+          console.log(`Fallback rendering frame ${frame.name}`);
+          setVisibleFrames(prev => new Set(prev.add(frame.id)));
+          
+          // 延迟渲染确保DOM准备
+          setTimeout(() => {
+            drawFramePreview(canvasRefs.current[index], frame);
+          }, index * 100); // 错开渲染时间避免阻塞
+        }
+      });
+    }, 3000); // 3秒后开始fallback渲染
+
+    return () => clearTimeout(fallbackTimer);
   }, [isLoading, frames, visibleFrames]);
 
   // 实现加载用户frames的功能
@@ -189,21 +219,36 @@ const MyFrames = () => {
 
   // 简化的绘制frame预览函数
   const drawFramePreview = async (canvasRef, frame) => {
-    if (!canvasRef.current || !frame) {
+    if (!canvasRef?.current || !frame) {
+      console.warn('drawFramePreview: Missing canvasRef or frame');
       return;
     }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
+    if (!ctx) {
+      console.error('drawFramePreview: Could not get canvas context');
+      return;
+    }
+
     // 添加调试日志
-    console.log('MyFrames drawFramePreview called:', {
-      frameId: frame.id,
-      frameName: frame.name,
+    DebugHelper.logFrameRenderAttempt(frame.id, frame.name, 'START', {
       hasCode: !!frame.code,
       codeLength: frame.code?.length,
-      canvasElement: !!canvasRef.current
+      canvasElement: !!canvasRef.current,
+      canvasSize: { width: canvas.width, height: canvas.height }
     });
+
+    // 🔥 测试canvas基本功能
+    const canvasTestPassed = await DebugHelper.testCanvasRendering(canvas);
+    if (!canvasTestPassed) {
+      DebugHelper.logError('Canvas test failed', new Error('Basic canvas rendering failed'), {
+        frameId: frame.id,
+        frameName: frame.name
+      });
+      return;
+    }
 
     try {
       // 保持与 Templates.js 相同的比例
@@ -240,27 +285,54 @@ const MyFrames = () => {
         ctx.fillText("Photo Preview", PREVIEW_WIDTH / 2, yOffset + imgHeight / 2);
       }
 
-      // 🔥 关键修复：简化异步处理，参考Templates.js的成功实现
+      // 🔥 关键修复：改进异步处理和错误恢复
       try {
         const drawFunction = await loadFrameDrawFunction(frame);
         
         if (drawFunction && typeof drawFunction === "function") {
-          // 重新绘制每张照片的frame
-          for (let i = 0; i < 4; i++) {
-            const yOffset = borderSize + (imgHeight + photoSpacing) * i;
-            
-            ctx.save();
-            ctx.translate(borderSize, yOffset);
+          // 🔥 增加超时保护，防止某些frame函数执行过久
+          const frameRenderPromise = new Promise(async (resolve, reject) => {
             try {
-              await drawFunction(ctx, 0, 0, imgWidth, imgHeight);
+              // 重新绘制每张照片的frame
+              for (let i = 0; i < 4; i++) {
+                const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+                
+                ctx.save();
+                ctx.translate(borderSize, yOffset);
+                
+                // 🔥 添加try-catch保护每个frame渲染
+                try {
+                  await drawFunction(ctx, 0, 0, imgWidth, imgHeight);
+                } catch (frameError) {
+                  console.error(`Error applying frame ${i} for ${frame.name}:`, frameError);
+                  // 继续渲染其他frames，不中断整个过程
+                }
+                
+                ctx.restore();
+              }
+              resolve();
             } catch (error) {
-              console.error(`Error applying frame in preview for ${frame.name}:`, error);
+              reject(error);
             }
-            ctx.restore();
-          }
+          });
+
+          // 🔥 设置超时保护 - 10秒超时
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Frame render timeout')), 10000);
+          });
+
+          await Promise.race([frameRenderPromise, timeoutPromise]);
+        } else {
+          console.warn(`No valid draw function for frame ${frame.name}`);
         }
       } catch (error) {
         console.error(`Failed to load and apply frame ${frame.name}:`, error);
+        
+        // 🔥 添加错误提示到canvas上
+        ctx.fillStyle = "#ff6b6b";
+        ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.fillText("Failed to load frame", PREVIEW_WIDTH / 2, PREVIEW_HEIGHT / 2);
       }
 
       // 添加底部签名区域（与Templates.js保持一致）
@@ -287,10 +359,30 @@ const MyFrames = () => {
 
     } catch (error) {
       console.error(`Critical error in drawFramePreview for frame ${frame.name}:`, error);
+      
+      // 🔥 错误恢复：显示错误信息而不是空白
+      try {
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "#ffebee";
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          ctx.fillStyle = "#c62828";
+          ctx.font = "14px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("Preview Error", canvas.width / 2, canvas.height / 2 - 10);
+          ctx.fillText("Click to use anyway", canvas.width / 2, canvas.height / 2 + 10);
+        }
+      } catch (recoveryError) {
+        console.error('Even error recovery failed:', recoveryError);
+      }
     } finally {
       // 🔥 关键修复：确保frame被标记为已渲染，避免一直显示loading
-      if (frame && frame.id) {
-        setVisibleFrames(prev => new Set(prev.add(frame.id)));
+      if (frame?.id) {
+        // 使用RAF确保状态更新在下一帧
+        requestAnimationFrame(() => {
+          setVisibleFrames(prev => new Set(prev.add(frame.id)));
+        });
       }
     }
   };
