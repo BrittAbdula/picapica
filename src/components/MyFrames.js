@@ -6,6 +6,7 @@ import Meta from "./Meta";
 import DebugHelper from "../utils/debugHelper";
 import FrameRenderTest from "../utils/frameRenderTest";
 import simpleFrameTest from "../utils/simpleFrameTest";
+import canvasDebug from "../utils/canvasDebug";
 
 const MyFrames = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const MyFrames = () => {
   const [loadingQueue, setLoadingQueue] = useState(new Set());
   const [visibleFrames, setVisibleFrames] = useState(new Set());
   const canvasRefs = useRef([]);
+  const [canvasElements, setCanvasElements] = useState(new Map()); // 备用canvas元素存储
   const [screenSize, setScreenSize] = useState({
     isMobile: window.innerWidth < 768,
     isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
@@ -73,8 +75,42 @@ const MyFrames = () => {
     if (canvasRefs.current.length !== frames.length) {
       canvasRefs.current = Array(frames.length).fill().map(() => React.createRef());
       console.log(`🔧 Created ${frames.length} canvas refs`);
+      console.log(`🔧 Canvas refs array:`, canvasRefs.current.map((ref, i) => ({ index: i, ref: !!ref })));
     }
   }, [frames.length]);
+
+  // 🔥 创建可靠的canvas ref回调函数
+  const createCanvasRefCallback = (index) => {
+    return (element) => {
+      console.log(`🔗 Canvas ref callback called for index ${index}:`, !!element);
+      
+      if (element) {
+        // 更新ref
+        if (canvasRefs.current[index]) {
+          canvasRefs.current[index].current = element;
+        }
+        
+        // 同时存储到backup Map中
+        setCanvasElements(prev => {
+          const newMap = new Map(prev);
+          newMap.set(index, element);
+          console.log(`🔗 Stored canvas element for index ${index}, total stored: ${newMap.size}`);
+          return newMap;
+        });
+      } else {
+        // 清理引用
+        if (canvasRefs.current[index]) {
+          canvasRefs.current[index].current = null;
+        }
+        
+        setCanvasElements(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(index);
+          return newMap;
+        });
+      }
+    };
+  };
 
   // 🔥 添加canvas元素就绪检查
   useEffect(() => {
@@ -82,19 +118,49 @@ const MyFrames = () => {
 
     const checkCanvasReady = () => {
       let readyCount = 0;
-      canvasRefs.current.forEach((ref, index) => {
-        if (ref?.current && frames[index]) {
-          readyCount++;
-        }
-      });
+      const debugInfo = [];
+      
+              canvasRefs.current.forEach((ref, index) => {
+          const frame = frames[index];
+          const hasRef = !!ref;
+          const hasCurrent = !!ref?.current;
+          const hasFrame = !!frame;
+          const hasBackupElement = canvasElements.has(index);
+          const backupElement = canvasElements.get(index);
+          
+          debugInfo.push({
+            index,
+            frameName: frame?.name || 'none',
+            hasRef,
+            hasCurrent,
+            hasFrame,
+            hasBackupElement,
+            backupElementType: backupElement?.tagName || 'none',
+            isReady: (hasCurrent || hasBackupElement) && hasFrame
+          });
+          
+          // 检查ref或backup element都可以
+          if ((ref?.current || canvasElements.has(index)) && frames[index]) {
+            readyCount++;
+          }
+        });
       
       console.log(`🔍 Canvas readiness check: ${readyCount}/${frames.length} canvases ready`);
+      console.log(`🔍 Detailed canvas status:`, debugInfo);
       
       if (readyCount === frames.length) {
         console.log('✅ All canvases are ready!');
       } else if (readyCount > 0) {
         console.log(`⏳ ${readyCount} canvases ready, ${frames.length - readyCount} still waiting...`);
-      }
+              } else {
+          console.log('🚨 No canvases are ready! Running DOM diagnostics...');
+          console.log('🚨 canvasRefs.current:', canvasRefs.current);
+          console.log('🚨 canvasRefs.current.length:', canvasRefs.current.length);
+          console.log('🚨 canvasElements Map size:', canvasElements.size);
+          
+          // 运行DOM诊断
+          canvasDebug.runDiagnostics();
+        }
       
       return readyCount;
     };
@@ -153,11 +219,13 @@ const MyFrames = () => {
                   requestAnimationFrame(() => {
                     setVisibleFrames(prev => new Set(prev.add(frame.id)));
                     
-                    setTimeout(() => {
-                      if (canvasRefs.current[index]?.current) {
-                        drawFramePreview(canvasRefs.current[index], frame);
-                      }
-                    }, 200);
+                                      setTimeout(() => {
+                    const canvasElement = getCanvasElement(index);
+                    if (canvasElement) {
+                      const tempRef = { current: canvasElement };
+                      drawFramePreview(tempRef, frame);
+                    }
+                  }, 200);
                   });
                 }
               }
@@ -179,14 +247,15 @@ const MyFrames = () => {
           console.log(`🔍 Attempt ${attempts} to setup Intersection Observer`);
           
           let observedCount = 0;
-          canvasRefs.current.forEach((ref, index) => {
-            if (ref?.current && frames[index]) {
-              ref.current.dataset.frameIndex = index;
-              observer.observe(ref.current);
+          for (let index = 0; index < frames.length; index++) {
+            const canvasElement = getCanvasElement(index);
+            if (canvasElement && frames[index]) {
+              canvasElement.dataset.frameIndex = index;
+              observer.observe(canvasElement);
               observedCount++;
               console.log(`📡 Observing canvas for frame: ${frames[index].name}`);
             }
-          });
+          }
           
           console.log(`📡 Set up Intersection Observer for ${observedCount} canvases (attempt ${attempts})`);
           
@@ -248,7 +317,9 @@ const MyFrames = () => {
         
         unrenderedFrames.forEach((frame, idx) => {
           const index = frames.indexOf(frame);
-          if (canvasRefs.current[index]?.current) {
+          const canvasElement = getCanvasElement(index);
+          
+          if (canvasElement) {
             console.log(`🔧 Fallback rendering frame ${frame.name} at index ${index}`);
             
             // 强制更新可见状态
@@ -260,13 +331,17 @@ const MyFrames = () => {
             
             // 更长的延迟确保DOM完全准备
             setTimeout(() => {
-              if (canvasRefs.current[index]?.current) {
+              const finalCanvasElement = getCanvasElement(index);
+              if (finalCanvasElement) {
                 console.log(`🔧 Actually drawing frame ${frame.name}`);
-                drawFramePreview(canvasRefs.current[index], frame);
+                const tempRef = { current: finalCanvasElement };
+                drawFramePreview(tempRef, frame);
               } else {
-                console.error(`🚨 Canvas ref missing for frame ${frame.name} at index ${index}`);
+                console.error(`🚨 Canvas element missing for frame ${frame.name} at index ${index}`);
               }
             }, idx * 300 + 500); // 基础500ms延迟 + 错开时间
+          } else {
+            console.error(`🚨 No canvas element found for frame ${frame.name} at index ${index}`);
           }
         });
       } else {
@@ -301,17 +376,40 @@ const MyFrames = () => {
     }
   };
 
+  // 🔥 获取canvas元素的辅助函数
+  const getCanvasElement = (index) => {
+    // 先尝试从ref获取，再尝试从backup Map获取
+    let element = canvasRefs.current[index]?.current || canvasElements.get(index);
+    
+    // 如果都没有，尝试直接从DOM查询作为最后的fallback
+    if (!element && frames[index]) {
+      const frameName = frames[index].name;
+      const canvases = document.querySelectorAll('canvas[aria-label*="frame preview"]');
+      for (let i = 0; i < canvases.length; i++) {
+        const canvas = canvases[i];
+        if (canvas.getAttribute('aria-label').includes(frameName)) {
+          console.log(`🔍 Found canvas for ${frameName} via DOM query`);
+          element = canvas;
+          break;
+        }
+      }
+    }
+    
+    return element;
+  };
+
   // 🔥 处理canvas准备就绪后的渲染逻辑
   const handleCanvasReadyRendering = () => {
     console.log('🎯 Handling canvas ready rendering');
     
     // 检查有多少canvas已经准备好
     let readyCanvases = 0;
-    canvasRefs.current.forEach((ref, index) => {
-      if (ref?.current && frames[index]) {
+    for (let index = 0; index < frames.length; index++) {
+      const canvasElement = getCanvasElement(index);
+      if (canvasElement && frames[index]) {
         readyCanvases++;
       }
-    });
+    }
     
     console.log(`🎯 Found ${readyCanvases} ready canvases out of ${frames.length} frames`);
     
@@ -321,12 +419,16 @@ const MyFrames = () => {
       
       for (let i = 0; i < maxImmediateRender; i++) {
         const frame = frames[i];
-        if (frame && canvasRefs.current[i]?.current && !visibleFrames.has(frame.id)) {
+        const canvasElement = getCanvasElement(i);
+        
+        if (frame && canvasElement && !visibleFrames.has(frame.id)) {
           console.log(`🎯 Ready to render frame ${frame.name} immediately`);
           setVisibleFrames(prev => new Set(prev.add(frame.id)));
           
           setTimeout(() => {
-            drawFramePreview(canvasRefs.current[i], frame);
+            // 创建一个临时的ref对象来兼容drawFramePreview
+            const tempRef = { current: canvasElement };
+            drawFramePreview(tempRef, frame);
           }, i * 150); // 错开渲染时间
         }
       }
@@ -878,7 +980,7 @@ const MyFrames = () => {
                  {/* Frame 预览区域 */}
                  <div style={{ position: "relative" }}>
                    <canvas
-                     ref={canvasRefs.current[index]}
+                     ref={createCanvasRefCallback(index)}
                      width={300}
                      height={Math.round(300 * 1450/480)}
                      style={{
