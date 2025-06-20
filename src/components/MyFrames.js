@@ -4,6 +4,7 @@ import { isAuthenticated, getAuthHeaders, getUsername } from "../utils/auth";
 import FrameService from "../services/frameService";
 import Meta from "./Meta";
 import DebugHelper from "../utils/debugHelper";
+import FrameRenderTest from "../utils/frameRenderTest";
 
 const MyFrames = () => {
   const navigate = useNavigate();
@@ -50,6 +51,14 @@ const MyFrames = () => {
 
     // 🔥 在生产环境中记录环境信息，帮助调试
     DebugHelper.logEnvironmentInfo();
+    
+    // 🧪 运行诊断测试
+    if (process.env.NODE_ENV === 'production') {
+      FrameRenderTest.runAllTests().then(results => {
+        console.log('🧪 Frame render test results:', results);
+      });
+    }
+    
     checkAuth();
   }, []);
 
@@ -60,74 +69,120 @@ const MyFrames = () => {
     }
   }, [frames.length]);
 
-  // 🔥 修复Intersection Observer，添加延迟和更精确的状态管理
+  // 🔥 生产环境专用：简化的渲染策略，绕过Intersection Observer问题
   useEffect(() => {
     if (isLoading || frames.length === 0) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const index = parseInt(entry.target.dataset.frameIndex);
-            const frame = frames[index];
-            
-            if (frame && !visibleFrames.has(frame.id)) {
-              // 🔥 关键修复：使用RAF确保DOM准备就绪
-              requestAnimationFrame(() => {
-                setVisibleFrames(prev => new Set(prev.add(frame.id)));
-                
-                // 🔥 增加延迟，确保生产环境DOM完全准备
-                setTimeout(() => {
-                  if (canvasRefs.current[index] && canvasRefs.current[index].current) {
-                    drawFramePreview(canvasRefs.current[index], frame);
-                  }
-                }, 300); // 增加延迟到300ms
-              });
+    // 检查是否支持Intersection Observer
+    const supportsIntersectionObserver = typeof IntersectionObserver !== 'undefined';
+    console.log('🔍 Intersection Observer support:', supportsIntersectionObserver);
+
+    if (supportsIntersectionObserver) {
+      // 尝试使用 Intersection Observer
+      const observer = new IntersectionObserver(
+        (entries) => {
+          console.log('📡 Intersection Observer triggered with', entries.length, 'entries');
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const index = parseInt(entry.target.dataset.frameIndex);
+              const frame = frames[index];
+              
+              if (frame && !visibleFrames.has(frame.id)) {
+                console.log(`📡 IO: Rendering frame ${frame.name} at index ${index}`);
+                requestAnimationFrame(() => {
+                  setVisibleFrames(prev => new Set(prev.add(frame.id)));
+                  
+                  setTimeout(() => {
+                    if (canvasRefs.current[index]?.current) {
+                      drawFramePreview(canvasRefs.current[index], frame);
+                    }
+                  }, 200);
+                });
+              }
             }
-          }
-        });
-      },
-      {
-        root: null,
-        rootMargin: '100px', // 增加预加载距离
-        threshold: 0.1
-      }
-    );
+          });
+        },
+        {
+          root: null,
+          rootMargin: '100px',
+          threshold: 0.1
+        }
+      );
 
-    // 观察所有canvas元素 - 增加检查
-    canvasRefs.current.forEach((ref, index) => {
-      if (ref && ref.current && frames[index]) {
-        ref.current.dataset.frameIndex = index;
-        observer.observe(ref.current);
-      }
-    });
+      // 观察所有canvas元素
+      let observedCount = 0;
+      canvasRefs.current.forEach((ref, index) => {
+        if (ref?.current && frames[index]) {
+          ref.current.dataset.frameIndex = index;
+          observer.observe(ref.current);
+          observedCount++;
+        }
+      });
+      
+      console.log(`📡 Set up Intersection Observer for ${observedCount} canvases`);
 
-    return () => {
-      observer.disconnect();
-    };
+      return () => {
+        observer.disconnect();
+      };
+    } else {
+      console.log('⚠️ Intersection Observer not supported, will rely on fallback');
+    }
   }, [isLoading, frames, visibleFrames]);
 
-  // 🔥 添加fallback机制：如果Intersection Observer在生产环境中失效，使用超时渲染
+  // 🔥 改进的fallback机制：更积极的渲染策略
   useEffect(() => {
     if (isLoading || frames.length === 0) return;
 
+    // 首先尝试立即渲染前几个可见的frames
+    const immediateRenderTimer = setTimeout(() => {
+      console.log('🎨 Starting immediate render for visible frames');
+      const maxImmediateRender = Math.min(6, frames.length); // 最多立即渲染6个
+      
+      for (let i = 0; i < maxImmediateRender; i++) {
+        const frame = frames[i];
+        if (frame && canvasRefs.current[i]?.current && !visibleFrames.has(frame.id)) {
+          console.log(`🎨 Immediate rendering frame ${frame.name}`);
+          setVisibleFrames(prev => new Set(prev.add(frame.id)));
+          
+          setTimeout(() => {
+            drawFramePreview(canvasRefs.current[i], frame);
+          }, i * 200); // 错开渲染时间
+        }
+      }
+    }, 500); // 500ms后开始立即渲染
+
+    // 如果Intersection Observer失效，渲染所有剩余frames
     const fallbackTimer = setTimeout(() => {
-      console.log('Fallback rendering: Intersection Observer may have failed');
+      console.log('🔧 Fallback rendering: Intersection Observer may have failed');
       
       frames.forEach((frame, index) => {
         if (!visibleFrames.has(frame.id) && canvasRefs.current[index]?.current) {
-          console.log(`Fallback rendering frame ${frame.name}`);
-          setVisibleFrames(prev => new Set(prev.add(frame.id)));
+          console.log(`🔧 Fallback rendering frame ${frame.name} at index ${index}`);
           
-          // 延迟渲染确保DOM准备
+          // 强制更新可见状态
+          setVisibleFrames(prev => {
+            const newSet = new Set(prev);
+            newSet.add(frame.id);
+            return newSet;
+          });
+          
+          // 更长的延迟确保DOM完全准备
           setTimeout(() => {
-            drawFramePreview(canvasRefs.current[index], frame);
-          }, index * 100); // 错开渲染时间避免阻塞
+            if (canvasRefs.current[index]?.current) {
+              console.log(`🔧 Actually drawing frame ${frame.name}`);
+              drawFramePreview(canvasRefs.current[index], frame);
+            } else {
+              console.error(`🚨 Canvas ref missing for frame ${frame.name} at index ${index}`);
+            }
+          }, index * 300 + 1000); // 基础1秒延迟 + 错开时间
         }
       });
-    }, 3000); // 3秒后开始fallback渲染
+    }, 2000); // 2秒后开始fallback渲染
 
-    return () => clearTimeout(fallbackTimer);
+    return () => {
+      clearTimeout(immediateRenderTimer);
+      clearTimeout(fallbackTimer);
+    };
   }, [isLoading, frames, visibleFrames]);
 
   // 实现加载用户frames的功能
@@ -150,28 +205,39 @@ const MyFrames = () => {
     }
   };
 
-  // 懒加载单个frame的draw函数 - 简化版本，参考Templates.js
+  // 懒加载单个frame的draw函数 - 增强调试版本
   const loadFrameDrawFunction = async (frame) => {
     const cacheKey = `frame_${frame.id}`;
+    console.log(`🔧 loadFrameDrawFunction called for: ${frame.name}`, { cacheKey });
     
     if (frameDrawFunctions[cacheKey]) {
+      console.log(`✅ Using cached draw function for: ${frame.name}`);
       return frameDrawFunctions[cacheKey];
     }
 
     if (loadingQueue.has(cacheKey)) {
+      console.log(`⏳ Waiting for existing load of: ${frame.name}`);
       // 等待正在进行的加载完成
-      while (loadingQueue.has(cacheKey)) {
+      let waitCount = 0;
+      while (loadingQueue.has(cacheKey) && waitCount < 100) { // 最多等待5秒
         await new Promise(resolve => setTimeout(resolve, 50));
+        waitCount++;
       }
+      console.log(`⏳ Wait completed for: ${frame.name}, waitCount: ${waitCount}`);
       return frameDrawFunctions[cacheKey] || (() => {});
     }
 
     try {
+      console.log(`🚀 Starting to load draw function for: ${frame.name}`);
       setLoadingQueue(prev => new Set(prev.add(cacheKey)));
       
       // 检查frame是否有有效的code
       if (!frame.code || typeof frame.code !== 'string' || frame.code.trim() === '') {
-        console.warn(`Frame ${frame.name} has no valid code`);
+        console.warn(`⚠️ Frame ${frame.name} has no valid code:`, {
+          hasCode: !!frame.code,
+          codeType: typeof frame.code,
+          codeLength: frame.code?.length
+        });
         const fallbackFunction = () => {};
         setFrameDrawFunctions(prev => ({
           ...prev,
@@ -180,18 +246,17 @@ const MyFrames = () => {
         return fallbackFunction;
       }
       
-      console.log('Creating draw function for frame:', frame.name);
-      
-      // 添加调试日志
-      console.log('MyFrames loadFrameDrawFunction:', {
-        frameId: frame.id,
-        cacheKey,
-        cached: !!frameDrawFunctions[cacheKey],
-        inQueue: loadingQueue.has(cacheKey)
+      console.log(`🔧 Creating draw function for frame: ${frame.name}`, {
+        codeLength: frame.code.length,
+        codePreview: frame.code.substring(0, 100) + '...'
       });
       
       // 🔥 关键修复：直接使用FrameService.createFrameDrawFunction，保持简单
       const drawFunction = FrameService.createFrameDrawFunction(frame.code);
+      console.log(`🔧 Draw function created for: ${frame.name}`, {
+        isFunction: typeof drawFunction === 'function',
+        functionLength: drawFunction.toString().length
+      });
       
       // 缓存函数
       setFrameDrawFunctions(prev => ({
@@ -199,9 +264,10 @@ const MyFrames = () => {
         [cacheKey]: drawFunction
       }));
       
+      console.log(`✅ Draw function cached for: ${frame.name}`);
       return drawFunction;
     } catch (error) {
-      console.error(`Failed to create draw function for frame ${frame.name}:`, error);
+      console.error(`🚨 Failed to create draw function for frame ${frame.name}:`, error);
       const fallbackFunction = () => {};
       setFrameDrawFunctions(prev => ({
         ...prev,
@@ -212,15 +278,22 @@ const MyFrames = () => {
       setLoadingQueue(prev => {
         const newQueue = new Set(prev);
         newQueue.delete(cacheKey);
+        console.log(`🔧 Removed ${frame.name} from loading queue`);
         return newQueue;
       });
     }
   };
 
-  // 简化的绘制frame预览函数
+  // 简化的绘制frame预览函数 - 增强调试版本
   const drawFramePreview = async (canvasRef, frame) => {
+    console.log(`🎨 drawFramePreview called for frame: ${frame?.name || 'unknown'}`);
+    
     if (!canvasRef?.current || !frame) {
-      console.warn('drawFramePreview: Missing canvasRef or frame');
+      console.error('🚨 drawFramePreview: Missing canvasRef or frame', {
+        hasCanvasRef: !!canvasRef?.current,
+        hasFrame: !!frame,
+        frameId: frame?.id
+      });
       return;
     }
 
@@ -228,9 +301,16 @@ const MyFrames = () => {
     const ctx = canvas.getContext("2d");
 
     if (!ctx) {
-      console.error('drawFramePreview: Could not get canvas context');
+      console.error('🚨 drawFramePreview: Could not get canvas context');
       return;
     }
+
+    console.log(`🎨 Canvas context obtained for frame ${frame.name}:`, {
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      hasCode: !!frame.code,
+      codeLength: frame.code?.length
+    });
 
     // 添加调试日志
     DebugHelper.logFrameRenderAttempt(frame.id, frame.name, 'START', {
@@ -241,13 +321,20 @@ const MyFrames = () => {
     });
 
     // 🔥 测试canvas基本功能
-    const canvasTestPassed = await DebugHelper.testCanvasRendering(canvas);
-    if (!canvasTestPassed) {
-      DebugHelper.logError('Canvas test failed', new Error('Basic canvas rendering failed'), {
-        frameId: frame.id,
-        frameName: frame.name
-      });
-      return;
+    try {
+      const canvasTestPassed = await DebugHelper.testCanvasRendering(canvas);
+      if (!canvasTestPassed) {
+        console.error('🚨 Canvas test failed for frame:', frame.name);
+        DebugHelper.logError('Canvas test failed', new Error('Basic canvas rendering failed'), {
+          frameId: frame.id,
+          frameName: frame.name
+        });
+        return;
+      }
+      console.log(`✅ Canvas test passed for frame: ${frame.name}`);
+    } catch (debugError) {
+      console.error('🚨 Debug helper failed:', debugError);
+      // 继续执行，不让调试代码阻塞渲染
     }
 
     try {
@@ -287,9 +374,16 @@ const MyFrames = () => {
 
       // 🔥 关键修复：改进异步处理和错误恢复
       try {
+        console.log(`🔧 Loading draw function for frame: ${frame.name}`);
         const drawFunction = await loadFrameDrawFunction(frame);
+        console.log(`🔧 Draw function loaded for frame: ${frame.name}`, {
+          isFunction: typeof drawFunction === 'function',
+          functionString: drawFunction ? drawFunction.toString().substring(0, 100) + '...' : 'null'
+        });
         
         if (drawFunction && typeof drawFunction === "function") {
+          console.log(`🎨 Starting frame rendering for: ${frame.name}`);
+          
           // 🔥 增加超时保护，防止某些frame函数执行过久
           const frameRenderPromise = new Promise(async (resolve, reject) => {
             try {
@@ -297,42 +391,60 @@ const MyFrames = () => {
               for (let i = 0; i < 4; i++) {
                 const yOffset = borderSize + (imgHeight + photoSpacing) * i;
                 
+                console.log(`🎨 Rendering frame layer ${i} for ${frame.name}`);
                 ctx.save();
                 ctx.translate(borderSize, yOffset);
                 
                 // 🔥 添加try-catch保护每个frame渲染
                 try {
                   await drawFunction(ctx, 0, 0, imgWidth, imgHeight);
+                  console.log(`✅ Frame layer ${i} rendered successfully for ${frame.name}`);
                 } catch (frameError) {
-                  console.error(`Error applying frame ${i} for ${frame.name}:`, frameError);
+                  console.error(`🚨 Error applying frame ${i} for ${frame.name}:`, frameError);
                   // 继续渲染其他frames，不中断整个过程
                 }
                 
                 ctx.restore();
               }
+              console.log(`✅ All frame layers rendered for: ${frame.name}`);
               resolve();
             } catch (error) {
+              console.error(`🚨 Frame render promise failed for ${frame.name}:`, error);
               reject(error);
             }
           });
 
           // 🔥 设置超时保护 - 10秒超时
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Frame render timeout')), 10000);
+            setTimeout(() => {
+              console.error(`⏰ Frame render timeout for: ${frame.name}`);
+              reject(new Error('Frame render timeout'));
+            }, 10000);
           });
 
           await Promise.race([frameRenderPromise, timeoutPromise]);
+          console.log(`🎉 Frame rendering completed for: ${frame.name}`);
         } else {
-          console.warn(`No valid draw function for frame ${frame.name}`);
+          console.warn(`⚠️ No valid draw function for frame ${frame.name}`, {
+            drawFunction,
+            type: typeof drawFunction
+          });
+          
+          // 显示"无法加载frame"的提示
+          ctx.fillStyle = "#ffa500";
+          ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
+          ctx.textAlign = "center";
+          ctx.fillText("Frame function unavailable", PREVIEW_WIDTH / 2, PREVIEW_HEIGHT / 2);
         }
       } catch (error) {
-        console.error(`Failed to load and apply frame ${frame.name}:`, error);
+        console.error(`🚨 Failed to load and apply frame ${frame.name}:`, error);
         
         // 🔥 添加错误提示到canvas上
         ctx.fillStyle = "#ff6b6b";
         ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
         ctx.textAlign = "center";
         ctx.fillText("Failed to load frame", PREVIEW_WIDTH / 2, PREVIEW_HEIGHT / 2);
+        ctx.fillText("Click to try anyway", PREVIEW_WIDTH / 2, PREVIEW_HEIGHT / 2 + 20);
       }
 
       // 添加底部签名区域（与Templates.js保持一致）
@@ -379,9 +491,15 @@ const MyFrames = () => {
     } finally {
       // 🔥 关键修复：确保frame被标记为已渲染，避免一直显示loading
       if (frame?.id) {
+        console.log(`🎯 Marking frame ${frame.name} as rendered (finally block)`);
         // 使用RAF确保状态更新在下一帧
         requestAnimationFrame(() => {
-          setVisibleFrames(prev => new Set(prev.add(frame.id)));
+          setVisibleFrames(prev => {
+            const newSet = new Set(prev);
+            newSet.add(frame.id);
+            console.log(`🎯 Frame ${frame.name} added to visible frames set, total: ${newSet.size}`);
+            return newSet;
+          });
         });
       }
     }
