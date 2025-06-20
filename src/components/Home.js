@@ -30,13 +30,10 @@ const Home = () => {
         canonicalUrl="/"
       />
       <div className="home-container bg-white bg-opacity-60">
-        <h1 className="text-5xl font-bold text-pink-600 mb-4">Pica Pica Photo Booth</h1>
+        <h1 className="text-3xl font-bold text-pink-600 mb-4">Picapica, Your Life in Strips</h1>
         <p className="text-lg text-gray-700 mb-6">
-          Welcome to picapica.app - Your personal web-based photo booth with vintage film effects!
-        </p>      
-        <p className="text-md text-gray-600 mb-4">
-          Capture moments, apply beautiful filters, and create shareable photo strips instantly.
-        </p>
+        💖 Online Photo Booth.
+        </p> 
           
         <img 
           src="/photobooth-strip.png" 

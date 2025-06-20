@@ -166,42 +166,54 @@ const PhotoBooth = ({ setCapturedImages }) => {
         const video = videoRef.current;
         const ctx = canvas.getContext('2d');
         
-        // 获取视频的实际显示尺寸（考虑CSS样式和容器限制）
-        const videoRect = video.getBoundingClientRect();
-        const canvasRect = canvas.getBoundingClientRect();
-        
-        // 使用标准的4:3比例，确保一致性
-        const aspectRatio = 4 / 3;
-        let canvasWidth = 640;
-        let canvasHeight = 480;
-        
-        // 如果视频已经加载，使用视频的原始尺寸但保持4:3比例
-        if (video.videoWidth > 0 && video.videoHeight > 0) {
-            const videoAspectRatio = video.videoWidth / video.videoHeight;
-            
-            if (videoAspectRatio > aspectRatio) {
-                // 视频太宽，以高度为准
-                canvasHeight = video.videoHeight;
-                canvasWidth = Math.round(canvasHeight * aspectRatio);
-            } else {
-                // 视频太高，以宽度为准
-                canvasWidth = video.videoWidth;
-                canvasHeight = Math.round(canvasWidth / aspectRatio);
-            }
+        // 确保视频完全加载且尺寸稳定
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+            console.log('Video not ready, skipping frame render');
+            return;
         }
+        
+        // 等待一帧以确保CSS样式完全生效
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
+        // 获取视频的实际显示尺寸
+        const videoRect = video.getBoundingClientRect();
+        
+        // 检查显示尺寸是否有效
+        if (videoRect.width === 0 || videoRect.height === 0) {
+            console.log('Video display size not ready, skipping frame render');
+            return;
+        }
+        
+        // 使用设备像素比获得高清canvas
+        const devicePixelRatio = window.devicePixelRatio || 1;
+        const canvasWidth = Math.round(videoRect.width * devicePixelRatio);
+        const canvasHeight = Math.round(videoRect.height * devicePixelRatio);
         
         // 设置画布的内部尺寸（实际像素）
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
         
+        // 设置画布的显示尺寸
+        canvas.style.width = `${videoRect.width}px`;
+        canvas.style.height = `${videoRect.height}px`;
+        
         // 清除画布
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // 绘制预览frame - 注意这只是预览，不影响实际拍摄
+        // 缩放context以适应设备像素比
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+        
+        // 绘制预览frame - 使用显示尺寸而不是canvas内部尺寸
         try {
-            await previewFrameDrawFunction(ctx, 0, 0, canvas.width, canvas.height);
+            await previewFrameDrawFunction(ctx, 0, 0, videoRect.width, videoRect.height);
+            
+            // 绘制成功后添加ready类名，触发显示动画
+            canvas.classList.add('ready');
+            console.log('Frame overlay rendered successfully');
         } catch (error) {
             console.error('Error drawing preview frame overlay:', error);
+            // 出错时移除ready类名
+            canvas.classList.remove('ready');
         }
     };
 
@@ -212,37 +224,40 @@ const PhotoBooth = ({ setCapturedImages }) => {
         const canvas = frameOverlayCanvasRef.current;
         const video = videoRef.current;
         
-        // 获取视频的实际显示尺寸和位置
+        // 确保视频已准备好
+        if (video.videoWidth === 0 || video.videoHeight === 0) {
+            console.log('Video not ready for positioning');
+            return;
+        }
+        
+        // 获取视频和容器的实际位置
         const videoRect = video.getBoundingClientRect();
         const containerRect = video.parentElement.getBoundingClientRect();
         
-        // 计算视频在容器中的实际位置（考虑object-fit和aspect-ratio）
-        const videoAspectRatio = video.videoWidth / video.videoHeight || 4/3;
-        const containerAspectRatio = containerRect.width / containerRect.height;
-        
-        let displayWidth, displayHeight, offsetX = 0, offsetY = 0;
-        
-        if (containerAspectRatio > videoAspectRatio) {
-            // 容器比视频宽，视频会有左右边距
-            displayHeight = containerRect.height;
-            displayWidth = displayHeight * videoAspectRatio;
-            offsetX = (containerRect.width - displayWidth) / 2;
-        } else {
-            // 容器比视频高，视频会有上下边距
-            displayWidth = containerRect.width;
-            displayHeight = displayWidth / videoAspectRatio;
-            offsetY = (containerRect.height - displayHeight) / 2;
+        // 检查尺寸是否有效
+        if (videoRect.width === 0 || videoRect.height === 0) {
+            console.log('Video display rect not ready');
+            return;
         }
+        
+        // 直接使用视频的实际显示位置和尺寸，无需复杂计算
+        const offsetX = videoRect.left - containerRect.left;
+        const offsetY = videoRect.top - containerRect.top;
         
         // 设置Canvas样式以精确匹配视频显示区域
         Object.assign(canvas.style, {
             position: "absolute",
             left: `${offsetX}px`,
             top: `${offsetY}px`,
-            width: `${displayWidth}px`,
-            height: `${displayHeight}px`,
+            width: `${videoRect.width}px`,
+            height: `${videoRect.height}px`,
             transform: "scaleX(-1)", // 保持镜像效果
             transformOrigin: "center center"
+        });
+        
+        console.log('Frame overlay positioned:', {
+            offset: { x: offsetX, y: offsetY },
+            size: { width: videoRect.width, height: videoRect.height }
         });
     };
 
@@ -251,56 +266,89 @@ const PhotoBooth = ({ setCapturedImages }) => {
         if (videoRef.current && previewFrameDrawFunction) {
             const video = videoRef.current;
             
-            const handleLoadedMetadata = async () => {
-                adjustFrameOverlayPosition();
-                await drawPreviewFrameOverlay();
+            // 防抖处理函数
+            let renderTimeout;
+            const debouncedRender = async () => {
+                clearTimeout(renderTimeout);
+                renderTimeout = setTimeout(async () => {
+                    if (video.videoWidth > 0 && video.videoHeight > 0) {
+                        adjustFrameOverlayPosition();
+                        await drawPreviewFrameOverlay();
+                    }
+                }, 100); // 100ms防抖
             };
             
-            const handleResize = async () => {
-                adjustFrameOverlayPosition();
-                await drawPreviewFrameOverlay();
-            };
-            
-            const handleTimeUpdate = async () => {
-                // 每秒更新一次 frame 预览叠加层（降低性能开销）
-                if (Math.floor(video.currentTime) % 1 === 0) {
-                    await drawPreviewFrameOverlay();
+            // 视频完全就绪的处理函数
+            const handleVideoReady = async () => {
+                // 等待多个条件同时满足
+                if (video.videoWidth > 0 && 
+                    video.videoHeight > 0 && 
+                    video.readyState >= 2) {
+                    
+                    console.log('Video fully ready, rendering frame overlay');
+                    // 额外延迟确保CSS样式完全生效
+                    setTimeout(async () => {
+                        adjustFrameOverlayPosition();
+                        await drawPreviewFrameOverlay();
+                    }, 200);
                 }
             };
             
-            // 使用 ResizeObserver 来监视视频元素的尺寸变化
+            const handleResize = async () => {
+                console.log('Window resize detected');
+                await debouncedRender();
+            };
+            
+            const handleTimeUpdate = async () => {
+                // 减少频率，每5秒更新一次
+                if (Math.floor(video.currentTime) % 3 === 0) {
+                    await debouncedRender();
+                }
+            };
+            
+            // 使用 ResizeObserver 来监视视频元素的尺寸变化，增加防抖
             let resizeObserver;
             if (window.ResizeObserver) {
                 resizeObserver = new ResizeObserver(async (entries) => {
                     for (const entry of entries) {
                         if (entry.target === video) {
-                            adjustFrameOverlayPosition();
-                            await drawPreviewFrameOverlay();
+                            console.log('Video element resized:', entry.contentRect);
+                            await debouncedRender();
                         }
                     }
                 });
                 resizeObserver.observe(video);
             }
             
-            video.addEventListener('loadedmetadata', handleLoadedMetadata);
+            // 监听多个事件确保时机正确
+            video.addEventListener('loadedmetadata', handleVideoReady);
+            video.addEventListener('loadeddata', handleVideoReady);
+            video.addEventListener('canplay', handleVideoReady);
             video.addEventListener('timeupdate', handleTimeUpdate);
             window.addEventListener('resize', handleResize);
             
-            // 立即调整位置并绘制预览
+            // 初始化尝试 - 分阶段进行
             const initialSetup = async () => {
-                adjustFrameOverlayPosition();
-                if (video.videoWidth > 0) {
+                console.log('Initial setup attempt, video ready state:', video.readyState);
+                if (video.videoWidth > 0 && video.videoHeight > 0) {
+                    adjustFrameOverlayPosition();
                     await drawPreviewFrameOverlay();
+                } else {
+                    console.log('Video not ready in initial setup');
                 }
             };
             
-            // 尝试多次初始化，确保视频完全加载
+            // 分阶段初始化，给视频更多时间加载
             setTimeout(initialSetup, 100);
             setTimeout(initialSetup, 300);
             setTimeout(initialSetup, 500);
+            setTimeout(initialSetup, 1000); // 额外的延迟尝试
             
             return () => {
-                video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+                clearTimeout(renderTimeout);
+                video.removeEventListener('loadedmetadata', handleVideoReady);
+                video.removeEventListener('loadeddata', handleVideoReady);
+                video.removeEventListener('canplay', handleVideoReady);
                 video.removeEventListener('timeupdate', handleTimeUpdate);
                 window.removeEventListener('resize', handleResize);
                 if (resizeObserver) {
@@ -679,6 +727,28 @@ const PhotoBooth = ({ setCapturedImages }) => {
                      .countdown-display-header[style*="32px"] {
                          font-size: 24px !important;
                      }
+                     
+                     /* Frame叠加层移动端优化 */
+                     .frame-overlay-canvas {
+                         /* 确保在移动端正确显示 */
+                         max-width: 100% !important;
+                         max-height: 100% !important;
+                     }
+                     
+                     /* 相机容器移动端优化 */
+                     .camera-container {
+                         width: 100% !important;
+                         max-width: 100vw !important;
+                         padding: 0 10px !important;
+                         box-sizing: border-box !important;
+                     }
+                     
+                     .video-feed {
+                         width: 100% !important;
+                         max-width: 100% !important;
+                         aspect-ratio: 4/3 !important;
+                         object-fit: cover !important;
+                     }
                  }
                  
                  /* Frame预览相关动画 */
@@ -747,21 +817,48 @@ const PhotoBooth = ({ setCapturedImages }) => {
                  }
                  
                  /* 确保Frame叠加层与视频精确对齐 */
+                 .frame-overlay-canvas {
+                     /* 初始状态 */
+                     opacity: 0;
+                     transition: opacity 0.3s ease;
+                 }
+                 
+                 .frame-overlay-canvas.ready {
+                     /* 准备就绪后显示 */
+                     opacity: 0.7;
+                 }
+                 
                  @media (max-width: 768px) {
                      .camera-container {
                          max-width: 100%;
                          padding: 0 10px;
+                         position: relative;
                      }
                      
                      .video-feed {
                          width: 100%;
                          max-width: none;
+                         display: block;
+                     }
+                     
+                     .frame-overlay-canvas {
+                         /* 移动端特殊处理 */
+                         will-change: transform;
+                         backface-visibility: hidden;
                      }
                  }
                  
                  @media (min-width: 769px) {
                      .camera-container {
                          max-width: 640px;
+                         position: relative;
+                     }
+                 }
+                 
+                 @media (orientation: landscape) and (max-height: 600px) {
+                     /* 横屏模式优化 */
+                     .camera-container {
+                         max-height: 70vh;
                      }
                  }
                 `}
