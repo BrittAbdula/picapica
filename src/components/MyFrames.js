@@ -57,7 +57,7 @@ const MyFrames = () => {
     }
   }, [frames.length]);
 
-  // 使用 Intersection Observer 实现懒加载，参考Templates.js
+  // 🔥 修复Intersection Observer，添加延迟和更精确的状态管理
   useEffect(() => {
     if (isLoading || frames.length === 0) return;
 
@@ -69,18 +69,20 @@ const MyFrames = () => {
             const frame = frames[index];
             
             if (frame && !visibleFrames.has(frame.id)) {
-              // 标记为可见
+              // 🔥 关键修复：确保状态更新后再绘制
               setVisibleFrames(prev => new Set(prev.add(frame.id)));
               
-              // 异步绘制frame预览
-              drawFramePreview(canvasRefs.current[index], frame);
+              // 延迟绘制，确保DOM更新完成
+              setTimeout(() => {
+                drawFramePreview(canvasRefs.current[index], frame);
+              }, 100);
             }
           }
         });
       },
       {
         root: null,
-        rootMargin: '100px', // 提前100px开始加载
+        rootMargin: '50px', // 减少提前加载距离
         threshold: 0.1
       }
     );
@@ -118,30 +120,29 @@ const MyFrames = () => {
     }
   };
 
-  // 懒加载单个frame的draw函数，参考Templates.js
+  // 懒加载单个frame的draw函数 - 简化版本，参考Templates.js
   const loadFrameDrawFunction = async (frame) => {
-    // 使用完整的frame对象而不是只有code
     const cacheKey = `frame_${frame.id}`;
     
     if (frameDrawFunctions[cacheKey]) {
       return frameDrawFunctions[cacheKey];
     }
-  
+
     if (loadingQueue.has(cacheKey)) {
       // 等待正在进行的加载完成
       while (loadingQueue.has(cacheKey)) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
       return frameDrawFunctions[cacheKey] || (() => {});
     }
-  
+
     try {
       setLoadingQueue(prev => new Set(prev.add(cacheKey)));
       
       // 检查frame是否有有效的code
       if (!frame.code || typeof frame.code !== 'string' || frame.code.trim() === '') {
         console.warn(`Frame ${frame.name} has no valid code`);
-        const fallbackFunction = async () => {};
+        const fallbackFunction = () => {};
         setFrameDrawFunctions(prev => ({
           ...prev,
           [cacheKey]: fallbackFunction
@@ -151,28 +152,27 @@ const MyFrames = () => {
       
       console.log('Creating draw function for frame:', frame.name);
       
-      // 🔥 关键修复：使用FrameService创建draw函数，这是同步操作
+      // 添加调试日志
+      console.log('MyFrames loadFrameDrawFunction:', {
+        frameId: frame.id,
+        cacheKey,
+        cached: !!frameDrawFunctions[cacheKey],
+        inQueue: loadingQueue.has(cacheKey)
+      });
+      
+      // 🔥 关键修复：直接使用FrameService.createFrameDrawFunction，保持简单
       const drawFunction = FrameService.createFrameDrawFunction(frame.code);
       
-      // 确保返回的是一个异步函数
-      const asyncDrawFunction = async (ctx, x, y, width, height) => {
-        try {
-          return await drawFunction(ctx, x, y, width, height);
-        } catch (error) {
-          console.error(`Error executing draw function for frame ${frame.name}:`, error);
-          // 不抛出错误，让绘制继续
-        }
-      };
-      
+      // 缓存函数
       setFrameDrawFunctions(prev => ({
         ...prev,
-        [cacheKey]: asyncDrawFunction
+        [cacheKey]: drawFunction
       }));
       
-      return asyncDrawFunction;
+      return drawFunction;
     } catch (error) {
       console.error(`Failed to create draw function for frame ${frame.name}:`, error);
-      const fallbackFunction = async () => {};
+      const fallbackFunction = () => {};
       setFrameDrawFunctions(prev => ({
         ...prev,
         [cacheKey]: fallbackFunction
@@ -187,21 +187,28 @@ const MyFrames = () => {
     }
   };
 
-  // 绘制frame预览，参考Templates.js
+  // 简化的绘制frame预览函数
   const drawFramePreview = async (canvasRef, frame) => {
     if (!canvasRef.current || !frame) {
-      // 即使无法绘制，也要标记为已处理，避免一直显示loading
-      setVisibleFrames(prev => new Set(prev.add(frame.id)));
       return;
     }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
+    // 添加调试日志
+    console.log('MyFrames drawFramePreview called:', {
+      frameId: frame.id,
+      frameName: frame.name,
+      hasCode: !!frame.code,
+      codeLength: frame.code?.length,
+      canvasElement: !!canvasRef.current
+    });
+
     try {
       // 保持与 Templates.js 相同的比例
       const PREVIEW_WIDTH = 300;
-      const ASPECT_RATIO = 1450/480; // ≈ 3.02
+      const ASPECT_RATIO = 1450/480;
       const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH * ASPECT_RATIO);
 
       // 设置画布尺寸
@@ -209,7 +216,7 @@ const MyFrames = () => {
       canvas.height = PREVIEW_HEIGHT;
 
       // 计算预览中的图片尺寸和间距
-      const borderSize = Math.round((40 * PREVIEW_WIDTH) / 480); // 比例缩放边框
+      const borderSize = Math.round((40 * PREVIEW_WIDTH) / 480);
       const imgWidth = PREVIEW_WIDTH - (borderSize * 2);
       const imgHeight = Math.round((300 * PREVIEW_WIDTH) / 480);
       const photoSpacing = Math.round((20 * PREVIEW_WIDTH) / 480);
@@ -224,25 +231,16 @@ const MyFrames = () => {
         
         // 绘制占位符背景
         ctx.fillStyle = "#f0f0f0";
-        ctx.fillRect(
-          borderSize,
-          yOffset,
-          imgWidth,
-          imgHeight
-        );
+        ctx.fillRect(borderSize, yOffset, imgWidth, imgHeight);
 
         // 添加占位符文本
         ctx.fillStyle = "#999999";
         ctx.font = `${Math.round(14 * PREVIEW_WIDTH / 480)}px Arial`;
         ctx.textAlign = "center";
-        ctx.fillText(
-          "Photo Preview",
-          PREVIEW_WIDTH / 2,
-          yOffset + imgHeight / 2
-        );
+        ctx.fillText("Photo Preview", PREVIEW_WIDTH / 2, yOffset + imgHeight / 2);
       }
 
-      // 异步加载并应用frame的draw函数
+      // 🔥 关键修复：简化异步处理，参考Templates.js的成功实现
       try {
         const drawFunction = await loadFrameDrawFunction(frame);
         
@@ -251,74 +249,49 @@ const MyFrames = () => {
           for (let i = 0; i < 4; i++) {
             const yOffset = borderSize + (imgHeight + photoSpacing) * i;
             
-            // 保存当前绘图状态
             ctx.save();
-            // 将绘图上下文移动到当前图片的位置
             ctx.translate(borderSize, yOffset);
-            // 在当前图片区域绘制边框
             try {
-              await drawFunction(
-                ctx,
-                0,  // 相对于当前图片区域的x坐标
-                0,  // 相对于当前图片区域的y坐标
-                imgWidth,
-                imgHeight
-              );
+              await drawFunction(ctx, 0, 0, imgWidth, imgHeight);
             } catch (error) {
               console.error(`Error applying frame in preview for ${frame.name}:`, error);
             }
-            // 恢复绘图状态
             ctx.restore();
           }
-        } else {
-          console.warn(`No valid draw function for frame ${frame.name}`);
         }
       } catch (error) {
         console.error(`Failed to load and apply frame ${frame.name}:`, error);
       }
 
-      // 添加底部签名区域
+      // 添加底部签名区域（与Templates.js保持一致）
       const footerY = borderSize + (imgHeight + photoSpacing) * 4;
       const footerHeight = PREVIEW_HEIGHT - footerY - borderSize;
       
-      // 添加优雅的分隔线
       ctx.fillStyle = "#e2e8f0";
       ctx.fillRect(borderSize, footerY - 2, imgWidth, 1);
 
-      // 添加签名文本
       ctx.fillStyle = "#718096";
       ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
       ctx.textAlign = "center";
       
-      // 计算文本位置
       const textY = footerY + footerHeight / 2;
+      ctx.fillText("Picapica.app", PREVIEW_WIDTH / 2, textY - 10);
       
-      // 添加照片条标识
-      ctx.fillText(
-        "Picapica.app",
-        PREVIEW_WIDTH / 2,
-        textY - 10
-      );
-      
-      // 添加日期占位符
-      const today = new Date();
-      const date = today.toLocaleDateString('en-US', {
+      const date = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
         month: 'long',
-        day: 'numeric',
-        year: 'numeric'
+        day: 'numeric'
       });
       ctx.font = `${Math.round(10 * PREVIEW_WIDTH / 480)}px Arial`;
-      ctx.fillText(
-        date,
-        PREVIEW_WIDTH / 2,
-        textY + 10
-      );
+      ctx.fillText(date, PREVIEW_WIDTH / 2, textY + 10);
 
     } catch (error) {
       console.error(`Critical error in drawFramePreview for frame ${frame.name}:`, error);
     } finally {
-      // 🔥 关键修复：无论成功还是失败，都要标记frame为已渲染，避免一直显示loading
-      setVisibleFrames(prev => new Set(prev.add(frame.id)));
+      // 🔥 关键修复：确保frame被标记为已渲染，避免一直显示loading
+      if (frame && frame.id) {
+        setVisibleFrames(prev => new Set(prev.add(frame.id)));
+      }
     }
   };
 
