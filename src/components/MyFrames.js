@@ -5,6 +5,7 @@ import FrameService from "../services/frameService";
 import Meta from "./Meta";
 import DebugHelper from "../utils/debugHelper";
 import FrameRenderTest from "../utils/frameRenderTest";
+import simpleFrameTest from "../utils/simpleFrameTest";
 
 const MyFrames = () => {
   const navigate = useNavigate();
@@ -56,6 +57,11 @@ const MyFrames = () => {
     if (process.env.NODE_ENV === 'production') {
       FrameRenderTest.runAllTests().then(results => {
         console.log('🧪 Frame render test results:', results);
+        
+        // 额外测试：直接frame渲染
+        simpleFrameTest.testWithSimpleFrame().then(result => {
+          console.log('🧪 Simple frame test result:', result);
+        });
       });
     }
     
@@ -66,10 +72,64 @@ const MyFrames = () => {
   useEffect(() => {
     if (canvasRefs.current.length !== frames.length) {
       canvasRefs.current = Array(frames.length).fill().map(() => React.createRef());
+      console.log(`🔧 Created ${frames.length} canvas refs`);
     }
   }, [frames.length]);
 
-  // 🔥 生产环境专用：简化的渲染策略，绕过Intersection Observer问题
+  // 🔥 添加canvas元素就绪检查
+  useEffect(() => {
+    if (frames.length === 0) return;
+
+    const checkCanvasReady = () => {
+      let readyCount = 0;
+      canvasRefs.current.forEach((ref, index) => {
+        if (ref?.current && frames[index]) {
+          readyCount++;
+        }
+      });
+      
+      console.log(`🔍 Canvas readiness check: ${readyCount}/${frames.length} canvases ready`);
+      
+      if (readyCount === frames.length) {
+        console.log('✅ All canvases are ready!');
+      } else if (readyCount > 0) {
+        console.log(`⏳ ${readyCount} canvases ready, ${frames.length - readyCount} still waiting...`);
+      }
+      
+      return readyCount;
+    };
+
+    // 立即检查一次
+    const readyNow = checkCanvasReady();
+    
+    // 如果有canvas准备就绪，立即触发渲染
+    if (readyNow > 0) {
+      console.log('🎯 Some canvases ready, triggering immediate rendering');
+      handleCanvasReadyRendering();
+    }
+    
+    // 如果不是全部就绪，继续检查
+    if (readyNow < frames.length) {
+      const checkInterval = setInterval(() => {
+        const readyCount = checkCanvasReady();
+        if (readyCount >= frames.length) {
+          console.log('🎉 All canvases became ready!');
+          handleCanvasReadyRendering(); // 确保所有准备就绪时也触发渲染
+          clearInterval(checkInterval);
+        }
+      }, 200); // 每200ms检查一次
+
+      // 10秒后停止检查
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        console.log('⏰ Canvas readiness check timeout');
+      }, 10000);
+
+      return () => clearInterval(checkInterval);
+    }
+  }, [frames.length]);
+
+  // 🔥 修复时序问题：确保在canvas DOM元素就绪后再设置Intersection Observer
   useEffect(() => {
     if (isLoading || frames.length === 0) return;
 
@@ -78,51 +138,76 @@ const MyFrames = () => {
     console.log('🔍 Intersection Observer support:', supportsIntersectionObserver);
 
     if (supportsIntersectionObserver) {
-      // 尝试使用 Intersection Observer
-      const observer = new IntersectionObserver(
-        (entries) => {
-          console.log('📡 Intersection Observer triggered with', entries.length, 'entries');
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              const index = parseInt(entry.target.dataset.frameIndex);
-              const frame = frames[index];
-              
-              if (frame && !visibleFrames.has(frame.id)) {
-                console.log(`📡 IO: Rendering frame ${frame.name} at index ${index}`);
-                requestAnimationFrame(() => {
-                  setVisibleFrames(prev => new Set(prev.add(frame.id)));
-                  
-                  setTimeout(() => {
-                    if (canvasRefs.current[index]?.current) {
-                      drawFramePreview(canvasRefs.current[index], frame);
-                    }
-                  }, 200);
-                });
+      // 🔥 关键修复：延迟设置Intersection Observer，确保DOM元素就绪
+      const setupObserver = () => {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            console.log('📡 Intersection Observer triggered with', entries.length, 'entries');
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                const index = parseInt(entry.target.dataset.frameIndex);
+                const frame = frames[index];
+                
+                if (frame && !visibleFrames.has(frame.id)) {
+                  console.log(`📡 IO: Rendering frame ${frame.name} at index ${index}`);
+                  requestAnimationFrame(() => {
+                    setVisibleFrames(prev => new Set(prev.add(frame.id)));
+                    
+                    setTimeout(() => {
+                      if (canvasRefs.current[index]?.current) {
+                        drawFramePreview(canvasRefs.current[index], frame);
+                      }
+                    }, 200);
+                  });
+                }
               }
+            });
+          },
+          {
+            root: null,
+            rootMargin: '100px',
+            threshold: 0.1
+          }
+        );
+
+        // 🔥 等待DOM元素准备就绪，最多尝试10次
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        const trySetupObserver = () => {
+          attempts++;
+          console.log(`🔍 Attempt ${attempts} to setup Intersection Observer`);
+          
+          let observedCount = 0;
+          canvasRefs.current.forEach((ref, index) => {
+            if (ref?.current && frames[index]) {
+              ref.current.dataset.frameIndex = index;
+              observer.observe(ref.current);
+              observedCount++;
+              console.log(`📡 Observing canvas for frame: ${frames[index].name}`);
             }
           });
-        },
-        {
-          root: null,
-          rootMargin: '100px',
-          threshold: 0.1
-        }
-      );
+          
+          console.log(`📡 Set up Intersection Observer for ${observedCount} canvases (attempt ${attempts})`);
+          
+          if (observedCount === 0 && attempts < maxAttempts) {
+            console.log(`⏰ No canvases found, retrying in 300ms...`);
+            setTimeout(trySetupObserver, 300);
+          } else if (observedCount === 0) {
+            console.log(`⚠️ Failed to setup Intersection Observer after ${maxAttempts} attempts`);
+          } else {
+            console.log(`✅ Successfully set up Intersection Observer for ${observedCount} canvases`);
+          }
+        };
 
-      // 观察所有canvas元素
-      let observedCount = 0;
-      canvasRefs.current.forEach((ref, index) => {
-        if (ref?.current && frames[index]) {
-          ref.current.dataset.frameIndex = index;
-          observer.observe(ref.current);
-          observedCount++;
-        }
-      });
-      
-      console.log(`📡 Set up Intersection Observer for ${observedCount} canvases`);
+        trySetupObserver();
+        return observer;
+      };
+
+      const observer = setupObserver();
 
       return () => {
-        observer.disconnect();
+        observer?.disconnect();
       };
     } else {
       console.log('⚠️ Intersection Observer not supported, will rely on fallback');
@@ -149,35 +234,45 @@ const MyFrames = () => {
           }, i * 200); // 错开渲染时间
         }
       }
-    }, 500); // 500ms后开始立即渲染
+    }, 800); // 增加到800ms，给Intersection Observer更多时间
 
     // 如果Intersection Observer失效，渲染所有剩余frames
     const fallbackTimer = setTimeout(() => {
-      console.log('🔧 Fallback rendering: Intersection Observer may have failed');
+      console.log('🔧 Fallback rendering: Checking if Intersection Observer worked');
       
-      frames.forEach((frame, index) => {
-        if (!visibleFrames.has(frame.id) && canvasRefs.current[index]?.current) {
-          console.log(`🔧 Fallback rendering frame ${frame.name} at index ${index}`);
-          
-          // 强制更新可见状态
-          setVisibleFrames(prev => {
-            const newSet = new Set(prev);
-            newSet.add(frame.id);
-            return newSet;
-          });
-          
-          // 更长的延迟确保DOM完全准备
-          setTimeout(() => {
-            if (canvasRefs.current[index]?.current) {
-              console.log(`🔧 Actually drawing frame ${frame.name}`);
-              drawFramePreview(canvasRefs.current[index], frame);
-            } else {
-              console.error(`🚨 Canvas ref missing for frame ${frame.name} at index ${index}`);
-            }
-          }, index * 300 + 1000); // 基础1秒延迟 + 错开时间
-        }
-      });
-    }, 2000); // 2秒后开始fallback渲染
+      const unrenderedFrames = frames.filter(frame => !visibleFrames.has(frame.id));
+      console.log(`🔧 Found ${unrenderedFrames.length} unrendered frames`);
+      
+      if (unrenderedFrames.length > 0) {
+        console.log('🔧 Fallback rendering: Intersection Observer may have failed');
+        
+        unrenderedFrames.forEach((frame, idx) => {
+          const index = frames.indexOf(frame);
+          if (canvasRefs.current[index]?.current) {
+            console.log(`🔧 Fallback rendering frame ${frame.name} at index ${index}`);
+            
+            // 强制更新可见状态
+            setVisibleFrames(prev => {
+              const newSet = new Set(prev);
+              newSet.add(frame.id);
+              return newSet;
+            });
+            
+            // 更长的延迟确保DOM完全准备
+            setTimeout(() => {
+              if (canvasRefs.current[index]?.current) {
+                console.log(`🔧 Actually drawing frame ${frame.name}`);
+                drawFramePreview(canvasRefs.current[index], frame);
+              } else {
+                console.error(`🚨 Canvas ref missing for frame ${frame.name} at index ${index}`);
+              }
+            }, idx * 300 + 500); // 基础500ms延迟 + 错开时间
+          }
+        });
+      } else {
+        console.log('✅ All frames already rendered, no fallback needed');
+      }
+    }, 4000); // 增加到4秒，给Intersection Observer更多时间工作
 
     return () => {
       clearTimeout(immediateRenderTimer);
@@ -196,12 +291,45 @@ const MyFrames = () => {
       });
       const result = await response.json();
       if (result.success) {
+        console.log(`📊 Loaded ${result.data.length} user frames`);
         setFrames(result.data);
       }
     } catch (error) {
       console.error('Failed to load frames:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 🔥 处理canvas准备就绪后的渲染逻辑
+  const handleCanvasReadyRendering = () => {
+    console.log('🎯 Handling canvas ready rendering');
+    
+    // 检查有多少canvas已经准备好
+    let readyCanvases = 0;
+    canvasRefs.current.forEach((ref, index) => {
+      if (ref?.current && frames[index]) {
+        readyCanvases++;
+      }
+    });
+    
+    console.log(`🎯 Found ${readyCanvases} ready canvases out of ${frames.length} frames`);
+    
+    if (readyCanvases > 0) {
+      // 立即渲染前几个可见的frames
+      const maxImmediateRender = Math.min(6, readyCanvases);
+      
+      for (let i = 0; i < maxImmediateRender; i++) {
+        const frame = frames[i];
+        if (frame && canvasRefs.current[i]?.current && !visibleFrames.has(frame.id)) {
+          console.log(`🎯 Ready to render frame ${frame.name} immediately`);
+          setVisibleFrames(prev => new Set(prev.add(frame.id)));
+          
+          setTimeout(() => {
+            drawFramePreview(canvasRefs.current[i], frame);
+          }, i * 150); // 错开渲染时间
+        }
+      }
     }
   };
 
@@ -761,6 +889,9 @@ const MyFrames = () => {
                        backgroundColor: "#f8f8f8"
                      }}
                      aria-label={`${frame.name} frame preview`}
+                     onLoad={() => {
+                       console.log(`🎨 Canvas ${index} for frame ${frame.name} loaded`);
+                     }}
                    />
                    
                    {/* 如果frame还没有被渲染，显示加载提示 */}
