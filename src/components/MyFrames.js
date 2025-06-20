@@ -128,6 +128,7 @@ const MyFrames = () => {
     }
   
     if (loadingQueue.has(cacheKey)) {
+      // 等待正在进行的加载完成
       while (loadingQueue.has(cacheKey)) {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
@@ -140,7 +141,7 @@ const MyFrames = () => {
       // 检查frame是否有有效的code
       if (!frame.code || typeof frame.code !== 'string' || frame.code.trim() === '') {
         console.warn(`Frame ${frame.name} has no valid code`);
-        const fallbackFunction = () => {};
+        const fallbackFunction = async () => {};
         setFrameDrawFunctions(prev => ({
           ...prev,
           [cacheKey]: fallbackFunction
@@ -149,17 +150,29 @@ const MyFrames = () => {
       }
       
       console.log('Creating draw function for frame:', frame.name);
+      
+      // 🔥 关键修复：使用FrameService创建draw函数，这是同步操作
       const drawFunction = FrameService.createFrameDrawFunction(frame.code);
+      
+      // 确保返回的是一个异步函数
+      const asyncDrawFunction = async (ctx, x, y, width, height) => {
+        try {
+          return await drawFunction(ctx, x, y, width, height);
+        } catch (error) {
+          console.error(`Error executing draw function for frame ${frame.name}:`, error);
+          // 不抛出错误，让绘制继续
+        }
+      };
       
       setFrameDrawFunctions(prev => ({
         ...prev,
-        [cacheKey]: drawFunction
+        [cacheKey]: asyncDrawFunction
       }));
       
-      return drawFunction;
+      return asyncDrawFunction;
     } catch (error) {
       console.error(`Failed to create draw function for frame ${frame.name}:`, error);
-      const fallbackFunction = () => {};
+      const fallbackFunction = async () => {};
       setFrameDrawFunctions(prev => ({
         ...prev,
         [cacheKey]: fallbackFunction
@@ -176,126 +189,137 @@ const MyFrames = () => {
 
   // 绘制frame预览，参考Templates.js
   const drawFramePreview = async (canvasRef, frame) => {
-    if (!canvasRef.current || !frame) return;
+    if (!canvasRef.current || !frame) {
+      // 即使无法绘制，也要标记为已处理，避免一直显示loading
+      setVisibleFrames(prev => new Set(prev.add(frame.id)));
+      return;
+    }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    // 保持与 Templates.js 相同的比例
-    const PREVIEW_WIDTH = 300;
-    const ASPECT_RATIO = 1450/480; // ≈ 3.02
-    const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH * ASPECT_RATIO);
-
-    // 设置画布尺寸
-    canvas.width = PREVIEW_WIDTH;
-    canvas.height = PREVIEW_HEIGHT;
-
-    // 计算预览中的图片尺寸和间距
-    const borderSize = Math.round((40 * PREVIEW_WIDTH) / 480); // 比例缩放边框
-    const imgWidth = PREVIEW_WIDTH - (borderSize * 2);
-    const imgHeight = Math.round((300 * PREVIEW_WIDTH) / 480);
-    const photoSpacing = Math.round((20 * PREVIEW_WIDTH) / 480);
-
-    // 填充背景
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // 绘制4张预览图片
-    for (let i = 0; i < 4; i++) {
-      const yOffset = borderSize + (imgHeight + photoSpacing) * i;
-      
-      // 绘制占位符背景
-      ctx.fillStyle = "#f0f0f0";
-      ctx.fillRect(
-        borderSize,
-        yOffset,
-        imgWidth,
-        imgHeight
-      );
-
-      // 添加占位符文本
-      ctx.fillStyle = "#999999";
-      ctx.font = `${Math.round(14 * PREVIEW_WIDTH / 480)}px Arial`;
-      ctx.textAlign = "center";
-      ctx.fillText(
-        "Photo Preview",
-        PREVIEW_WIDTH / 2,
-        yOffset + imgHeight / 2
-      );
-    }
-
-    // 异步加载并应用frame的draw函数
     try {
-      const drawFunction = await loadFrameDrawFunction(frame);
-      
-      if (drawFunction && typeof drawFunction === "function") {
-        // 重新绘制每张照片的frame
-        for (let i = 0; i < 4; i++) {
-          const yOffset = borderSize + (imgHeight + photoSpacing) * i;
-          
-          // 保存当前绘图状态
-          ctx.save();
-          // 将绘图上下文移动到当前图片的位置
-          ctx.translate(borderSize, yOffset);
-          // 在当前图片区域绘制边框
-          try {
-            await drawFunction(
-              ctx,
-              0,  // 相对于当前图片区域的x坐标
-              0,  // 相对于当前图片区域的y坐标
-              imgWidth,
-              imgHeight
-            );
-          } catch (error) {
-            console.error(`Error applying frame in preview:`, error);
-          }
-          // 恢复绘图状态
-          ctx.restore();
-        }
+      // 保持与 Templates.js 相同的比例
+      const PREVIEW_WIDTH = 300;
+      const ASPECT_RATIO = 1450/480; // ≈ 3.02
+      const PREVIEW_HEIGHT = Math.round(PREVIEW_WIDTH * ASPECT_RATIO);
+
+      // 设置画布尺寸
+      canvas.width = PREVIEW_WIDTH;
+      canvas.height = PREVIEW_HEIGHT;
+
+      // 计算预览中的图片尺寸和间距
+      const borderSize = Math.round((40 * PREVIEW_WIDTH) / 480); // 比例缩放边框
+      const imgWidth = PREVIEW_WIDTH - (borderSize * 2);
+      const imgHeight = Math.round((300 * PREVIEW_WIDTH) / 480);
+      const photoSpacing = Math.round((20 * PREVIEW_WIDTH) / 480);
+
+      // 填充背景
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 绘制4张预览图片
+      for (let i = 0; i < 4; i++) {
+        const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+        
+        // 绘制占位符背景
+        ctx.fillStyle = "#f0f0f0";
+        ctx.fillRect(
+          borderSize,
+          yOffset,
+          imgWidth,
+          imgHeight
+        );
+
+        // 添加占位符文本
+        ctx.fillStyle = "#999999";
+        ctx.font = `${Math.round(14 * PREVIEW_WIDTH / 480)}px Arial`;
+        ctx.textAlign = "center";
+        ctx.fillText(
+          "Photo Preview",
+          PREVIEW_WIDTH / 2,
+          yOffset + imgHeight / 2
+        );
       }
+
+      // 异步加载并应用frame的draw函数
+      try {
+        const drawFunction = await loadFrameDrawFunction(frame);
+        
+        if (drawFunction && typeof drawFunction === "function") {
+          // 重新绘制每张照片的frame
+          for (let i = 0; i < 4; i++) {
+            const yOffset = borderSize + (imgHeight + photoSpacing) * i;
+            
+            // 保存当前绘图状态
+            ctx.save();
+            // 将绘图上下文移动到当前图片的位置
+            ctx.translate(borderSize, yOffset);
+            // 在当前图片区域绘制边框
+            try {
+              await drawFunction(
+                ctx,
+                0,  // 相对于当前图片区域的x坐标
+                0,  // 相对于当前图片区域的y坐标
+                imgWidth,
+                imgHeight
+              );
+            } catch (error) {
+              console.error(`Error applying frame in preview for ${frame.name}:`, error);
+            }
+            // 恢复绘图状态
+            ctx.restore();
+          }
+        } else {
+          console.warn(`No valid draw function for frame ${frame.name}`);
+        }
+      } catch (error) {
+        console.error(`Failed to load and apply frame ${frame.name}:`, error);
+      }
+
+      // 添加底部签名区域
+      const footerY = borderSize + (imgHeight + photoSpacing) * 4;
+      const footerHeight = PREVIEW_HEIGHT - footerY - borderSize;
+      
+      // 添加优雅的分隔线
+      ctx.fillStyle = "#e2e8f0";
+      ctx.fillRect(borderSize, footerY - 2, imgWidth, 1);
+
+      // 添加签名文本
+      ctx.fillStyle = "#718096";
+      ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
+      ctx.textAlign = "center";
+      
+      // 计算文本位置
+      const textY = footerY + footerHeight / 2;
+      
+      // 添加照片条标识
+      ctx.fillText(
+        "Picapica.app",
+        PREVIEW_WIDTH / 2,
+        textY - 10
+      );
+      
+      // 添加日期占位符
+      const today = new Date();
+      const date = today.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+      ctx.font = `${Math.round(10 * PREVIEW_WIDTH / 480)}px Arial`;
+      ctx.fillText(
+        date,
+        PREVIEW_WIDTH / 2,
+        textY + 10
+      );
+
     } catch (error) {
-      console.error(`Failed to load and apply frame:`, error);
+      console.error(`Critical error in drawFramePreview for frame ${frame.name}:`, error);
+    } finally {
+      // 🔥 关键修复：无论成功还是失败，都要标记frame为已渲染，避免一直显示loading
+      setVisibleFrames(prev => new Set(prev.add(frame.id)));
     }
-
-    // 添加底部签名区域
-    const footerY = borderSize + (imgHeight + photoSpacing) * 4;
-    const footerHeight = PREVIEW_HEIGHT - footerY - borderSize;
-    
-    // 添加优雅的分隔线
-    ctx.fillStyle = "#e2e8f0";
-    ctx.fillRect(borderSize, footerY - 2, imgWidth, 1);
-
-    // 添加签名文本
-    ctx.fillStyle = "#718096";
-    ctx.font = `${Math.round(12 * PREVIEW_WIDTH / 480)}px Arial`;
-    ctx.textAlign = "center";
-    
-    // 计算文本位置
-    const textY = footerY + footerHeight / 2;
-    
-    // 添加照片条标识
-    ctx.fillText(
-      "Picapica.app",
-      PREVIEW_WIDTH / 2,
-      textY - 10
-    );
-    
-    // 添加日期占位符
-    const today = new Date();
-    const date = today.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
-    ctx.font = `${Math.round(10 * PREVIEW_WIDTH / 480)}px Arial`;
-    ctx.fillText(
-      date,
-      PREVIEW_WIDTH / 2,
-      textY + 10
-    );
-
-    // 标记frame为已渲染，隐藏加载动画
-    setVisibleFrames(prev => new Set(prev.add(frame.id)));
   };
 
   // 使用frame功能，与Templates保持一致的导航方式
