@@ -20,6 +20,7 @@ import { isAuthenticated, getUsername, logout } from "./utils/auth";
 import Clarity from "@microsoft/clarity";
 import VConsoleComponent from "./utils/VConsole";
 import Templates from "./components/Templates";
+import TemplateTest from "./components/TemplateTest";
 import FrameMaker from "./components/FrameMaker";
 import MyFrames from "./components/MyFrames";
 
@@ -154,6 +155,7 @@ function App() {
 					<Route path="/privacy-policy" element={<PrivacyPolicy />} />
 					<Route path="/terms-of-service" element={<TermsOfService />} />
 					<Route path="/templates" element={<Templates />} />
+					<Route path="/template-test" element={<TemplateTest />} />
 					<Route path="/frames" element={<Templates />} />
 					<Route path="/frame-maker" element={<FrameMaker />} />
 					<Route path="/my-frames" element={<MyFrames />	} />

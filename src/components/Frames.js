@@ -2630,101 +2630,6 @@ const FRAMES = {
             }
         }
     },
-    colorfulDots: {
-        draw: (ctx, x, y, width, height) => {
-            // 彩色圆点框架，轻松活泼
-            const bgColor =  "white";
-            
-            // 定义与每种背景色相协调的圆点颜色
-            const dotPalettes = {
-                "white": ["#FF69B4", "#3498DB", "#2ECC71", "#F1C40F", "#9B59B6"],
-                "black": ["#FF69B4", "#3498DB", "#2ECC71", "#F1C40F", "#9B59B6"],
-                "#f6d5da": ["#D25377", "#8C3A57", "#E98195", "#FFFFFF", "#5D3754"], // Pink
-                "#dde6d5": ["#5D7D50", "#2F4F2F", "#8FB07C", "#FFFFFF", "#3E5F3E"], // Green
-                "#adc3e5": ["#4A6DA3", "#2A4374", "#829BC7", "#FFFFFF", "#1A355A"], // Blue
-                "#FFF2CC": ["#D6A922", "#8E6C0A", "#E0C160", "#FFFFFF", "#876012"], // Yellow
-                "#dbcfff": ["#7E57C2", "#4D2C91", "#A58FD8", "#FFFFFF", "#3D2076"]  // Purple
-            };
-            
-            // 获取当前背景色的圆点调色板
-            let colors = dotPalettes["white"]; // 默认
-            
-            if (dotPalettes[bgColor]) {
-                colors = dotPalettes[bgColor];
-            }
-            
-            // 绘制圆点边框
-            const dotSize = 6;
-            const dotSpacing = 15;
-            
-            // 计算每条边需要的点数
-            const dotsH = Math.floor(width / dotSpacing);
-            const dotsV = Math.floor(height / dotSpacing);
-            
-            // 绘制上边缘点
-            for (let i = 0; i < dotsH; i++) {
-                const dotX = x + (i + 0.5) * (width / dotsH);
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.beginPath();
-                ctx.arc(dotX, y + dotSize, dotSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // 绘制右边缘点
-            for (let i = 0; i < dotsV; i++) {
-                const dotY = y + (i + 0.5) * (height / dotsV);
-                ctx.fillStyle = colors[(i + 1) % colors.length];
-                ctx.beginPath();
-                ctx.arc(x + width - dotSize, dotY, dotSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // 绘制下边缘点
-            for (let i = dotsH - 1; i >= 0; i--) {
-                const dotX = x + (i + 0.5) * (width / dotsH);
-                ctx.fillStyle = colors[(dotsH - i) % colors.length];
-                ctx.beginPath();
-                ctx.arc(dotX, y + height - dotSize, dotSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // 绘制左边缘点
-            for (let i = dotsV - 1; i >= 0; i--) {
-                const dotY = y + (i + 0.5) * (height / dotsV);
-                ctx.fillStyle = colors[(dotsV - i + 1) % colors.length];
-                ctx.beginPath();
-                ctx.arc(x + dotSize, dotY, dotSize, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // 在四个角落添加特殊大点
-            const cornerDotSize = dotSize * 1.5;
-            
-            // 左上角
-            ctx.fillStyle = colors[0];
-            ctx.beginPath();
-            ctx.arc(x + cornerDotSize, y + cornerDotSize, cornerDotSize, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 右上角
-            ctx.fillStyle = colors[1];
-            ctx.beginPath();
-            ctx.arc(x + width - cornerDotSize, y + cornerDotSize, cornerDotSize, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 右下角
-            ctx.fillStyle = colors[2];
-            ctx.beginPath();
-            ctx.arc(x + width - cornerDotSize, y + height - cornerDotSize, cornerDotSize, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 左下角
-            ctx.fillStyle = colors[3];
-            ctx.beginPath();
-            ctx.arc(x + cornerDotSize, y + height - cornerDotSize, cornerDotSize, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    },
     darkFairy: {
         draw: (ctx, x, y, width, height) => {
             // 暮光仙境主题
@@ -3595,10 +3500,6 @@ const FRAMES = {
                  ctx.closePath();
                  ctx.fill();
 
-                 // Optional: Add a contrasting outline
-                 // ctx.strokeStyle = "#000000"; // Black outline
-                 // ctx.lineWidth = 1;
-                 // ctx.stroke();
             };
 
              // Helper for simple flower
@@ -3881,1538 +3782,1238 @@ const FRAMES = {
             drawSparkle4Point(x + width - 60, y + height - 55, 4, "rgba(255, 192, 203, 0.8)"); // Pink
         }
     },
-    retroPopParty: {
-        description: "复古波普派对风！大胆撞色+几何图形背景。", // Retro Pop Art style
+    // 1. 精致梦幻光环 - 改进版
+    dreamyAuraRefined: {
         draw: (ctx, x, y, width, height) => {
-            // Background: Bold Stripes + Polka Dots Mix
-            const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"]; // Chart.js colors
-            const stripeHeight = height / 6;
-            for (let i = 0; i < 6; i++) {
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.fillRect(x, y + i * stripeHeight, width, stripeHeight);
-            }
-            // Add Polka Dots layer
-            ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; // White transparent dots
-            const dotRadius = 8;
-            const dotSpacing = 30;
-            for (let i = x + dotSpacing/2; i < x + width; i += dotSpacing) {
-                for (let j = y + dotSpacing/2; j < y + height; j += dotSpacing) {
-                     ctx.beginPath();
-                     ctx.arc(i + (Math.random()-0.5)*5, j + (Math.random()-0.5)*5, dotRadius, 0, Math.PI*2); // Add jitter
-                     ctx.fill();
-                 }
-             }
-
-             // Border: Thick simple frame + Inner line
-             ctx.strokeStyle = "#000000"; // Black border
-             ctx.lineWidth = 8;
-             ctx.strokeRect(x + 4, y + 4, width - 8, height - 8);
-             ctx.strokeStyle = "#FFFFFF"; // White inner line
-             ctx.lineWidth = 2;
-             ctx.strokeRect(x + 10, y + 10, width - 20, height - 20);
-             ctx.lineWidth = 1; // Reset
-
-             // Stickers: Chunky simple shapes + outline
-             const drawChunkyShape = (type, cx, cy, size, color, outlineColor = "#000000") => {
-                 ctx.fillStyle = color;
-                 ctx.strokeStyle = outlineColor;
-                 ctx.lineWidth = 2;
-                 ctx.beginPath();
-                 if (type === 'star') { // Using Y2K chunky star logic
-                    ctx.moveTo(cx, cy - size);
-                     for (let i = 0; i < 5; i++) {
-                         const angle = Math.PI / 5;
-                         ctx.lineTo(cx + Math.cos(1.5 * Math.PI + i * 2 * angle) * size, cy + Math.sin(1.5 * Math.PI + i * 2 * angle) * size);
-                         ctx.lineTo(cx + Math.cos(1.5 * Math.PI + (i + 0.5) * 2 * angle) * size * 0.6, cy + Math.sin(1.5 * Math.PI + (i + 0.5) * 2 * angle) * size * 0.6);
-                     }
-                 } else if (type === 'heart') { // Simpler chunky heart
-                     ctx.moveTo(cx, cy + size*0.8); // Bottom point
-                     ctx.arc(cx - size*0.5, cy, size*0.7, Math.PI * 0.25, Math.PI * 1.25, false); // Left Lobe
-                     ctx.arc(cx + size*0.5, cy, size*0.7, Math.PI * 1.75, Math.PI * 0.75, false); // Right Lobe
-                 } else if (type === 'lightning') {
-                     ctx.moveTo(cx - size*0.5, cy - size);
-                     ctx.lineTo(cx + size*0.3, cy - size*0.2);
-                     ctx.lineTo(cx - size*0.2, cy - size*0.1);
-                     ctx.lineTo(cx + size*0.5, cy + size);
-                     ctx.lineTo(cx - size*0.3, cy + size*0.2);
-                     ctx.lineTo(cx + size*0.2, cy + size*0.1);
-                     ctx.closePath();
-                 }
-                 ctx.closePath();
-                 ctx.fill();
-                 ctx.stroke();
-             };
-
-            // Layout Stickers (fewer, larger, bolder)
-             drawChunkyShape('star', x + 60, y + 70, 25, colors[2]); // Yellow star
-             drawChunkyShape('heart', x + width - 70, y + 60, 22, colors[0]); // Pink heart
-             drawChunkyShape('lightning', x + width / 2, y + height - 50, 30, colors[1]); // Blue lightning
-
-             // Simple Text
-             ctx.font = "bold 24px 'Impact', sans-serif";
-             ctx.fillStyle = "#FFFFFF";
-             ctx.strokeStyle = "#000000";
-             ctx.lineWidth = 4;
-             ctx.textAlign = "left";
-             ctx.strokeText("POP!", x + 25, y + 35);
-             ctx.fillText("POP!", x + 25, y + 35);
-
-             ctx.textAlign = "right";
-             ctx.strokeText("WOW!", x + width - 25, y + height - 25);
-             ctx.fillText("WOW!", x + width - 25, y + height - 25);
-        }
-    },
-    retroPopParty: {
-        description: "复古波普派对风！大胆撞色+几何图形装饰边框。", // Retro Pop Art style
-        draw: (ctx, x, y, width, height) => {
-            // 定义波普色彩
-            const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"];
-            
-            // 1. 仅在边框绘制条纹而不是整个背景
-            const borderWidth = 40; // 边框宽度
-            
-            // 绘制上边框条纹
-            const topStripeWidth = width / 6;
-            for (let i = 0; i < 6; i++) {
-                ctx.fillStyle = colors[i % colors.length];
-                ctx.fillRect(x + i * topStripeWidth, y, topStripeWidth, borderWidth);
-            }
-            
-            // 绘制下边框条纹
-            for (let i = 0; i < 6; i++) {
-                ctx.fillStyle = colors[(i + 3) % colors.length]; // 错开颜色
-                ctx.fillRect(x + i * topStripeWidth, y + height - borderWidth, topStripeWidth, borderWidth);
-            }
-            
-            // 绘制左边框条纹
-            const sideStripeHeight = (height - 2 * borderWidth) / 4;
-            for (let i = 0; i < 4; i++) {
-                ctx.fillStyle = colors[(i + 1) % colors.length];
-                ctx.fillRect(x, y + borderWidth + i * sideStripeHeight, borderWidth, sideStripeHeight);
-            }
-            
-            // 绘制右边框条纹
-            for (let i = 0; i < 4; i++) {
-                ctx.fillStyle = colors[(i + 4) % colors.length];
-                ctx.fillRect(x + width - borderWidth, y + borderWidth + i * sideStripeHeight, borderWidth, sideStripeHeight);
-            }
-            
-            // 2. 添加波点装饰在边框上
-            ctx.fillStyle = "rgba(255, 255, 255, 0.5)"; // 半透明白色圆点
-            const dotRadius = 6;
-            const dotSpacing = 20;
-            
-            // 上边框波点
-            for (let i = x + dotSpacing; i < x + width; i += dotSpacing) {
-                for (let j = y + dotSpacing/2; j < y + borderWidth; j += dotSpacing) {
-                    ctx.beginPath();
-                    ctx.arc(i + (Math.random()-0.5)*3, j + (Math.random()-0.5)*3, dotRadius, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            }
-            
-            // 下边框波点
-            for (let i = x + dotSpacing; i < x + width; i += dotSpacing) {
-                for (let j = y + height - borderWidth + dotSpacing/2; j < y + height; j += dotSpacing) {
-                    ctx.beginPath();
-                    ctx.arc(i + (Math.random()-0.5)*3, j + (Math.random()-0.5)*3, dotRadius, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            }
-            
-            // 左边框波点
-            for (let i = x + dotSpacing/2; i < x + borderWidth; i += dotSpacing) {
-                for (let j = y + borderWidth + dotSpacing; j < y + height - borderWidth; j += dotSpacing) {
-                    ctx.beginPath();
-                    ctx.arc(i + (Math.random()-0.5)*3, j + (Math.random()-0.5)*3, dotRadius, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            }
-            
-            // 右边框波点
-            for (let i = x + width - borderWidth + dotSpacing/2; i < x + width; i += dotSpacing) {
-                for (let j = y + borderWidth + dotSpacing; j < y + height - borderWidth; j += dotSpacing) {
-                    ctx.beginPath();
-                    ctx.arc(i + (Math.random()-0.5)*3, j + (Math.random()-0.5)*3, dotRadius, 0, Math.PI*2);
-                    ctx.fill();
-                }
-            }
-            
-            // 3. 内部黑白边框
-            ctx.strokeStyle = "#000000"; // 黑色边框
-            ctx.lineWidth = 6;
-            ctx.strokeRect(x + borderWidth/2, y + borderWidth/2, width - borderWidth, height - borderWidth);
-            
-            ctx.strokeStyle = "#FFFFFF"; // 白色内线
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + borderWidth/2 + 5, y + borderWidth/2 + 5, width - borderWidth - 10, height - borderWidth - 10);
-            
-            // 4. 形状装饰函数
-            const drawChunkyShape = (type, cx, cy, size, color, outlineColor = "#000000") => {
-                ctx.fillStyle = color;
-                ctx.strokeStyle = outlineColor;
-                ctx.lineWidth = 2;
+            // 多层次渐变光环效果
+            const createMultiLayerGlow = (cx, cy, baseRadius) => {
+                // 外层光晕
+                const outerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius * 1.8);
+                outerGlow.addColorStop(0, "rgba(255, 182, 193, 0.05)");
+                outerGlow.addColorStop(0.3, "rgba(255, 218, 185, 0.08)");
+                outerGlow.addColorStop(0.6, "rgba(230, 230, 250, 0.06)");
+                outerGlow.addColorStop(1, "rgba(255, 255, 255, 0)");
+                
+                ctx.fillStyle = outerGlow;
                 ctx.beginPath();
-                
-                if (type === 'star') {
-                    for (let i = 0; i < 5; i++) {
-                        const angle = Math.PI / 5;
-                        const startAngle = -Math.PI / 2 + i * 2 * angle;
-                        const endAngle = startAngle + angle;
-                        
-                        if (i === 0) {
-                            ctx.moveTo(
-                                cx + Math.cos(startAngle) * size,
-                                cy + Math.sin(startAngle) * size
-                            );
-                        }
-                        
-                        ctx.lineTo(
-                            cx + Math.cos(startAngle) * size,
-                            cy + Math.sin(startAngle) * size
-                        );
-                        ctx.lineTo(
-                            cx + Math.cos(endAngle) * (size * 0.4),
-                            cy + Math.sin(endAngle) * (size * 0.4)
-                        );
-                    }
-                } else if (type === 'heart') {
-                    ctx.moveTo(cx, cy + size*0.7);
-                    ctx.arc(cx - size*0.5, cy, size*0.5, Math.PI * 0.25, Math.PI * 1.3, false);
-                    ctx.arc(cx + size*0.5, cy, size*0.5, Math.PI * 1.7, Math.PI * 0.75, false);
-                } else if (type === 'lightning') {
-                    ctx.moveTo(cx - size*0.3, cy - size);
-                    ctx.lineTo(cx + size*0.2, cy - size*0.3);
-                    ctx.lineTo(cx - size*0.1, cy - size*0.1);
-                    ctx.lineTo(cx + size*0.3, cy + size);
-                    ctx.lineTo(cx - size*0.2, cy + size*0.3);
-                    ctx.lineTo(cx + size*0.1, cy + size*0.1);
-                    ctx.closePath();
-                } else if (type === 'circle') {
-                    ctx.arc(cx, cy, size, 0, Math.PI * 2);
-                } else if (type === 'triangle') {
-                    ctx.moveTo(cx, cy - size);
-                    ctx.lineTo(cx - size, cy + size/2);
-                    ctx.lineTo(cx + size, cy + size/2);
-                    ctx.closePath();
-                } else if (type === 'speech') {
-                    // 语音气泡
-                    ctx.arc(cx, cy, size, 0, Math.PI * 2);
-                    // 添加小尖角
-                    ctx.moveTo(cx - size/2, cy + size*0.8);
-                    ctx.lineTo(cx - size, cy + size*1.5);
-                    ctx.lineTo(cx, cy + size*0.7);
-                }
-                
-                ctx.closePath();
+                ctx.arc(cx, cy, baseRadius * 1.8, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.stroke();
+                
+                // 中层彩虹光环
+                const middleGlow = ctx.createRadialGradient(cx, cy, baseRadius * 0.3, cx, cy, baseRadius * 1.2);
+                middleGlow.addColorStop(0, "rgba(255, 192, 203, 0.15)");
+                middleGlow.addColorStop(0.25, "rgba(255, 218, 185, 0.12)");
+                middleGlow.addColorStop(0.5, "rgba(221, 160, 221, 0.10)");
+                middleGlow.addColorStop(0.75, "rgba(176, 224, 230, 0.08)");
+                middleGlow.addColorStop(1, "rgba(255, 255, 255, 0)");
+                
+                ctx.fillStyle = middleGlow;
+                ctx.beginPath();
+                ctx.arc(cx, cy, baseRadius * 1.2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 内层聚焦光
+                const innerGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, baseRadius * 0.6);
+                innerGlow.addColorStop(0, "rgba(255, 255, 255, 0.25)");
+                innerGlow.addColorStop(0.5, "rgba(255, 250, 250, 0.15)");
+                innerGlow.addColorStop(1, "rgba(255, 255, 255, 0)");
+                
+                ctx.fillStyle = innerGlow;
+                ctx.beginPath();
+                ctx.arc(cx, cy, baseRadius * 0.6, 0, Math.PI * 2);
+                ctx.fill();
             };
             
-            // 5. 在四个角落添加装饰，而不是中央
-            // 左上角
-            drawChunkyShape('star', x + borderWidth + 15, y + borderWidth + 15, 20, colors[2], "#000000");
-            
-            // 右上角
-            drawChunkyShape('heart', x + width - borderWidth - 20, y + borderWidth + 20, 18, colors[0], "#000000");
-            
-            // 左下角
-            drawChunkyShape('lightning', x + borderWidth + 20, y + height - borderWidth - 20, 20, colors[4], "#000000");
-            
-            // 右下角
-            drawChunkyShape('speech', x + width - borderWidth - 20, y + height - borderWidth - 20, 18, colors[1], "#000000");
-            
-            // 6. 边缘添加额外波普元素
-            drawChunkyShape('triangle', x + width/4, y + borderWidth/2, 12, colors[3], "#000000");
-            drawChunkyShape('circle', x + width*3/4, y + height - borderWidth/2, 12, colors[5], "#000000");
-            drawChunkyShape('circle', x + borderWidth/2, y + height/2, 12, colors[2], "#000000");
-            drawChunkyShape('triangle', x + width - borderWidth/2, y + height/2, 12, colors[0], "#000000");
-            
-            // 7. 文字标语 - 放在边框上而不是中央
-            ctx.font = "bold 22px 'Impact', sans-serif";
-            ctx.textAlign = "center";
-            
-            // 上边框文字
-            ctx.fillStyle = "#000000";
-            ctx.strokeStyle = "#FFFFFF";
-            ctx.lineWidth = 3;
-            ctx.strokeText("POP!", x + width/2, y + borderWidth/2 + 8);
-            ctx.fillText("POP!", x + width/2, y + borderWidth/2 + 8);
-            
-            // 下边框文字
-            ctx.strokeText("WOW!", x + width/2, y + height - borderWidth/2 + 8);
-            ctx.fillText("WOW!", x + width/2, y + height - borderWidth/2 + 8);
-            
-            // 左边旋转文字
-            ctx.save();
-            ctx.translate(x + borderWidth/2, y + height/2);
-            ctx.rotate(-Math.PI/2);
-            ctx.strokeText("YEAH!", 0, 0);
-            ctx.fillText("YEAH!", 0, 0);
-            ctx.restore();
-            
-            // 右边旋转文字
-            ctx.save();
-            ctx.translate(x + width - borderWidth/2, y + height/2);
-            ctx.rotate(Math.PI/2);
-            ctx.strokeText("COOL!", 0, 0);
-            ctx.fillText("COOL!", 0, 0);
-            ctx.restore();
-        }
-    },
-    girlyGraffitiScrapbook: {
-        description: "手绘涂鸦+剪贴簿风，胶带、手绘图案、拍纸本背景。",
-        draw: (ctx, x, y, width, height) => {
-            // 为避免遮挡中央内容，调整装饰边框宽度
-            const borderWidth = 50;
-            
-            // 绘制拍纸本背景 - 仅在边框区域
-            ctx.fillStyle = "#FFFDF0"; 
-            
-            // 仅绘制边框区域的背景
-            // 上边框
-            ctx.fillRect(x, y, width, borderWidth);
-            // 下边框
-            ctx.fillRect(x, y + height - borderWidth, width, borderWidth);
-            // 左边框
-            ctx.fillRect(x, y + borderWidth, borderWidth, height - 2 * borderWidth);
-            // 右边框
-            ctx.fillRect(x + width - borderWidth, y + borderWidth, borderWidth, height - 2 * borderWidth);
-            
-            // 在边框区域绘制横线 - 笔记本纸效果
-            ctx.strokeStyle = "rgba(173, 216, 230, 0.4)"; 
-            ctx.lineWidth = 0.5;
-            
-            // 上边框区域横线
-            for(let i = y + 10; i < y + borderWidth; i += 10) { 
-                ctx.beginPath(); 
-                ctx.moveTo(x, i); 
-                ctx.lineTo(x + width, i); 
-                ctx.stroke();
-            }
-            
-            // 下边框区域横线
-            for(let i = y + height - borderWidth + 10; i < y + height; i += 10) { 
-                ctx.beginPath(); 
-                ctx.moveTo(x, i); 
-                ctx.lineTo(x + width, i); 
-                ctx.stroke();
-            }
-            
-            // 添加粉色竖线（笔记本边线）
-            ctx.strokeStyle = "rgba(255, 105, 180, 0.5)"; 
-            ctx.lineWidth = 1;
-            ctx.beginPath(); 
-            ctx.moveTo(x + 20, y); 
-            ctx.lineTo(x + 20, y + borderWidth); 
-            ctx.stroke();
-            
-            ctx.beginPath(); 
-            ctx.moveTo(x + 20, y + height - borderWidth); 
-            ctx.lineTo(x + 20, y + height); 
-            ctx.stroke();
-            
-            // 自定义绘制和纸胶带函数
-            const drawWashiTape = (centerX, centerY, width, height, angle, color, pattern = null) => {
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(angle * Math.PI / 180);
+            // 精致的星光粒子
+            const drawRefinedSparkle = (cx, cy, size, intensity = 1) => {
+                // 光晕效果
+                const sparkleGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 3);
+                sparkleGlow.addColorStop(0, `rgba(255, 255, 255, ${0.8 * intensity})`);
+                sparkleGlow.addColorStop(0.2, `rgba(255, 255, 255, ${0.4 * intensity})`);
+                sparkleGlow.addColorStop(0.5, `rgba(255, 250, 250, ${0.2 * intensity})`);
+                sparkleGlow.addColorStop(1, "rgba(255, 255, 255, 0)");
                 
-                // 胶带背景
-                ctx.fillStyle = color;
-                ctx.fillRect(-width/2, -height/2, width, height);
+                ctx.fillStyle = sparkleGlow;
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * 3, 0, Math.PI * 2);
+                ctx.fill();
                 
-                // 胶带图案
-                if (pattern === 'stripes') {
-                    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-                    ctx.lineWidth = 1;
-                    for (let i = -width/2 + 4; i < width/2; i += 4) {
-                        ctx.beginPath();
-                        ctx.moveTo(i, -height/2);
-                        ctx.lineTo(i, height/2);
-                        ctx.stroke();
-                    }
-                } else if (pattern === 'dots') {
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-                    for (let i = -width/2 + 4; i < width/2; i += 6) {
-                        for (let j = -height/2 + 3; j < height/2; j += 6) {
-                            ctx.beginPath();
-                            ctx.arc(i, j, 1, 0, Math.PI * 2);
-                            ctx.fill();
-                        }
-                    }
-                } else if (pattern === 'zigzag') {
-                    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-                    ctx.lineWidth = 1;
-                    ctx.beginPath();
-                    let x = -width/2 + 2;
-                    ctx.moveTo(x, -height/2 + 2);
-                    while (x < width/2 - 2) {
-                        x += 4;
-                        ctx.lineTo(x, -height/2 + height/4);
-                        x += 4;
-                        ctx.lineTo(x, -height/2 + 2);
-                    }
-                    ctx.stroke();
-                    
-                    ctx.beginPath();
-                    x = -width/2 + 2;
-                    ctx.moveTo(x, height/2 - 2);
-                    while (x < width/2 - 2) {
-                        x += 4;
-                        ctx.lineTo(x, height/2 - height/4);
-                        x += 4;
-                        ctx.lineTo(x, height/2 - 2);
-                    }
-                    ctx.stroke();
-                }
-                
-                // 胶带边缘半透明效果
-                ctx.globalAlpha = 0.1;
-                ctx.fillStyle = "#FFFFFF";
-                ctx.fillRect(-width/2, -height/2, width, 2);
-                ctx.fillRect(-width/2, height/2 - 2, width, 2);
-                ctx.globalAlpha = 1;
-                
-                ctx.restore();
-            };
-            
-            // 绘制涂鸦函数
-            const drawDoodle = (type, cx, cy, size, color) => {
-                ctx.fillStyle = color;
-                ctx.strokeStyle = color;
-                ctx.lineWidth = size/5;
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
-                
-                switch(type) {
-                    case 'heart':
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy + size/2);
-                        ctx.bezierCurveTo(
-                            cx, cy, 
-                            cx - size, cy, 
-                            cx - size, cy - size/2
-                        );
-                        ctx.bezierCurveTo(
-                            cx - size, cy - size, 
-                            cx, cy - size, 
-                            cx, cy - size/2
-                        );
-                        ctx.bezierCurveTo(
-                            cx, cy - size, 
-                            cx + size, cy - size, 
-                            cx + size, cy - size/2
-                        );
-                        ctx.bezierCurveTo(
-                            cx + size, cy, 
-                            cx, cy, 
-                            cx, cy + size/2
-                        );
-                        ctx.fill();
-                        break;
-                        
-                    case 'star':
-                        ctx.beginPath();
-                        for (let i = 0; i < 5; i++) {
-                            const angle = (i * 2 * Math.PI / 5) - Math.PI / 2;
-                            const x1 = cx + Math.cos(angle) * size;
-                            const y1 = cy + Math.sin(angle) * size;
-                            
-                            if (i === 0) {
-                                ctx.moveTo(x1, y1);
-                            } else {
-                                ctx.lineTo(x1, y1);
-                            }
-                            
-                            const angle2 = angle + Math.PI / 5;
-                            const x2 = cx + Math.cos(angle2) * (size/2);
-                            const y2 = cy + Math.sin(angle2) * (size/2);
-                            
-                            ctx.lineTo(x2, y2);
-                        }
-                        ctx.closePath();
-                        ctx.fill();
-                        break;
-                        
-                    case 'sparkle':
-                        // 十字星形
-                        for (let i = 0; i < 4; i++) {
-                            const angle = (i * Math.PI / 2);
-                            ctx.beginPath();
-                            ctx.moveTo(cx, cy);
-                            ctx.lineTo(
-                                cx + Math.cos(angle) * size,
-                                cy + Math.sin(angle) * size
-                            );
-                            ctx.stroke();
-                            
-                            // 十字星的小点
-                            ctx.beginPath();
-                            ctx.arc(
-                                cx + Math.cos(angle) * size,
-                                cy + Math.sin(angle) * size,
-                                size/5, 0, Math.PI * 2
-                            );
-                            ctx.fill();
-                        }
-                        
-                        // 中心点
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, size/4, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                        
-                    case 'spiral':
-                        ctx.beginPath();
-                        let angle = 0;
-                        let radius = size / 10;
-                        let x1 = cx, y1 = cy;
-                        ctx.moveTo(x1, y1);
-                        
-                        for (let i = 0; i < 30; i++) {
-                            angle += 0.2;
-                            radius += size / 50;
-                            const x2 = cx + Math.cos(angle) * radius;
-                            const y2 = cy + Math.sin(angle) * radius;
-                            ctx.lineTo(x2, y2);
-                            x1 = x2;
-                            y1 = y2;
-                        }
-                        ctx.stroke();
-                        break;
-                        
-                    case 'flower':
-                        for (let i = 0; i < 6; i++) {
-                            const angle = i * Math.PI / 3;
-                            ctx.beginPath();
-                            ctx.arc(
-                                cx + Math.cos(angle) * size/2,
-                                cy + Math.sin(angle) * size/2,
-                                size/2, 0, Math.PI * 2
-                            );
-                            ctx.fill();
-                        }
-                        
-                        // 花芯
-                        ctx.fillStyle = "#FFFF88";
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, size/3, 0, Math.PI * 2);
-                        ctx.fill();
-                        break;
-                        
-                    case 'cloud':
-                        ctx.beginPath();
-                        ctx.arc(cx, cy, size/2, Math.PI, 2 * Math.PI);
-                        ctx.arc(cx - size/2, cy, size/3, 0, Math.PI);
-                        ctx.arc(cx + size/2, cy, size/3, 0, Math.PI);
-                        ctx.closePath();
-                        ctx.fill();
-                        break;
-                }
-            };
-            
-            // 绘制对话气泡函数
-            const drawTextBubble = (cx, cy, width, height, pointX, pointY) => {
-                ctx.fillStyle = "#FFFFFF";
-                ctx.strokeStyle = "#999999";
+                // 十字星光
+                ctx.strokeStyle = `rgba(255, 255, 255, ${0.9 * intensity})`;
                 ctx.lineWidth = 1;
+                ctx.shadowBlur = 3;
+                ctx.shadowColor = "rgba(255, 255, 255, 0.8)";
                 
-                // 气泡主体
+                // 垂直线
+                const gradient1 = ctx.createLinearGradient(cx, cy - size * 2, cx, cy + size * 2);
+                gradient1.addColorStop(0, "rgba(255, 255, 255, 0)");
+                gradient1.addColorStop(0.3, `rgba(255, 255, 255, ${0.6 * intensity})`);
+                gradient1.addColorStop(0.5, `rgba(255, 255, 255, ${0.9 * intensity})`);
+                gradient1.addColorStop(0.7, `rgba(255, 255, 255, ${0.6 * intensity})`);
+                gradient1.addColorStop(1, "rgba(255, 255, 255, 0)");
+                
+                ctx.strokeStyle = gradient1;
                 ctx.beginPath();
-                ctx.ellipse(cx, cy, width/2, height/2, 0, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.moveTo(cx, cy - size * 2);
+                ctx.lineTo(cx, cy + size * 2);
                 ctx.stroke();
                 
-                // 气泡尖角
+                // 水平线
+                const gradient2 = ctx.createLinearGradient(cx - size * 2, cy, cx + size * 2, cy);
+                gradient2.addColorStop(0, "rgba(255, 255, 255, 0)");
+                gradient2.addColorStop(0.3, `rgba(255, 255, 255, ${0.6 * intensity})`);
+                gradient2.addColorStop(0.5, `rgba(255, 255, 255, ${0.9 * intensity})`);
+                gradient2.addColorStop(0.7, `rgba(255, 255, 255, ${0.6 * intensity})`);
+                gradient2.addColorStop(1, "rgba(255, 255, 255, 0)");
+                
+                ctx.strokeStyle = gradient2;
                 ctx.beginPath();
-                ctx.moveTo(cx, cy - height/4);
-                ctx.quadraticCurveTo(
-                    (cx + pointX) / 2,
-                    (cy + pointY) / 2,
-                    pointX, pointY
-                );
-                ctx.quadraticCurveTo(
-                    (cx + pointX) / 2 + 5,
-                    (cy + pointY) / 2 + 5,
-                    cx + 10, cy - height/4
-                );
-                ctx.closePath();
-                ctx.fill();
+                ctx.moveTo(cx - size * 2, cy);
+                ctx.lineTo(cx + size * 2, cy);
                 ctx.stroke();
+                
+                // 中心亮点
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = `rgba(255, 255, 255, ${intensity})`;
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
             };
             
-            // 在四个角落添加胶带，位置调整到边缘
-            drawWashiTape(x + 30, y + 25, 60, 20, -35, '#FFDAB9', 'stripes');
-            drawWashiTape(x + width - 30, y + 25, 60, 20, 35, '#98FB98', 'dots');
-            drawWashiTape(x + 30, y + height - 25, 60, 20, 40, '#E6E6FA', 'zigzag');
-            drawWashiTape(x + width - 30, y + height - 25, 60, 20, -40, '#ADD8E6', 'stripes');
+            // 绘制精致的水彩效果背景
+            const drawWatercolorEffect = () => {
+                // 底层淡彩
+                ctx.globalAlpha = 0.05;
+                const baseGradient = ctx.createLinearGradient(x, y, x + width, y + height);
+                baseGradient.addColorStop(0, "#FFE4E1");
+                baseGradient.addColorStop(0.3, "#F0E68C");
+                baseGradient.addColorStop(0.6, "#E6E6FA");
+                baseGradient.addColorStop(1, "#F0FFFF");
+                
+                ctx.fillStyle = baseGradient;
+                ctx.fillRect(x, y, width, height);
+                ctx.globalAlpha = 1;
+            };
             
-            // 额外的胶带在边框中间位置
-            drawWashiTape(x + width/2, y + 25, 80, 25, 0, '#FFD1DC', 'dots');
-            drawWashiTape(x + width/2, y + height - 25, 80, 25, 0, '#B5EAD7', 'zigzag');
-            drawWashiTape(x + 25, y + height/2, 80, 25, 90, '#C7CEEB', 'dots');
-            drawWashiTape(x + width - 25, y + height/2, 80, 25, 90, '#FFE4B5', 'stripes');
+            // 应用效果
+            drawWatercolorEffect();
             
-            // 边框手绘线条
-            ctx.strokeStyle = "#444444"; 
-            ctx.lineWidth = 1.5; 
-            ctx.lineCap = "round";
-            ctx.lineJoin = "round";
+            // 四角光环
+            createMultiLayerGlow(x + 50, y + 50, 35);
+            createMultiLayerGlow(x + width - 50, y + 50, 35);
+            createMultiLayerGlow(x + 50, y + height - 50, 35);
+            createMultiLayerGlow(x + width - 50, y + height - 50, 35);
             
-            const wiggle = 2; // 线条的摆动量
-            ctx.beginPath(); 
+            // 边缘装饰光点
+            const sparklePositions = [
+                { x: x + 30, y: y + 25, size: 4, intensity: 0.9 },
+                { x: x + width - 30, y: y + 25, size: 5, intensity: 1 },
+                { x: x + width/2, y: y + 15, size: 3, intensity: 0.7 },
+                { x: x + 25, y: y + height - 25, size: 4, intensity: 0.8 },
+                { x: x + width - 25, y: y + height - 25, size: 5, intensity: 1 },
+                { x: x + width/2, y: y + height - 15, size: 3, intensity: 0.6 },
+                { x: x + 15, y: y + height/2, size: 3, intensity: 0.7 },
+                { x: x + width - 15, y: y + height/2, size: 4, intensity: 0.8 }
+            ];
             
-            // 只绘制边框区域的手绘线条，不进入中心区域
-            ctx.moveTo(x + borderWidth + (Math.random()-0.5)*wiggle, y + borderWidth + (Math.random()-0.5)*wiggle);
-            ctx.lineTo(x + width - borderWidth + (Math.random()-0.5)*wiggle, y + borderWidth + (Math.random()-0.5)*wiggle);
-            ctx.lineTo(x + width - borderWidth + (Math.random()-0.5)*wiggle, y + height - borderWidth + (Math.random()-0.5)*wiggle);
-            ctx.lineTo(x + borderWidth + (Math.random()-0.5)*wiggle, y + height - borderWidth + (Math.random()-0.5)*wiggle);
-            ctx.closePath();
-            ctx.stroke();
-            
-            // 在边缘区域添加涂鸦，避免遮挡中央区域
-            drawDoodle('heart', x + borderWidth/2 + 15, y + borderWidth/2 + 15, 12, '#E57373');
-            drawDoodle('star', x + width - borderWidth/2 - 15, y + borderWidth/2 + 15, 12, '#81C784');
-            drawDoodle('sparkle', x + borderWidth/2 + 15, y + height - borderWidth/2 - 15, 10, '#64B5F6');
-            drawDoodle('spiral', x + width - borderWidth/2 - 15, y + height - borderWidth/2 - 15, 10, '#FFB74D');
-            
-            // 沿着边框添加额外的涂鸦
-            drawDoodle('heart', x + width / 4, y + borderWidth/2, 8, '#FF94A1');
-            drawDoodle('star', x + width * 3/4, y + borderWidth/2, 8, '#82DDA7');
-            drawDoodle('flower', x + borderWidth/2, y + height/3, 12, '#FF94D0');
-            drawDoodle('cloud', x + width - borderWidth/2, y + height/3, 12, '#94CAFF');
-            drawDoodle('heart', x + borderWidth/2, y + height * 2/3, 8, '#FFBE7D');
-            drawDoodle('sparkle', x + width - borderWidth/2, y + height * 2/3, 8, '#C08FFF');
-            drawDoodle('flower', x + width / 4, y + height - borderWidth/2, 8, '#7DC1FF');
-            drawDoodle('cloud', x + width * 3/4, y + height - borderWidth/2, 8, '#AAD9A8');
-            
-            // 将对话气泡移到边框上
-            drawTextBubble(x + width - borderWidth/2, y + height - borderWidth/2 - 10, 70, 30, x + width - borderWidth - 30, y + height - borderWidth - 30);
-            
-            // 手写风格文字
-            ctx.font = "16px Arial";  // 假设没有特殊字体
-            ctx.fillStyle = "#333";
-            ctx.textAlign = "center";
-            ctx.fillText("So fun!", x + width - borderWidth/2, y + height - borderWidth/2 - 7);
-            
-            // 日期文本移至右上角边框区域
-            ctx.textAlign = "left";
-            // ctx.fillText("Date:__/__", x + width - borderWidth + 5, y + 20);
+            sparklePositions.forEach(pos => {
+                drawRefinedSparkle(pos.x, pos.y, pos.size, pos.intensity);
+            });
         }
     },
     
-    kawaiiCosmicVoyage: {
-        description: "可爱宇宙主题！行星、UFO、星星背景。",
+    // 2. 精致日式大头贴 - 改进版
+    japanesePurikuraRefined: {
         draw: (ctx, x, y, width, height) => {
-            // 设置边框宽度，确保装饰不遮挡中央内容
-            const borderWidth = 60;
-            
-            // 仅绘制边框区域的深色背景
-            ctx.fillStyle = "#1A1A40";
-            
-            // 上边框
-            ctx.fillRect(x, y, width, borderWidth);
-            // 下边框
-            ctx.fillRect(x, y + height - borderWidth, width, borderWidth);
-            // 左边框
-            ctx.fillRect(x, y + borderWidth, borderWidth, height - 2 * borderWidth);
-            // 右边框
-            ctx.fillRect(x + width - borderWidth, y + borderWidth, borderWidth, height - 2 * borderWidth);
-            
-            // 自定义星尘函数
-            const drawSparkleDust = (minX, minY, maxX, maxY, count, color, minSize, maxSize) => {
-                ctx.fillStyle = color;
-                
-                for (let i = 0; i < count; i++) {
-                    // 随机位置，但仅限于边框区域
-                    let starX, starY;
-                    
-                    // 确定星星位置在哪个边框区域
-                    const side = Math.floor(Math.random() * 4);
-                    
-                    switch(side) {
-                        case 0: // 上边框
-                            starX = minX + Math.random() * (maxX - minX);
-                            starY = minY + Math.random() * borderWidth;
-                            break;
-                        case 1: // 右边框
-                            starX = maxX - borderWidth + Math.random() * borderWidth;
-                            starY = minY + borderWidth + Math.random() * (maxY - minY - 2 * borderWidth);
-                            break;
-                        case 2: // 下边框
-                            starX = minX + Math.random() * (maxX - minX);
-                            starY = maxY - borderWidth + Math.random() * borderWidth;
-                            break;
-                        case 3: // 左边框
-                            starX = minX + Math.random() * borderWidth;
-                            starY = minY + borderWidth + Math.random() * (maxY - minY - 2 * borderWidth);
-                            break;
-                    }
-                    
-                    const size = minSize + Math.random() * (maxSize - minSize);
-                    
-                    // 20%的几率绘制十字星
-                    if (Math.random() < 0.2) {
-                        ctx.beginPath();
-                        ctx.moveTo(starX - size, starY);
-                        ctx.lineTo(starX + size, starY);
-                        ctx.moveTo(starX, starY - size);
-                        ctx.lineTo(starX, starY + size);
-                        ctx.stroke();
-                    } else {
-                        ctx.beginPath();
-                        ctx.arc(starX, starY, size/2, 0, Math.PI * 2);
-                        ctx.fill();
-                        
-                        // 有10%几率添加光芒
-                        if (Math.random() < 0.1) {
-                            const glow = ctx.createRadialGradient(starX, starY, 0, starX, starY, size * 3);
-                            glow.addColorStop(0, "rgba(255, 255, 255, 0.3)");
-                            glow.addColorStop(1, "rgba(255, 255, 255, 0)");
-                            
-                            ctx.fillStyle = glow;
-                            ctx.beginPath();
-                            ctx.arc(starX, starY, size * 3, 0, Math.PI * 2);
-                            ctx.fill();
-                            
-                            ctx.fillStyle = color; // 重置填充色
-                        }
-                    }
-                }
+            // 辅助函数 - 颜色处理
+            const darkenColor = (color, amount) => {
+                // 简单的颜色变暗处理
+                const colorMap = {
+                    "#FFB6C1": "#FF91A4",
+                    "#87CEEB": "#6AB5E3",
+                    "#FFFFE0": "#E6E6C8",
+                    "#DDA0DD": "#C48FC4",
+                    "#FFD700": "#E6C200"
+                };
+                return colorMap[color] || color;
             };
             
-            // 自定义绘制行星函数
-            const drawPlanet = (cx, cy, size, color, ringColor, hasFace) => {
-                // 行星光晕
-                const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 1.5);
-                glow.addColorStop(0, "rgba(255, 255, 255, 0.2)");
-                glow.addColorStop(1, "rgba(255, 255, 255, 0)");
-                
-                ctx.fillStyle = glow;
-                ctx.beginPath();
-                ctx.arc(cx, cy, size * 1.5, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 行星主体
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                ctx.arc(cx, cy, size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 行星环（如果有）
-                if (ringColor) {
-                    ctx.strokeStyle = ringColor;
-                    ctx.lineWidth = size / 4;
-                    ctx.beginPath();
-                    ctx.ellipse(cx, cy, size * 1.3, size * 0.3, 0, 0, Math.PI * 2);
-                    ctx.stroke();
-                    
-                    // 环的顶部半透明遮盖
-                    ctx.globalCompositeOperation = 'source-atop';
-                    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-                    ctx.beginPath();
-                    ctx.ellipse(cx, cy, size * 1.3, size * 0.3, 0, Math.PI, 2 * Math.PI);
-                    ctx.stroke();
-                    ctx.globalCompositeOperation = 'source-over';
-                }
-                
-                // 行星表面细节
-                ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
-                
-                // 随机添加表面纹理
-                for (let i = 0; i < 4; i++) {
-                    const angle = Math.random() * Math.PI * 2;
-                    const distance = Math.random() * size * 0.7;
-                    const spotSize = size * (0.1 + Math.random() * 0.1);
-                    
-                    ctx.beginPath();
-                    ctx.arc(
-                        cx + Math.cos(angle) * distance,
-                        cy + Math.sin(angle) * distance,
-                        spotSize, 0, Math.PI * 2
-                    );
-                    ctx.fill();
-                }
-                
-                // 可爱表情（如果需要）
-                if (hasFace) {
-                    // 眼睛
-                    ctx.fillStyle = "#000";
-                    ctx.beginPath();
-                    ctx.arc(cx - size * 0.3, cy - size * 0.1, size * 0.15, 0, Math.PI * 2);
-                    ctx.arc(cx + size * 0.3, cy - size * 0.1, size * 0.15, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // 眼睛高光
-                    ctx.fillStyle = "#FFF";
-                    ctx.beginPath();
-                    ctx.arc(cx - size * 0.25, cy - size * 0.15, size * 0.05, 0, Math.PI * 2);
-                    ctx.arc(cx + size * 0.35, cy - size * 0.15, size * 0.05, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // 笑容
-                    ctx.strokeStyle = "#000";
-                    ctx.lineWidth = size * 0.08;
-                    ctx.lineCap = "round";
-                    ctx.beginPath();
-                    ctx.arc(cx, cy + size * 0.1, size * 0.4, 0.1 * Math.PI, 0.9 * Math.PI);
-                    ctx.stroke();
-                }
+            const lightenColor = (color, amount) => {
+                // 简单的颜色变亮处理
+                const colorMap = {
+                    "#FFB6C1": "#FFD6E1",
+                    "#87CEEB": "#B7E3F5",
+                    "#FFFFE0": "#FFFFF0",
+                    "#DDA0DD": "#EEB7EE",
+                    "#FFD700": "#FFED4E"
+                };
+                return colorMap[color] || color;
             };
             
-            // 自定义绘制UFO函数
-            const drawUFO = (cx, cy, size, bodyColor, domeColor, lightColor) => {
-                // UFO光束
-                if (lightColor) {
-                    const beamGradient = ctx.createLinearGradient(cx, cy + size * 0.5, cx, cy + size * 2);
-                    beamGradient.addColorStop(0, lightColor);
-                    beamGradient.addColorStop(1, "rgba(255, 0, 255, 0)");
+            const drawStarPath = (ctx, cx, cy, size) => {
+                const points = 5;
+                const outerRadius = size;
+                const innerRadius = size / 2;
+                
+                ctx.beginPath();
+                for (let i = 0; i < points * 2; i++) {
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const angle = (Math.PI / points) * i - Math.PI / 2;
+                    const x = cx + Math.cos(angle) * radius;
+                    const y = cy + Math.sin(angle) * radius;
                     
-                    ctx.fillStyle = beamGradient;
-                    ctx.beginPath();
-                    ctx.moveTo(cx - size * 0.7, cy + size * 0.5);
-                    ctx.lineTo(cx + size * 0.7, cy + size * 0.5);
-                    ctx.lineTo(cx + size * 1.2, cy + size * 2);
-                    ctx.lineTo(cx - size * 1.2, cy + size * 2);
-                    ctx.closePath();
-                    ctx.fill();
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
                 }
-                
-                // UFO底部
-                ctx.fillStyle = bodyColor;
-                ctx.beginPath();
-                ctx.ellipse(cx, cy + size * 0.1, size, size * 0.3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // UFO舱体
-                ctx.fillStyle = domeColor;
-                ctx.beginPath();
-                ctx.ellipse(cx, cy - size * 0.2, size * 0.7, size * 0.5, 0, Math.PI, 0);
-                ctx.fill();
-                
-                // 舱体反光
-                ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-                ctx.beginPath();
-                ctx.ellipse(cx, cy - size * 0.25, size * 0.6, size * 0.3, 0, Math.PI, 0);
-                ctx.fill();
-                
-                // 底部灯光
-                const lightCount = 5;
-                for (let i = 0; i < lightCount; i++) {
-                    const lightAngle = (i / lightCount) * Math.PI;
-                    const lightX = cx + Math.cos(lightAngle) * size * 0.8;
-                    const lightY = cy + size * 0.1;
-                    
-                    ctx.fillStyle = `rgba(255, 255, 100, ${0.5 + 0.5 * Math.sin(Date.now() / 500 + i)})`; // 闪烁效果
-                    ctx.beginPath();
-                    ctx.arc(lightX, lightY, size * 0.1, 0, Math.PI * 2);
-                    ctx.fill();
-                }
+                ctx.closePath();
             };
             
-            // 自定义绘制流星函数
-            const drawShootingStar = (startX, startY, length, angle, width, color) => {
-                const endX = startX + Math.cos(angle) * length;
-                const endY = startY + Math.sin(angle) * length;
+            // 渐变边框背景
+            const createBorderGradient = () => {
+                const borderWidth = 15;
                 
-                // 流星尾巴渐变
-                const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-                gradient.addColorStop(0, color);
-                gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
-                
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = width;
-                ctx.lineCap = "round";
-                
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
-                
-                // 流星头部
-                ctx.fillStyle = "#FFFFFF";
-                ctx.beginPath();
-                ctx.arc(startX, startY, width * 0.8, 0, Math.PI * 2);
-                ctx.fill();
-            };
-            
-            // 绘制星尘，限制在边框区域
-            drawSparkleDust(x, y, x + width, y + height, 150, "rgba(255, 255, 255, 0.8)", 0.5, 1.5);
-            
-            // 在边框区域添加星云渐变
-            // 左上角星云
-            let nebulaX = x + borderWidth/2;
-            let nebulaY = y + borderWidth/2;
-            let nebulaRadius = borderWidth * 1.5;
-            
-            let nebulaGrad = ctx.createRadialGradient(nebulaX, nebulaY, 0, nebulaX, nebulaY, nebulaRadius);
-            nebulaGrad.addColorStop(0, "rgba(218, 112, 214, 0.15)");
-            nebulaGrad.addColorStop(0.5, "rgba(138, 43, 226, 0.08)");
-            nebulaGrad.addColorStop(1, "rgba(75, 0, 130, 0)");
-            
-            ctx.fillStyle = nebulaGrad;
-            ctx.beginPath();
-            ctx.arc(nebulaX, nebulaY, nebulaRadius, 0, Math.PI*2);
-            ctx.fill();
-            
-            // 右下角星云
-            nebulaX = x + width - borderWidth/2;
-            nebulaY = y + height - borderWidth/2;
-            
-            nebulaGrad = ctx.createRadialGradient(nebulaX, nebulaY, 0, nebulaX, nebulaY, nebulaRadius);
-            nebulaGrad.addColorStop(0, "rgba(0, 191, 255, 0.15)");
-            nebulaGrad.addColorStop(0.5, "rgba(30, 144, 255, 0.08)");
-            nebulaGrad.addColorStop(1, "rgba(0, 0, 139, 0)");
-            
-            ctx.fillStyle = nebulaGrad;
-            ctx.beginPath();
-            ctx.arc(nebulaX, nebulaY, nebulaRadius, 0, Math.PI*2);
-            ctx.fill();
-            
-            // 边框线条
-            ctx.strokeStyle = "rgba(173, 216, 230, 0.3)";
-            ctx.lineWidth = 3;
-            ctx.strokeRect(x + borderWidth, y + borderWidth, width - 2 * borderWidth, height - 2 * borderWidth);
-            
-            // 所有装饰元素放在边框上，而不是中央区域
-            // 左上方装饰
-            drawPlanet(x + borderWidth/2, y + borderWidth/2, 20, "#FFB347", "#FDFD96");
-            
-            // 右上方装饰
-            drawUFO(x + width - borderWidth/2, y + borderWidth/2, 18, "#C0C0C0", "#AFEEEE", "#FF00FF");
-            
-            // 左下方装饰
-            drawShootingStar(x + borderWidth/2, y + height - borderWidth/2, 50, -Math.PI/4, 6, "#FFFACD");
-            
-            // 右下方装饰
-            drawPlanet(x + width - borderWidth/2, y + height - borderWidth/2, 15, "#77DD77", null, true);
-            
-            // 添加更多装饰在边框中部
-            drawPlanet(x + width/4, y + borderWidth/2, 12, "#FFD700", null, false);
-            drawPlanet(x + width*3/4, y + height - borderWidth/2, 12, "#FF6B88", "#C9E4FF", false);
-            drawUFO(x + borderWidth/2, y + height/2, 15, "#E1E1E1", "#B5EAD7", "#87CEEB");
-            drawShootingStar(x + width - borderWidth/2, y + height/3, 40, Math.PI*3/4, 5, "#FFC3E6");
-            
-            // 在边框顶部添加文字，而不是干扰中央内容
-            ctx.font = "bold 18px Arial";  // 假设没有特殊字体
-            ctx.fillStyle = "#FFFFFF";
-            ctx.shadowColor = "rgba(255, 105, 180, 0.7)";
-            ctx.shadowBlur = 5;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-            ctx.textAlign = "center";
-            ctx.fillText("Cosmic Cutie ☆", x + width/2, y + borderWidth/2);
-            
-            // 添加底部文字
-            ctx.fillText("★ Space Adventure ★", x + width/2, y + height - borderWidth/3);
-            
-            // 重置阴影
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-        }
-    },
-    ghibliDreamworld: {
-        description: "吉卜力梦境，带你进入宫崎骏的奇幻世界。温馨自然的边框装饰，充满童话感。",
-        draw: (ctx, x, y, width, height) => {
-            // 设置边框宽度，确保中心内容不被遮挡
-            const borderWidth = 70;
-            
-            // 绘制吉卜力特色的渐变天空背景（仅在边框区域）
-            const drawSkyBackground = () => {
-                // 上边框天空渐变
+                // 上边框渐变
                 const topGradient = ctx.createLinearGradient(x, y, x, y + borderWidth);
-                topGradient.addColorStop(0, "#87CEEB");  // 浅蓝色天空
-                topGradient.addColorStop(1, "#E0F7FF");  // 更浅的蓝色
-                
+                topGradient.addColorStop(0, "rgba(255, 182, 193, 0.3)");
+                topGradient.addColorStop(1, "rgba(255, 182, 193, 0)");
                 ctx.fillStyle = topGradient;
                 ctx.fillRect(x, y, width, borderWidth);
                 
-                // 下边框草地渐变
+                // 下边框渐变
                 const bottomGradient = ctx.createLinearGradient(x, y + height - borderWidth, x, y + height);
-                bottomGradient.addColorStop(0, "#8FBC8F");  // 深绿色
-                bottomGradient.addColorStop(1, "#A7D282");  // 浅绿色
-                
+                bottomGradient.addColorStop(0, "rgba(173, 216, 230, 0)");
+                bottomGradient.addColorStop(1, "rgba(173, 216, 230, 0.3)");
                 ctx.fillStyle = bottomGradient;
                 ctx.fillRect(x, y + height - borderWidth, width, borderWidth);
                 
                 // 左边框渐变
-                const leftGradient = ctx.createLinearGradient(x, y + borderWidth, x + borderWidth, y + borderWidth);
-                leftGradient.addColorStop(0, "#87CEEB");
-                leftGradient.addColorStop(1, "#E0F7FF");
-                
+                const leftGradient = ctx.createLinearGradient(x, y, x + borderWidth, y);
+                leftGradient.addColorStop(0, "rgba(255, 218, 185, 0.3)");
+                leftGradient.addColorStop(1, "rgba(255, 218, 185, 0)");
                 ctx.fillStyle = leftGradient;
-                ctx.fillRect(x, y + borderWidth, borderWidth, height - 2 * borderWidth);
+                ctx.fillRect(x, y, borderWidth, height);
                 
                 // 右边框渐变
-                const rightGradient = ctx.createLinearGradient(x + width - borderWidth, y + borderWidth, x + width, y + borderWidth);
-                rightGradient.addColorStop(0, "#E0F7FF");
-                rightGradient.addColorStop(1, "#87CEEB");
-                
+                const rightGradient = ctx.createLinearGradient(x + width - borderWidth, y, x + width, y);
+                rightGradient.addColorStop(0, "rgba(221, 160, 221, 0)");
+                rightGradient.addColorStop(1, "rgba(221, 160, 221, 0.3)");
                 ctx.fillStyle = rightGradient;
-                ctx.fillRect(x + width - borderWidth, y + borderWidth, borderWidth, height - 2 * borderWidth);
-                
-                // 添加一些柔和的云朵（仅在上边框）
-                drawCloud(x + width * 0.2, y + borderWidth * 0.4, borderWidth * 0.8);
-                drawCloud(x + width * 0.6, y + borderWidth * 0.6, borderWidth * 0.7);
-                drawCloud(x + width * 0.85, y + borderWidth * 0.3, borderWidth * 0.5);
+                ctx.fillRect(x + width - borderWidth, y, borderWidth, height);
             };
             
-            // 绘制吉卜力风格的蓬松云朵
-            const drawCloud = (cloudX, cloudY, cloudSize) => {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+            // 精致的3D装饰元素
+            const draw3DDecoration = (posX, posY, type, size, rotation = 0) => {
+                ctx.save();
+                ctx.translate(posX, posY);
+                ctx.rotate(rotation);
                 
-                // 蓬松的云朵由多个重叠的圆形组成
-                ctx.beginPath();
-                ctx.arc(cloudX, cloudY, cloudSize * 0.5, 0, Math.PI * 2);
-                ctx.arc(cloudX + cloudSize * 0.4, cloudY - cloudSize * 0.1, cloudSize * 0.45, 0, Math.PI * 2);
-                ctx.arc(cloudX + cloudSize * 0.7, cloudY + cloudSize * 0.05, cloudSize * 0.35, 0, Math.PI * 2);
-                ctx.arc(cloudX + cloudSize * 0.3, cloudY + cloudSize * 0.2, cloudSize * 0.4, 0, Math.PI * 2);
-                ctx.arc(cloudX - cloudSize * 0.2, cloudY + cloudSize * 0.1, cloudSize * 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 为云朵添加轻微的阴影，增加立体感
-                ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-                ctx.beginPath();
-                ctx.arc(cloudX + cloudSize * 0.1, cloudY + cloudSize * 0.3, cloudSize * 0.3, 0, Math.PI);
-                ctx.fill();
-            };
-            
-            // 绘制草地和花朵（在下边框）
-            const drawGrassAndFlowers = () => {
-                // 绘制一些随机的草丛
-                ctx.fillStyle = "#528539";
-                for (let i = 0; i < width; i += 20) {
-                    const grassHeight = 10 + Math.random() * 15;
-                    const grassWidth = 5 + Math.random() * 8;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(x + i, y + height - 2);
-                    ctx.quadraticCurveTo(
-                        x + i + grassWidth/2, 
-                        y + height - grassHeight - 10, 
-                        x + i + grassWidth, 
-                        y + height - 2
-                    );
-                    ctx.fill();
-                }
-                
-                // 绘制几朵小花
-                const flowerPositions = [
-                    {x: x + width * 0.1, y: y + height - borderWidth * 0.6, color: "#FFD700"},
-                    {x: x + width * 0.3, y: y + height - borderWidth * 0.5, color: "#FF69B4"},
-                    {x: x + width * 0.5, y: y + height - borderWidth * 0.7, color: "#FFFFFF"},
-                    {x: x + width * 0.7, y: y + height - borderWidth * 0.4, color: "#9370DB"},
-                    {x: x + width * 0.9, y: y + height - borderWidth * 0.6, color: "#FF6347"},
-                    {x: x + width * 0.15, y: y + height - borderWidth * 0.3, color: "#FFFFFF"},
-                    {x: x + width * 0.65, y: y + height - borderWidth * 0.3, color: "#FFD700"},
-                    {x: x + width * 0.85, y: y + height - borderWidth * 0.5, color: "#FF69B4"}
-                ];
-                
-                flowerPositions.forEach(flower => {
-                    drawFlower(flower.x, flower.y, 6, flower.color);
-                });
-            };
-            
-            // 绘制吉卜力风格的简单花朵
-            const drawFlower = (fx, fy, size, color) => {
-                // 花瓣
-                ctx.fillStyle = color;
-                for (let i = 0; i < 5; i++) {
-                    const angle = i * (Math.PI * 2) / 5;
-                    ctx.beginPath();
-                    ctx.ellipse(
-                        fx + Math.cos(angle) * size * 0.8,
-                        fy + Math.sin(angle) * size * 0.8,
-                        size, size * 0.6,
-                        angle, 0, Math.PI * 2
-                    );
-                    ctx.fill();
-                }
-                
-                // 花蕊
-                ctx.fillStyle = "#FFFF00";
-                ctx.beginPath();
-                ctx.arc(fx, fy, size * 0.6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 花茎
-                ctx.strokeStyle = "#528539";
-                ctx.lineWidth = size * 0.3;
-                ctx.beginPath();
-                ctx.moveTo(fx, fy + size * 0.5);
-                ctx.lineTo(fx, fy + size * 3);
-                ctx.stroke();
-                
-                // 叶子
-                ctx.fillStyle = "#528539";
-                ctx.beginPath();
-                ctx.ellipse(
-                    fx - size * 1.2, fy + size * 1.5,
-                    size * 1.2, size * 0.5,
-                    -Math.PI/4, 0, Math.PI * 2
-                );
-                ctx.fill();
-            };
-            
-            // 绘制吉卜力风格的龙猫 (Totoro)
-            const drawTotoro = (tx, ty, size) => {
-                // 身体
-                ctx.fillStyle = "#8c8c8c";
-                ctx.beginPath();
-                ctx.ellipse(tx, ty, size * 0.8, size, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 肚子
-                ctx.fillStyle = "#d9d9d9";
-                ctx.beginPath();
-                ctx.ellipse(tx, ty + size * 0.2, size * 0.6, size * 0.7, 0, 0, Math.PI);
-                ctx.fill();
-                
-                // 腹部花纹
-                ctx.strokeStyle = "#8c8c8c";
-                ctx.lineWidth = 1;
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(tx - size * 0.2, ty + size * (0.3 + i * 0.15));
-                    ctx.lineTo(tx + size * 0.2, ty + size * (0.3 + i * 0.15));
-                    ctx.stroke();
-                }
-                
-                // 耳朵
-                ctx.fillStyle = "#8c8c8c";
-                ctx.beginPath();
-                ctx.ellipse(tx - size * 0.5, ty - size * 0.8, size * 0.25, size * 0.4, -Math.PI/6, 0, Math.PI * 2);
-                ctx.ellipse(tx + size * 0.5, ty - size * 0.8, size * 0.25, size * 0.4, Math.PI/6, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 眼睛
-                ctx.fillStyle = "#FFFFFF";
-                ctx.beginPath();
-                ctx.arc(tx - size * 0.25, ty - size * 0.3, size * 0.15, 0, Math.PI * 2);
-                ctx.arc(tx + size * 0.25, ty - size * 0.3, size * 0.15, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = "#000000";
-                ctx.beginPath();
-                ctx.arc(tx - size * 0.25, ty - size * 0.3, size * 0.07, 0, Math.PI * 2);
-                ctx.arc(tx + size * 0.25, ty - size * 0.3, size * 0.07, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 鼻子
-                ctx.fillStyle = "#000000";
-                ctx.beginPath();
-                ctx.arc(tx, ty - size * 0.1, size * 0.08, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 胡须
-                ctx.strokeStyle = "#000000";
-                ctx.lineWidth = 1;
-                // 左侧胡须
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(tx - size * 0.1, ty - size * 0.1 + i * size * 0.1);
-                    ctx.lineTo(tx - size * 0.6, ty - size * 0.2 + i * size * 0.2);
-                    ctx.stroke();
-                }
-                // 右侧胡须
-                for (let i = 0; i < 3; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(tx + size * 0.1, ty - size * 0.1 + i * size * 0.1);
-                    ctx.lineTo(tx + size * 0.6, ty - size * 0.2 + i * size * 0.2);
-                    ctx.stroke();
-                }
-            };
-            
-            // 绘制吉卜力风格的小煤炭精灵 (Soot Sprite)
-            const drawSootSprite = (sx, sy, size) => {
-                // 身体 - 黑色毛球
-                ctx.fillStyle = "#000000";
-                ctx.beginPath();
-                ctx.arc(sx, sy, size, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 随机的毛发效果
-                ctx.fillStyle = "#000000";
-                const hairCount = 12;
-                for (let i = 0; i < hairCount; i++) {
-                    const angle = i * (Math.PI * 2) / hairCount;
-                    const hairLength = size * (0.1 + Math.random() * 0.2);
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(sx, sy);
-                    ctx.lineTo(
-                        sx + Math.cos(angle) * (size + hairLength),
-                        sy + Math.sin(angle) * (size + hairLength)
-                    );
-                    ctx.lineWidth = 1 + Math.random() * 2;
-                    ctx.stroke();
-                }
-                
-                // 眼睛
-                ctx.fillStyle = "#FFFFFF";
-                const eyeOffset = size * 0.4;
-                ctx.beginPath();
-                ctx.arc(sx - eyeOffset, sy - eyeOffset, size * 0.3, 0, Math.PI * 2);
-                ctx.arc(sx + eyeOffset, sy - eyeOffset, size * 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 眼球
-                ctx.fillStyle = "#000000";
-                ctx.beginPath();
-                ctx.arc(sx - eyeOffset, sy - eyeOffset, size * 0.15, 0, Math.PI * 2);
-                ctx.arc(sx + eyeOffset, sy - eyeOffset, size * 0.15, 0, Math.PI * 2);
-                ctx.fill();
-            };
-            
-            // 绘制吉卜力风格的小白龙 (Haku)
-            const drawHaku = (hx, hy, size, isFull = false) => {
-                if (isFull) {
-                    // 完整的龙身
-                    ctx.fillStyle = "#FFFFFF";
-                    
-                    // 身体主干（蜿蜒的曲线）
-                    ctx.beginPath();
-                    ctx.moveTo(hx, hy);
-                    ctx.bezierCurveTo(
-                        hx - size * 1.5, hy - size * 0.5,
-                        hx - size, hy + size,
-                        hx + size * 0.5, hy + size * 0.8
-                    );
-                    ctx.bezierCurveTo(
-                        hx + size * 2, hy + size * 0.6,
-                        hx + size * 2.5, hy - size * 0.5,
-                        hx + size * 1.5, hy - size * 0.8
-                    );
-                    
-                    ctx.lineWidth = size * 0.4;
-                    ctx.strokeStyle = "#FFFFFF";
-                    ctx.stroke();
-                    
-                    // 龙头
-                    ctx.fillStyle = "#FFFFFF";
-                    ctx.beginPath();
-                    ctx.ellipse(hx, hy, size * 0.5, size * 0.3, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // 角
-                    ctx.strokeStyle = "#b3ecff";
-                    ctx.lineWidth = size * 0.15;
-                    ctx.beginPath();
-                    ctx.moveTo(hx, hy - size * 0.2);
-                    ctx.bezierCurveTo(
-                        hx - size * 0.3, hy - size * 0.6,
-                        hx - size * 0.1, hy - size * 0.8,
-                        hx + size * 0.2, hy - size * 0.6
-                    );
-                    ctx.stroke();
-                    
-                    // 眼睛
-                    ctx.fillStyle = "#49796b";
-                    ctx.beginPath();
-                    ctx.arc(hx - size * 0.2, hy - size * 0.05, size * 0.08, 0, Math.PI * 2);
-                    ctx.fill();
-                } else {
-                    // 仅绘制龙头（简化版本，适合小尺寸）
-                    // 龙头
-                    ctx.fillStyle = "#FFFFFF";
-                    ctx.beginPath();
-                    ctx.ellipse(hx, hy, size * 0.5, size * 0.3, 0, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // 角
-                    ctx.strokeStyle = "#b3ecff";
-                    ctx.lineWidth = size * 0.15;
-                    ctx.beginPath();
-                    ctx.moveTo(hx, hy - size * 0.2);
-                    ctx.bezierCurveTo(
-                        hx - size * 0.3, hy - size * 0.6,
-                        hx - size * 0.1, hy - size * 0.8,
-                        hx + size * 0.2, hy - size * 0.6
-                    );
-                    ctx.stroke();
-                    
-                    // 身体一小段
-                    ctx.strokeStyle = "#FFFFFF";
-                    ctx.lineWidth = size * 0.4;
-                    ctx.beginPath();
-                    ctx.moveTo(hx + size * 0.4, hy);
-                    ctx.bezierCurveTo(
-                        hx + size * 0.8, hy + size * 0.2,
-                        hx + size * 1.2, hy - size * 0.2,
-                        hx + size * 1.6, hy - size * 0.4
-                    );
-                    ctx.stroke();
-                    
-                    // 眼睛
-                    ctx.fillStyle = "#49796b";
-                    ctx.beginPath();
-                    ctx.arc(hx - size * 0.2, hy - size * 0.05, size * 0.08, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            };
-            
-            // 绘制吉卜力风格的无脸男 (No-Face)
-            const drawNoFace = (nx, ny, size) => {
-                // 黑色身体
-                ctx.fillStyle = "#000000";
-                ctx.beginPath();
-                ctx.arc(nx, ny, size * 0.6, 0, Math.PI);
-                ctx.lineTo(nx - size * 0.3, ny + size * 1.2);
-                ctx.lineTo(nx + size * 0.3, ny + size * 1.2);
-                ctx.closePath();
-                ctx.fill();
-                
-                // 面具
-                ctx.fillStyle = "#FFFFFF";
-                ctx.beginPath();
-                ctx.arc(nx, ny, size * 0.5, 0, Math.PI);
-                ctx.closePath();
-                ctx.fill();
-                
-                // 面具上的纹路
-                ctx.strokeStyle = "#800000";
-                ctx.lineWidth = 1;
-                
-                // 眼睛和嘴巴
-                ctx.fillStyle = "#000000";
-                // 两个小黑点作为眼睛
-                ctx.beginPath();
-                ctx.arc(nx - size * 0.2, ny - size * 0.1, size * 0.05, 0, Math.PI * 2);
-                ctx.arc(nx + size * 0.2, ny - size * 0.1, size * 0.05, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 嘴巴线条
-                ctx.beginPath();
-                ctx.arc(nx, ny + size * 0.1, size * 0.1, 0, Math.PI);
-                ctx.stroke();
-            };
-            
-            // 绘制吉卜力风格的千与千寻的小煤炭工人
-            const drawSootWorker = (wx, wy, size) => {
-                // 身体 - 就是个椭圆
-                ctx.fillStyle = "#000000";
-                ctx.beginPath();
-                ctx.ellipse(wx, wy, size * 0.5, size * 0.7, 0, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 眼睛 - 两个白点
-                ctx.fillStyle = "#FFFFFF";
-                ctx.beginPath();
-                ctx.arc(wx - size * 0.15, wy - size * 0.1, size * 0.1, 0, Math.PI * 2);
-                ctx.arc(wx + size * 0.15, wy - size * 0.1, size * 0.1, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // 腿 - 细线
-                ctx.strokeStyle = "#000000";
-                ctx.lineWidth = size * 0.1;
-                ctx.beginPath();
-                ctx.moveTo(wx - size * 0.2, wy + size * 0.7);
-                ctx.lineTo(wx - size * 0.2, wy + size * 1);
-                ctx.moveTo(wx + size * 0.2, wy + size * 0.7);
-                ctx.lineTo(wx + size * 0.2, wy + size * 1);
-                ctx.stroke();
-                
-                // 手臂
-                ctx.beginPath();
-                ctx.moveTo(wx - size * 0.5, wy);
-                ctx.lineTo(wx - size * 0.8, wy + size * 0.1);
-                ctx.moveTo(wx + size * 0.5, wy);
-                ctx.lineTo(wx + size * 0.8, wy + size * 0.1);
-                ctx.stroke();
-            };
-            
-            // 绘制吉卜力风格的小箭头路标
-            const drawSignpost = (px, py, size, text) => {
-                // 木桩
-                ctx.fillStyle = "#8B4513";
-                ctx.beginPath();
-                ctx.rect(px - size * 0.1, py, size * 0.2, size * 1.5);
-                ctx.fill();
-                
-                // 箭头牌
-                ctx.fillStyle = "#D2B48C";
-                ctx.beginPath();
-                ctx.moveTo(px, py - size * 0.3);
-                ctx.lineTo(px + size, py);
-                ctx.lineTo(px + size, py + size * 0.5);
-                ctx.lineTo(px, py + size * 0.8);
-                ctx.lineTo(px - size * 0.2, py + size * 0.5);
-                ctx.lineTo(px - size * 0.2, py);
-                ctx.closePath();
-                ctx.fill();
-                
-                // 描边
-                ctx.strokeStyle = "#8B4513";
-                ctx.lineWidth = size * 0.05;
-                ctx.stroke();
-                
-                // 文字
-                ctx.fillStyle = "#5D4037";
-                ctx.font = `${size * 0.3}px Arial`;
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(text, px + size * 0.4, py + size * 0.25);
-            };
-            
-            // 绘制霍尔移动城堡的小样式
-            const drawMovingCastle = (cx, cy, size) => {
-                // 城堡基础部分 - 简化版
-                ctx.fillStyle = "#E0E0E0";
-                
-                // 主要建筑物
-                ctx.beginPath();
-                ctx.rect(cx - size * 0.8, cy - size * 1.2, size * 1.6, size * 1.2);
-                ctx.fill();
-                
-                // 屋顶
-                ctx.fillStyle = "#8B4513";
-                ctx.beginPath();
-                ctx.moveTo(cx - size * 0.9, cy - size * 1.2);
-                ctx.lineTo(cx, cy - size * 1.7);
-                ctx.lineTo(cx + size * 0.9, cy - size * 1.2);
-                ctx.closePath();
-                ctx.fill();
-                
-                // 窗户
-                ctx.fillStyle = "#87CEEB";
-                for (let i = 0; i < 3; i++) {
-                    for (let j = 0; j < 2; j++) {
+                switch(type) {
+                    case "gem": {
+                        // 宝石效果
+                        const colors = {
+                            pink: ["#FF69B4", "#FF1493", "#FFB6C1"],
+                            blue: ["#87CEEB", "#4682B4", "#B0E0E6"],
+                            purple: ["#DDA0DD", "#9370DB", "#E6E6FA"]
+                        };
+                        
+                        const colorSet = Object.values(colors)[Math.floor(Math.random() * 3)];
+                        
+                        // 底部阴影
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
                         ctx.beginPath();
-                        ctx.rect(
-                            cx - size * 0.6 + i * size * 0.5, 
-                            cy - size * 1 + j * size * 0.4, 
-                            size * 0.3, size * 0.3
-                        );
+                        ctx.ellipse(2, 2, size * 0.8, size * 0.4, 0, 0, Math.PI * 2);
                         ctx.fill();
+                        
+                        // 宝石主体
+                        const gradient = ctx.createRadialGradient(-size/4, -size/4, 0, 0, 0, size);
+                        gradient.addColorStop(0, colorSet[2]);
+                        gradient.addColorStop(0.5, colorSet[0]);
+                        gradient.addColorStop(1, colorSet[1]);
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, size, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 高光
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+                        ctx.beginPath();
+                        ctx.ellipse(-size/3, -size/3, size/3, size/4, -Math.PI/4, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 反光
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+                        ctx.beginPath();
+                        ctx.arc(size/4, size/4, size/5, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        break;
+                    }
+                    
+                    case "ribbon": {
+                        // 立体蝴蝶结
+                        const ribbonColor = ["#FFB6C1", "#87CEEB", "#FFFFE0", "#DDA0DD"][Math.floor(Math.random() * 4)];
+                        
+                        // 阴影
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+                        ctx.beginPath();
+                        ctx.ellipse(2, 3, size * 1.2, size * 0.8, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 左侧蝴蝶结
+                        const leftGradient = ctx.createLinearGradient(-size, -size/2, 0, size/2);
+                        leftGradient.addColorStop(0, ribbonColor);
+                        leftGradient.addColorStop(0.7, ribbonColor);
+                        leftGradient.addColorStop(1, darkenColor(ribbonColor, 0.3));
+                        
+                        ctx.fillStyle = leftGradient;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.bezierCurveTo(-size, -size/2, -size*1.2, size/2, 0, size/3);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 右侧蝴蝶结
+                        const rightGradient = ctx.createLinearGradient(0, -size/2, size, size/2);
+                        rightGradient.addColorStop(0, ribbonColor);
+                        rightGradient.addColorStop(0.3, ribbonColor);
+                        rightGradient.addColorStop(1, darkenColor(ribbonColor, 0.3));
+                        
+                        ctx.fillStyle = rightGradient;
+                        ctx.beginPath();
+                        ctx.moveTo(0, 0);
+                        ctx.bezierCurveTo(size, -size/2, size*1.2, size/2, 0, size/3);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 中心结
+                        ctx.fillStyle = darkenColor(ribbonColor, 0.2);
+                        ctx.beginPath();
+                        ctx.ellipse(0, 0, size/3, size/4, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 高光
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+                        ctx.beginPath();
+                        ctx.ellipse(-size/2, -size/4, size/4, size/8, -Math.PI/6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.beginPath();
+                        ctx.ellipse(size/2, -size/4, size/4, size/8, Math.PI/6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        break;
+                    }
+                    
+                    case "star": {
+                        // 立体星星
+                        const starColor = ["#FFD700", "#FFA500", "#FF69B4", "#87CEEB"][Math.floor(Math.random() * 4)];
+                        
+                        // 阴影
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                        ctx.save();
+                        ctx.translate(3, 3);
+                        drawStarPath(ctx, 0, 0, size);
+                        ctx.fill();
+                        ctx.restore();
+                        
+                        // 星星主体 - 渐变
+                        const starGradient = ctx.createRadialGradient(-size/3, -size/3, 0, 0, 0, size);
+                        starGradient.addColorStop(0, lightenColor(starColor, 0.3));
+                        starGradient.addColorStop(0.5, starColor);
+                        starGradient.addColorStop(1, darkenColor(starColor, 0.2));
+                        
+                        ctx.fillStyle = starGradient;
+                        drawStarPath(ctx, 0, 0, size);
+                        ctx.fill();
+                        
+                        // 内部高光
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+                        drawStarPath(ctx, -size/4, -size/4, size/3);
+                        ctx.fill();
+                        
+                        break;
+                    }
+                    
+                    case "heart": {
+                        // 立体爱心
+                        const heartColor = ["#FF69B4", "#FF1493", "#FFB6C1", "#FF85A1"][Math.floor(Math.random() * 4)];
+                        
+                        // 阴影
+                        ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+                        ctx.save();
+                        ctx.translate(2, 3);
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(0, size/3);
+                        ctx.bezierCurveTo(0, 0, -size/2, 0, -size/2, size/3);
+                        ctx.bezierCurveTo(-size/2, size*0.6, 0, size*0.9, 0, size*1.2);
+                        ctx.bezierCurveTo(0, size*0.9, size/2, size*0.6, size/2, size/3);
+                        ctx.bezierCurveTo(size/2, 0, 0, 0, 0, size/3);
+                        ctx.fill();
+                        ctx.restore();
+                        
+                        // 爱心主体
+                        const heartGradient = ctx.createRadialGradient(-size/4, -size/4, 0, 0, 0, size);
+                        heartGradient.addColorStop(0, lightenColor(heartColor, 0.3));
+                        heartGradient.addColorStop(0.5, heartColor);
+                        heartGradient.addColorStop(1, darkenColor(heartColor, 0.2));
+                        
+                        ctx.fillStyle = heartGradient;
+                        ctx.beginPath();
+                        ctx.moveTo(0, size/3);
+                        ctx.bezierCurveTo(0, 0, -size/2, 0, -size/2, size/3);
+                        ctx.bezierCurveTo(-size/2, size*0.6, 0, size*0.9, 0, size*1.2);
+                        ctx.bezierCurveTo(0, size*0.9, size/2, size*0.6, size/2, size/3);
+                        ctx.bezierCurveTo(size/2, 0, 0, 0, 0, size/3);
+                        ctx.fill();
+                        
+                        // 高光
+                        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+                        ctx.beginPath();
+                        ctx.ellipse(-size/4, size/6, size/4, size/3, -Math.PI/6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        break;
                     }
                 }
                 
-                // 城堡腿部
-                ctx.fillStyle = "#A0522D";
+                ctx.restore();
+            };
+            
+            // 应用效果
+            createBorderGradient();
+            
+            // 精心布置的装饰元素
+            draw3DDecoration(x + 35, y + 35, "gem", 15, Math.PI / 8);
+            draw3DDecoration(x + width - 35, y + 35, "ribbon", 20, -Math.PI / 10);
+            draw3DDecoration(x + 35, y + height - 35, "star", 18, Math.PI / 6);
+            draw3DDecoration(x + width - 35, y + height - 35, "heart", 16, -Math.PI / 8);
+            
+            // 添加更多小装饰
+            draw3DDecoration(x + width/2, y + 20, "star", 12, 0);
+            draw3DDecoration(x + width/2, y + height - 20, "ribbon", 15, Math.PI);
+            draw3DDecoration(x + 20, y + height/2, "gem", 10, Math.PI / 4);
+            draw3DDecoration(x + width - 20, y + height/2, "heart", 10, -Math.PI / 4);
+            
+            // 添加闪光点缀
+            const drawSparkle = (cx, cy, size) => {
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
                 ctx.beginPath();
-                ctx.rect(cx - size * 0.7, cy, size * 0.3, size * 0.5);
-                ctx.rect(cx + size * 0.4, cy, size * 0.3, size * 0.5);
-                ctx.fill();
                 
-                // 烟囱
-                ctx.fillStyle = "#8B4513";
-                ctx.beginPath();
-                ctx.rect(cx - size * 0.5, cy - size * 1.9, size * 0.2, size * 0.5);
-                ctx.rect(cx + size * 0.2, cy - size * 1.8, size * 0.2, size * 0.4);
-                ctx.fill();
+                // 十字闪光
+                ctx.moveTo(cx - size, cy);
+                ctx.lineTo(cx + size, cy);
+                ctx.moveTo(cx, cy - size);
+                ctx.lineTo(cx, cy + size);
                 
-                // 烟雾
-                ctx.fillStyle = "rgba(200, 200, 200, 0.7)";
+                // 斜十字
+                const smallSize = size * 0.7;
+                ctx.moveTo(cx - smallSize, cy - smallSize);
+                ctx.lineTo(cx + smallSize, cy + smallSize);
+                ctx.moveTo(cx - smallSize, cy + smallSize);
+                ctx.lineTo(cx + smallSize, cy - smallSize);
+                
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                // 中心亮点
+                ctx.fillStyle = "#FFFFFF";
                 ctx.beginPath();
-                ctx.arc(cx - size * 0.4, cy - size * 2, size * 0.15, 0, Math.PI * 2);
-                ctx.arc(cx - size * 0.3, cy - size * 2.2, size * 0.2, 0, Math.PI * 2);
-                ctx.arc(cx - size * 0.1, cy - size * 2.4, size * 0.25, 0, Math.PI * 2);
+                ctx.arc(cx, cy, size * 0.2, 0, Math.PI * 2);
                 ctx.fill();
             };
             
-            // 执行绘制函数
-            // 先绘制边框背景
-            drawSkyBackground();
-            // 绘制草地和花朵
-            drawGrassAndFlowers();
-            
-            // 添加装饰性的内框边线
-            ctx.strokeStyle = "#5D4037";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x + borderWidth/2, y + borderWidth/2, 
-                           width - borderWidth, height - borderWidth);
-            
-            // 绘制一个水彩风的半透明效果
-            ctx.globalAlpha = 0.1;
-            ctx.fillStyle = "#87CEEB";
-            const watercolorPos = [
-                {x: x + borderWidth/2, y: y + borderWidth/2},
-                {x: x + width - borderWidth/2, y: y + borderWidth/2},
-                {x: x + borderWidth/2, y: y + height - borderWidth/2},
-                {x: x + width - borderWidth/2, y: y + height - borderWidth/2}
-            ];
-            
-            watercolorPos.forEach(pos => {
-                ctx.beginPath();
-                ctx.arc(pos.x, pos.y, borderWidth, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            
-            ctx.globalAlpha = 1.0;
-            
-            // 添加吉卜力风格的装饰元素到边框四周
-            // 左上角：龙猫和小煤炭精灵
-            drawTotoro(x + borderWidth/2, y + borderWidth/2, borderWidth * 0.35);
-            drawSootSprite(x + borderWidth * 0.3, y + borderWidth * 0.8, borderWidth * 0.15);
-            drawSootSprite(x + borderWidth * 0.8, y + borderWidth * 0.3, borderWidth * 0.12);
-            
-            // 右上角：飞行的白龙
-            drawHaku(x + width - borderWidth * 0.6, y + borderWidth * 0.5, borderWidth * 0.3, true);
-            
-            // 左下角：无脸男和小煤炭工人
-            drawNoFace(x + borderWidth * 0.4, y + height - borderWidth * 0.6, borderWidth * 0.3);
-            drawSootWorker(x + borderWidth * 0.8, y + height - borderWidth * 0.3, borderWidth * 0.2);
-            
-            // 右下角：移动城堡小图样
-            drawMovingCastle(x + width - borderWidth * 0.5, y + height - borderWidth * 0.7, borderWidth * 0.3);
-            
-            // 在边框中间位置添加小标志
-            drawSignpost(x + width * 0.25, y + height - borderWidth * 0.5, borderWidth * 0.2, "魔法");
-            drawSignpost(x + width * 0.75, y + borderWidth * 0.5, borderWidth * 0.2, "冒险");
-            
-            // 在框架四角添加一些小装饰元素
-            ctx.fillStyle = "#D0F0C0"; // 淡绿色
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-            ctx.lineTo(x + borderWidth * 0.3, y);
-            ctx.lineTo(x, y + borderWidth * 0.3);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(x + width, y);
-            ctx.lineTo(x + width - borderWidth * 0.3, y);
-            ctx.lineTo(x + width, y + borderWidth * 0.3);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(x, y + height);
-            ctx.lineTo(x + borderWidth * 0.3, y + height);
-            ctx.lineTo(x, y + height - borderWidth * 0.3);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(x + width, y + height);
-            ctx.lineTo(x + width - borderWidth * 0.3, y + height);
-            ctx.lineTo(x + width, y + height - borderWidth * 0.3);
-            ctx.closePath();
-            ctx.fill();
-            
-            // 添加一些装饰性的手绘线条
-            ctx.strokeStyle = "#5D4037";
-            ctx.lineWidth = 0.5;
-            
-            // 上边框装饰线
-            ctx.beginPath();
-            ctx.moveTo(x + borderWidth, y + borderWidth * 0.3);
-            ctx.lineTo(x + width - borderWidth, y + borderWidth * 0.3);
-            ctx.stroke();
-            
-            // 下边框装饰线
-            ctx.beginPath();
-            ctx.moveTo(x + borderWidth, y + height - borderWidth * 0.3);
-            ctx.lineTo(x + width - borderWidth, y + height - borderWidth * 0.3);
-            ctx.stroke();
-            
-            // 添加标题文字
-            ctx.font = "italic 24px serif";
-            ctx.fillStyle = "#5D4037";
-            ctx.textAlign = "center";
+            // 添加随机闪光
+            for (let i = 0; i < 8; i++) {
+                const sparkleX = x + 10 + Math.random() * (width - 20);
+                const sparkleY = y + 10 + Math.random() * (height - 20);
+                // 确保闪光只在边缘
+                if (sparkleX < x + 50 || sparkleX > x + width - 50 || 
+                    sparkleY < y + 50 || sparkleY > y + height - 50) {
+                    drawSparkle(sparkleX, sparkleY, 3 + Math.random() * 2);
+                }
+            }
         }
     },
+    
+    // 3. 精致霓虹光效 - 全新设计
+    neonGlowDeluxe: {
+        draw: (ctx, x, y, width, height) => {
+            // 创建复杂的霓虹光效
+            const createNeonEffect = (path, color, glowSize = 10) => {
+                // 外层光晕
+                ctx.shadowColor = color;
+                ctx.shadowBlur = glowSize * 2;
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 0.3;
+                ctx.stroke(path);
+                
+                // 中层光晕
+                ctx.shadowBlur = glowSize;
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.5;
+                ctx.stroke(path);
+                
+                // 内层光线
+                ctx.shadowBlur = glowSize / 2;
+                ctx.lineWidth = 3;
+                ctx.globalAlpha = 0.8;
+                ctx.stroke(path);
+                
+                // 核心线条
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = "#FFFFFF";
+                ctx.lineWidth = 1;
+                ctx.globalAlpha = 1;
+                ctx.stroke(path);
+                
+                ctx.globalAlpha = 1;
+            };
+            
+            // 创建几何图案路径
+            const createGeometricPattern = () => {
+                const path = new Path2D();
+                
+                // 六边形图案
+                const hexSize = 20;
+                const drawHexagon = (cx, cy) => {
+                    path.moveTo(cx + hexSize, cy);
+                    for (let i = 1; i <= 6; i++) {
+                        const angle = (i * Math.PI) / 3;
+                        path.lineTo(cx + hexSize * Math.cos(angle), cy + hexSize * Math.sin(angle));
+                    }
+                };
+                
+                // 在角落创建六边形
+                drawHexagon(x + 40, y + 40);
+                drawHexagon(x + width - 40, y + 40);
+                drawHexagon(x + 40, y + height - 40);
+                drawHexagon(x + width - 40, y + height - 40);
+                
+                return path;
+            };
+            
+            // 创建流动线条
+            const createFlowingLines = () => {
+                const path = new Path2D();
+                
+                // 上边流动线
+                path.moveTo(x + 60, y + 10);
+                path.bezierCurveTo(
+                    x + width/3, y + 15,
+                    x + width*2/3, y + 15,
+                    x + width - 60, y + 10
+                );
+                
+                // 下边流动线
+                path.moveTo(x + 60, y + height - 10);
+                path.bezierCurveTo(
+                    x + width/3, y + height - 15,
+                    x + width*2/3, y + height - 15,
+                    x + width - 60, y + height - 10
+                );
+                
+                return path;
+            };
+            
+            // 应用霓虹效果
+            const geometricPath = createGeometricPattern();
+            createNeonEffect(geometricPath, "#00FFFF", 15); // 青色霓虹
+            
+            const flowingPath = createFlowingLines();
+            createNeonEffect(flowingPath, "#FF00FF", 12); // 品红霓虹
+            
+            // 添加点缀光点
+            const drawNeonDot = (cx, cy, size, color) => {
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 3);
+                gradient.addColorStop(0, color);
+                gradient.addColorStop(0.3, color + "80");
+                gradient.addColorStop(0.6, color + "40");
+                gradient.addColorStop(1, color + "00");
+                
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * 3, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = "#FFFFFF";
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            };
+            
+            // 随机放置霓虹点
+            const neonColors = ["#00FFFF", "#FF00FF", "#FFFF00", "#00FF00"];
+            for (let i = 0; i < 12; i++) {
+                const edge = Math.floor(Math.random() * 4);
+                let dotX, dotY;
+                
+                switch(edge) {
+                    case 0: // 上边
+                        dotX = x + 30 + Math.random() * (width - 60);
+                        dotY = y + 10 + Math.random() * 20;
+                        break;
+                    case 1: // 右边
+                        dotX = x + width - 30 + Math.random() * 20;
+                        dotY = y + 30 + Math.random() * (height - 60);
+                        break;
+                    case 2: // 下边
+                        dotX = x + 30 + Math.random() * (width - 60);
+                        dotY = y + height - 30 + Math.random() * 20;
+                        break;
+                    case 3: // 左边
+                        dotX = x + 10 + Math.random() * 20;
+                        dotY = y + 30 + Math.random() * (height - 60);
+                        break;
+                }
+                
+                const color = neonColors[Math.floor(Math.random() * neonColors.length)];
+                drawNeonDot(dotX, dotY, 2 + Math.random() * 2, color);
+            }
+        }
+    },
+    // 1. 甜点派对主题 - 修正版
+    sweetPartyFrame: {
+        draw: (ctx, x, y, width, height) => {
+            // 只在照片周围绘制装饰，不遮挡中心区域
+            
+            // 绘制装饰边框
+            const drawDecorativeBorder = () => {
+                // 顶部装饰条
+                const topGradient = ctx.createLinearGradient(x, y, x, y + 40);
+                topGradient.addColorStop(0, "rgba(255, 182, 193, 0.8)");
+                topGradient.addColorStop(1, "rgba(255, 182, 193, 0)");
+                ctx.fillStyle = topGradient;
+                ctx.fillRect(x, y, width, 40);
+                
+                // 底部装饰条
+                const bottomGradient = ctx.createLinearGradient(x, y + height - 40, x, y + height);
+                bottomGradient.addColorStop(0, "rgba(255, 218, 185, 0)");
+                bottomGradient.addColorStop(1, "rgba(255, 218, 185, 0.8)");
+                ctx.fillStyle = bottomGradient;
+                ctx.fillRect(x, y + height - 40, width, 40);
+                
+                // 左侧装饰条
+                const leftGradient = ctx.createLinearGradient(x, y, x + 40, y);
+                leftGradient.addColorStop(0, "rgba(255, 240, 245, 0.8)");
+                leftGradient.addColorStop(1, "rgba(255, 240, 245, 0)");
+                ctx.fillStyle = leftGradient;
+                ctx.fillRect(x, y, 40, height);
+                
+                // 右侧装饰条
+                const rightGradient = ctx.createLinearGradient(x + width - 40, y, x + width, y);
+                rightGradient.addColorStop(0, "rgba(255, 239, 213, 0)");
+                rightGradient.addColorStop(1, "rgba(255, 239, 213, 0.8)");
+                ctx.fillStyle = rightGradient;
+                ctx.fillRect(x + width - 40, y, 40, height);
+            };
+            
+            // 绘制角落装饰
+            const drawCornerDecoration = () => {
+                // 左上角 - 小熊和蛋糕
+                const drawBear = (cx, cy, size) => {
+                    // 身体
+                    ctx.fillStyle = "#D2691E";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, size, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 耳朵
+                    ctx.beginPath();
+                    ctx.arc(cx - size * 0.7, cy - size * 0.7, size * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(cx + size * 0.7, cy - size * 0.7, size * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 内耳
+                    ctx.fillStyle = "#FFB6C1";
+                    ctx.beginPath();
+                    ctx.arc(cx - size * 0.7, cy - size * 0.7, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(cx + size * 0.7, cy - size * 0.7, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 脸部特征
+                    ctx.fillStyle = "#000000";
+                    // 眼睛
+                    ctx.beginPath();
+                    ctx.arc(cx - size * 0.3, cy - size * 0.1, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(cx + size * 0.3, cy - size * 0.1, size * 0.08, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 鼻子
+                    ctx.beginPath();
+                    ctx.arc(cx, cy + size * 0.1, size * 0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 腮红
+                    ctx.fillStyle = "rgba(255, 182, 193, 0.5)";
+                    ctx.beginPath();
+                    ctx.arc(cx - size * 0.5, cy + size * 0.2, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(cx + size * 0.5, cy + size * 0.2, size * 0.2, 0, Math.PI * 2);
+                    ctx.fill();
+                };
+                
+                const drawCake = (cx, cy, size) => {
+                    // 盘子
+                    ctx.fillStyle = "#E6E6FA";
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy + size * 0.8, size * 0.8, size * 0.2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 蛋糕底层
+                    ctx.fillStyle = "#8B4513";
+                    ctx.beginPath();
+                    ctx.moveTo(cx - size * 0.5, cy + size * 0.5);
+                    ctx.lineTo(cx + size * 0.5, cy + size * 0.5);
+                    ctx.lineTo(cx + size * 0.4, cy);
+                    ctx.lineTo(cx - size * 0.4, cy);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 奶油层
+                    ctx.fillStyle = "#FFFACD";
+                    ctx.beginPath();
+                    ctx.moveTo(cx - size * 0.4, cy);
+                    ctx.lineTo(cx + size * 0.4, cy);
+                    ctx.lineTo(cx + size * 0.3, cy - size * 0.3);
+                    ctx.lineTo(cx - size * 0.3, cy - size * 0.3);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 草莓
+                    ctx.fillStyle = "#FF1493";
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - size * 0.5);
+                    ctx.lineTo(cx - size * 0.2, cy - size * 0.3);
+                    ctx.lineTo(cx + size * 0.2, cy - size * 0.3);
+                    ctx.closePath();
+                    ctx.fill();
+                };
+                
+                // 绘制装饰
+                drawBear(x + 25, y + 25, 15);
+                drawCake(x + 60, y + 30, 20);
+                
+                // 右上角 - 蝴蝶结
+                const drawRibbon = (cx, cy, size) => {
+                    // 阴影
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+                    ctx.beginPath();
+                    ctx.ellipse(cx + 2, cy + 2, size * 1.2, size * 0.8, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = "#FF69B4";
+                    // 左边蝴蝶结
+                    ctx.beginPath();
+                    ctx.ellipse(cx - size * 0.6, cy, size * 0.8, size * 0.5, -Math.PI/6, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 右边蝴蝶结
+                    ctx.beginPath();
+                    ctx.ellipse(cx + size * 0.6, cy, size * 0.8, size * 0.5, Math.PI/6, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 中心结
+                    ctx.fillStyle = "#FF1493";
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // 高光
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+                    ctx.beginPath();
+                    ctx.arc(cx - size * 0.5, cy - size * 0.2, size * 0.15, 0, Math.PI * 2);
+                    ctx.fill();
+                };
+                
+                drawRibbon(x + width - 40, y + 35, 20);
+                
+                // 左下角 - 星星和心形
+                const drawStar = (cx, cy, size) => {
+                    ctx.fillStyle = "#FFD700";
+                    ctx.beginPath();
+                    for (let i = 0; i < 5; i++) {
+                        const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                        const px = cx + size * Math.cos(angle);
+                        const py = cy + size * Math.sin(angle);
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // 高光
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+                    ctx.beginPath();
+                    ctx.arc(cx - size * 0.2, cy - size * 0.2, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                };
+                
+                const drawHeart = (cx, cy, size) => {
+                    ctx.fillStyle = "#FF69B4";
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy + size * 0.3);
+                    ctx.bezierCurveTo(
+                        cx, cy,
+                        cx - size, cy,
+                        cx - size, cy + size * 0.3
+                    );
+                    ctx.bezierCurveTo(
+                        cx - size, cy + size * 0.8,
+                        cx, cy + size * 1.2,
+                        cx, cy + size * 1.5
+                    );
+                    ctx.bezierCurveTo(
+                        cx, cy + size * 1.2,
+                        cx + size, cy + size * 0.8,
+                        cx + size, cy + size * 0.3
+                    );
+                    ctx.bezierCurveTo(
+                        cx + size, cy,
+                        cx, cy,
+                        cx, cy + size * 0.3
+                    );
+                    ctx.fill();
+                };
+                
+                drawStar(x + 30, y + height - 40, 12);
+                drawHeart(x + 55, y + height - 35, 10);
+                
+                // 右下角 - Picapica.app 品牌标识
+                ctx.save();
+                // 品牌背景
+                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.beginPath();
+                ctx.roundRect(x + width - 110, y + height - 35, 100, 25, 10);
+                ctx.fill();
+                
+                // 品牌文字
+                ctx.font = "bold 12px Arial";
+                ctx.fillStyle = "#FF69B4";
+                ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
+                ctx.fillText("Picapica.app", x + width - 15, y + height - 22);
+                ctx.restore();
+            };
+            
+            // 绘制点缀元素
+            const drawSparkles = () => {
+                const sparkleColors = ["#FFD700", "#FF69B4", "#87CEEB", "#DDA0DD"];
+                
+                // 只在边缘区域添加闪光点
+                for (let i = 0; i < 15; i++) {
+                    const side = Math.floor(Math.random() * 4);
+                    let sparkleX, sparkleY;
+                    
+                    switch(side) {
+                        case 0: // 顶部
+                            sparkleX = x + 50 + Math.random() * (width - 100);
+                            sparkleY = y + 5 + Math.random() * 30;
+                            break;
+                        case 1: // 右侧
+                            sparkleX = x + width - 35 + Math.random() * 30;
+                            sparkleY = y + 50 + Math.random() * (height - 100);
+                            break;
+                        case 2: // 底部
+                            sparkleX = x + 50 + Math.random() * (width - 100);
+                            sparkleY = y + height - 35 + Math.random() * 30;
+                            break;
+                        case 3: // 左侧
+                            sparkleX = x + 5 + Math.random() * 30;
+                            sparkleY = y + 50 + Math.random() * (height - 100);
+                            break;
+                    }
+                    
+                    ctx.fillStyle = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+                    ctx.beginPath();
+                    ctx.arc(sparkleX, sparkleY, 2 + Math.random() * 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            };
+            
+            // 应用所有装饰
+            drawDecorativeBorder();
+            drawCornerDecoration();
+            drawSparkles();
+        }
+    },
+    
+    // 2. 粉色梦幻主题 - 修正版
+    pinkDreamFrame: {
+        draw: (ctx, x, y, width, height) => {
+            // 绘制边框渐变
+            const drawGradientBorder = () => {
+                const borderWidth = 35;
+                
+                // 创建遮罩路径 - 只绘制边框区域
+                ctx.save();
+                
+                // 外部矩形
+                ctx.beginPath();
+                ctx.rect(x, y, width, height);
+                
+                // 内部矩形（反向路径）
+                ctx.moveTo(x + borderWidth, y + borderWidth);
+                ctx.lineTo(x + borderWidth, y + height - borderWidth);
+                ctx.lineTo(x + width - borderWidth, y + height - borderWidth);
+                ctx.lineTo(x + width - borderWidth, y + borderWidth);
+                ctx.lineTo(x + borderWidth, y + borderWidth);
+                
+                ctx.clip('evenodd');
+                
+                // 绘制渐变
+                const gradient = ctx.createRadialGradient(
+                    x + width/2, y + height/2, 0,
+                    x + width/2, y + height/2, Math.max(width, height) * 0.7
+                );
+                gradient.addColorStop(0, "rgba(255, 192, 203, 0.3)");
+                gradient.addColorStop(0.5, "rgba(255, 182, 193, 0.5)");
+                gradient.addColorStop(1, "rgba(255, 105, 180, 0.3)");
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, width, height);
+                
+                ctx.restore();
+            };
+            
+            // 绘制装饰花朵
+            const drawFlower = (cx, cy, size, color) => {
+                const petalCount = 6;
+                
+                // 花瓣
+                ctx.fillStyle = color;
+                for (let i = 0; i < petalCount; i++) {
+                    const angle = (i * 2 * Math.PI) / petalCount;
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.rotate(angle);
+                    
+                    ctx.beginPath();
+                    ctx.ellipse(0, -size * 0.7, size * 0.4, size * 0.7, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+                
+                // 花心
+                ctx.fillStyle = "#FFD700";
+                ctx.beginPath();
+                ctx.arc(cx, cy, size * 0.4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 花心纹理
+                ctx.fillStyle = "#FFA500";
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i * Math.PI) / 4;
+                    const dotX = cx + Math.cos(angle) * size * 0.2;
+                    const dotY = cy + Math.sin(angle) * size * 0.2;
+                    ctx.beginPath();
+                    ctx.arc(dotX, dotY, size * 0.05, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            };
+            
+            // 绘制云朵装饰
+            const drawCloud = (cx, cy, size) => {
+                ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+                
+                // 云朵主体
+                const circles = [
+                    { x: 0, y: 0, r: size },
+                    { x: -size * 0.6, y: size * 0.1, r: size * 0.7 },
+                    { x: size * 0.6, y: size * 0.1, r: size * 0.7 },
+                    { x: -size * 0.3, y: -size * 0.3, r: size * 0.5 },
+                    { x: size * 0.3, y: -size * 0.3, r: size * 0.5 }
+                ];
+                
+                circles.forEach(circle => {
+                    ctx.beginPath();
+                    ctx.arc(cx + circle.x, cy + circle.y, circle.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // 云朵高光
+                ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.beginPath();
+                ctx.arc(cx - size * 0.2, cy - size * 0.2, size * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            };
+            
+            // 绘制边框和装饰
+            drawGradientBorder();
+            
+            // 角落装饰
+            drawFlower(x + 30, y + 30, 20, "#FFB6C1");
+            drawCloud(x + width - 50, y + 35, 15);
+            drawFlower(x + width - 30, y + height - 30, 18, "#DDA0DD");
+            drawCloud(x + 40, y + height - 40, 12);
+            
+            // 边缘小花装饰
+            const edgeFlowers = [
+                { x: x + width/2, y: y + 20, size: 15, color: "#87CEEB" },
+                { x: x + width/2, y: y + height - 20, size: 15, color: "#F0E68C" },
+                { x: x + 20, y: y + height/2, size: 12, color: "#FFB6C1" },
+                { x: x + width - 20, y: y + height/2, size: 12, color: "#DDA0DD" }
+            ];
+            
+            edgeFlowers.forEach(flower => {
+                drawFlower(flower.x, flower.y, flower.size, flower.color);
+            });
+            
+            // 添加梦幻光点
+            ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+            for (let i = 0; i < 20; i++) {
+                const sparkleX = x + Math.random() * width;
+                const sparkleY = y + Math.random() * height;
+                
+                // 确保光点只在边缘
+                if (sparkleX < x + 40 || sparkleX > x + width - 40 ||
+                    sparkleY < y + 40 || sparkleY > y + height - 40) {
+                    const sparkleSize = 1 + Math.random() * 3;
+                    ctx.beginPath();
+                    ctx.arc(sparkleX, sparkleY, sparkleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // 品牌标识
+            ctx.font = "14px Arial";
+            ctx.fillStyle = "rgba(255, 105, 180, 0.8)";
+            ctx.textAlign = "center";
+            ctx.fillText("Picapica.app", x + width/2, y + height - 10);
+        }
+    },
+    
+    // 3. 卡通贴纸风格 - 新设计
+    cartoonStickerFrame: {
+        draw: (ctx, x, y, width, height) => {
+            // 只在边缘添加贴纸装饰
+            
+            // 绘制卡通小动物
+            const drawCartoonAnimal = (type, cx, cy, size) => {
+                switch(type) {
+                    case 'cat':
+                        // 猫咪
+                        ctx.fillStyle = "#FFB366";
+                        // 身体
+                        ctx.beginPath();
+                        ctx.ellipse(cx, cy + size * 0.2, size * 0.8, size, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 头
+                        ctx.beginPath();
+                        ctx.arc(cx, cy - size * 0.3, size * 0.6, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 耳朵
+                        ctx.beginPath();
+                        ctx.moveTo(cx - size * 0.5, cy - size * 0.3);
+                        ctx.lineTo(cx - size * 0.3, cy - size * 0.8);
+                        ctx.lineTo(cx - size * 0.1, cy - size * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(cx + size * 0.5, cy - size * 0.3);
+                        ctx.lineTo(cx + size * 0.3, cy - size * 0.8);
+                        ctx.lineTo(cx + size * 0.1, cy - size * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 脸部特征
+                        ctx.fillStyle = "#000000";
+                        // 眼睛
+                        ctx.beginPath();
+                        ctx.ellipse(cx - size * 0.2, cy - size * 0.3, size * 0.05, size * 0.1, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.ellipse(cx + size * 0.2, cy - size * 0.3, size * 0.05, size * 0.1, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 鼻子
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy - size * 0.2);
+                        ctx.lineTo(cx - size * 0.05, cy - size * 0.1);
+                        ctx.lineTo(cx + size * 0.05, cy - size * 0.1);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 胡须
+                        ctx.strokeStyle = "#000000";
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(cx - size * 0.4, cy - size * 0.15);
+                        ctx.lineTo(cx - size * 0.6, cy - size * 0.2);
+                        ctx.moveTo(cx + size * 0.4, cy - size * 0.15);
+                        ctx.lineTo(cx + size * 0.6, cy - size * 0.2);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'bunny':
+                        // 兔子
+                        ctx.fillStyle = "#FFFFFF";
+                        // 身体
+                        ctx.beginPath();
+                        ctx.ellipse(cx, cy + size * 0.3, size * 0.7, size * 0.9, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 头
+                        ctx.beginPath();
+                        ctx.arc(cx, cy - size * 0.2, size * 0.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 长耳朵
+                        ctx.beginPath();
+                        ctx.ellipse(cx - size * 0.3, cy - size * 0.7, size * 0.15, size * 0.5, -Math.PI/12, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.ellipse(cx + size * 0.3, cy - size * 0.7, size * 0.15, size * 0.5, Math.PI/12, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 内耳
+                        ctx.fillStyle = "#FFB6C1";
+                        ctx.beginPath();
+                        ctx.ellipse(cx - size * 0.3, cy - size * 0.7, size * 0.08, size * 0.3, -Math.PI/12, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.ellipse(cx + size * 0.3, cy - size * 0.7, size * 0.08, size * 0.3, Math.PI/12, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 脸部
+                        ctx.fillStyle = "#000000";
+                        // 眼睛
+                        ctx.beginPath();
+                        ctx.arc(cx - size * 0.15, cy - size * 0.2, size * 0.05, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(cx + size * 0.15, cy - size * 0.2, size * 0.05, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 鼻子
+                        ctx.fillStyle = "#FFB6C1";
+                        ctx.beginPath();
+                        ctx.arc(cx, cy - size * 0.05, size * 0.06, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // 腮红
+                        ctx.fillStyle = "rgba(255, 182, 193, 0.5)";
+                        ctx.beginPath();
+                        ctx.arc(cx - size * 0.3, cy, size * 0.1, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.beginPath();
+                        ctx.arc(cx + size * 0.3, cy, size * 0.1, 0, Math.PI * 2);
+                        ctx.fill();
+                        break;
+                }
+            };
+            
+            // 绘制对话框
+            const drawSpeechBubble = (cx, cy, width, height, text) => {
+                // 气泡主体
+                ctx.fillStyle = "#FFFFFF";
+                ctx.strokeStyle = "#333333";
+                ctx.lineWidth = 2;
+                
+                ctx.beginPath();
+                ctx.roundRect(cx - width/2, cy - height/2, width, height, 10);
+                ctx.fill();
+                ctx.stroke();
+                
+                // 气泡尾巴
+                ctx.beginPath();
+                ctx.moveTo(cx - 10, cy + height/2);
+                ctx.lineTo(cx - 20, cy + height/2 + 15);
+                ctx.lineTo(cx + 5, cy + height/2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+                
+                // 文字
+                ctx.fillStyle = "#333333";
+                ctx.font = "14px 'Comic Sans MS', Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(text, cx, cy);
+            };
+            
+            // 角落贴纸
+            drawCartoonAnimal('cat', x + 35, y + 40, 20);
+            drawSpeechBubble(x + 80, y + 30, 60, 30, "Meow!");
+            
+            drawCartoonAnimal('bunny', x + width - 35, y + height - 50, 22);
+            drawSpeechBubble(x + width - 80, y + height - 30, 70, 30, "Hello!");
+            
+            // 边缘装饰性元素
+            const drawDecoElement = (type, cx, cy, size) => {
+                switch(type) {
+                    case 'star':
+                        ctx.fillStyle = "#FFD700";
+                        ctx.beginPath();
+                        for (let i = 0; i < 5; i++) {
+                            const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+                            const px = cx + size * Math.cos(angle);
+                            const py = cy + size * Math.sin(angle);
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        break;
+                        
+                    case 'heart':
+                        ctx.fillStyle = "#FF69B4";
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy + size * 0.3);
+                        ctx.bezierCurveTo(cx, cy, cx - size, cy, cx - size, cy + size * 0.3);
+                        ctx.bezierCurveTo(cx - size, cy + size * 0.8, cx, cy + size * 1.2, cx, cy + size * 1.5);
+                        ctx.bezierCurveTo(cx, cy + size * 1.2, cx + size, cy + size * 0.8, cx + size, cy + size * 0.3);
+                        ctx.bezierCurveTo(cx + size, cy, cx, cy, cx, cy + size * 0.3);
+                        ctx.fill();
+                        break;
+                        
+                    case 'rainbow':
+                        const colors = ["#FF0000", "#FFA500", "#FFFF00", "#00FF00", "#0000FF", "#4B0082"];
+                        const arcWidth = size / colors.length;
+                        
+                        colors.forEach((color, i) => {
+                            ctx.strokeStyle = color;
+                            ctx.lineWidth = arcWidth;
+                            ctx.beginPath();
+                            ctx.arc(cx, cy + size, size - i * arcWidth, Math.PI, 0);
+                            ctx.stroke();
+                        });
+                        break;
+                }
+            };
+            
+            // 添加边缘装饰
+            drawDecoElement('star', x + width - 30, y + 30, 12);
+            drawDecoElement('heart', x + 25, y + height - 30, 10);
+            drawDecoElement('rainbow', x + width/2, y + 20, 20);
+            
+            // 底部品牌标识
+            ctx.save();
+            ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+            ctx.fillRect(x + width - 100, y + height - 25, 95, 20);
+            
+            ctx.font = "12px Arial";
+            ctx.fillStyle = "#FF69B4";
+            ctx.textAlign = "right";
+            ctx.fillText("Picapica.app", x + width - 10, y + height - 10);
+            ctx.restore();
+        }
+    }
+    
 };
 
 export default FRAMES;
