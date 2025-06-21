@@ -205,7 +205,14 @@ const PhotoBooth = ({ setCapturedImages }) => {
         
         // 绘制预览frame - 使用显示尺寸而不是canvas内部尺寸
         try {
+            // 由于canvas本身已经通过CSS镜像了，需要在绘制前再次镜像context以抵消效果
+            ctx.save();
+            ctx.scale(-1, 1);
+            ctx.translate(-videoRect.width, 0);
+            
             await previewFrameDrawFunction(ctx, 0, 0, videoRect.width, videoRect.height);
+            
+            ctx.restore();
             
             // 绘制成功后添加ready类名，触发显示动画
             canvas.classList.add('ready');
