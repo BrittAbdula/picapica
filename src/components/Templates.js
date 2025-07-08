@@ -127,7 +127,7 @@ const Templates = () => {
     canvas.height = PREVIEW_HEIGHT;
 
     // 计算预览中的图片尺寸和间距
-    const borderSize = Math.round((40 * PREVIEW_WIDTH) / 480); // 比例缩放边框
+    const borderSize = Math.round((20 * PREVIEW_WIDTH) / 480); // 比例缩放边框
     const imgWidth = PREVIEW_WIDTH - (borderSize * 2);
     const imgHeight = Math.round((300 * PREVIEW_WIDTH) / 480);
     const photoSpacing = Math.round((20 * PREVIEW_WIDTH) / 480);

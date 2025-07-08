@@ -4,6 +4,7 @@ import Meta from "./Meta";
 import FrameService from "../services/frameService";
 import QRCode from 'qrcode';
 import { getAuthHeaders } from '../utils/auth';
+import './PhotoPreview.css';
 
 const PhotoPreview = ({ capturedImages: initialImages }) => {
 	const stripCanvasRef = useRef(null);
@@ -271,9 +272,9 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		// 使用4:3比例
 		const imgWidth = 400;
 		const imgHeight = 300; // 400/300 = 4:3
-		const borderSize = 40;
+		const borderSize = 20;
 		const photoSpacing = 20;
-		const textHeight = showPrediction && prediction ? 150 : 50;
+		const textHeight = showPrediction && prediction ? 150 : 60;
 		const totalHeight =
 			imgHeight * 4 + photoSpacing * 3 + borderSize * 2 + textHeight;
 
@@ -464,37 +465,34 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 
 	const addFooterAndWatermark = (ctx, totalHeight, borderSize, canvasWidth) => {
 		const now = new Date();
-		const timestamp =
-			now.toLocaleDateString("en-US", {
-				month: "2-digit",
-				day: "2-digit",
-				year: "numeric",
-			}) +
-			"  " +
-			now.toLocaleTimeString("en-US", {
-				hour: "2-digit",
-				minute: "2-digit",
-				hour12: true,
-			});
+		// 手写体风格的日期格式：Jul 3, 2025
+		const timestamp = now.toLocaleDateString("en-US", {
+			month: "short",
+			day: "numeric", 
+			year: "numeric",
+		});
 
 		ctx.fillStyle = stripColor === "black" ? "white" : "black";
-		ctx.font = "20px Arial";
+		// 使用手写体风格字体，降级到 cursive 通用字体族
+		ctx.font = "20px 'Brush Script MT', 'Lucida Handwriting', cursive";
 		ctx.textAlign = "center";
 
+		// 调整时间戳位置，确保有足够空间显示（20px字体需要至少25px空间）
 		ctx.fillText(
 			timestamp,
 			canvasWidth / 2,
-			totalHeight - borderSize * 1
+			totalHeight - Math.max(borderSize, 25)
 		);
 
 		ctx.fillStyle = stripColor === "black" ? "white" : "black";
 		ctx.font = "12px Arial";
-		ctx.textAlign = "center";
+		ctx.textAlign = "right";
 
+		// 调整水印位置，右侧留出20px空间，确保不与时间戳重叠
 		ctx.fillText(
-			"Picapica.app   ",
-			canvasWidth - borderSize,
-			totalHeight - borderSize / 2
+			"Picapica.app",
+			canvasWidth - 20,
+			totalHeight - Math.max(borderSize / 2, 8)
 		);
 	};
 
@@ -919,6 +917,26 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 		{ name: "Mint", value: "#4ECDC4" },
 	];
 
+	// 判断颜色是否为深色的辅助函数
+	const isDarkColor = (color) => {
+		// 对于命名颜色的特殊处理
+		if (color === 'black') return true;
+		if (color === 'white') return false;
+		
+		// 对于十六进制颜色，计算亮度
+		if (color.startsWith('#')) {
+			const hex = color.replace('#', '');
+			const r = parseInt(hex.substr(0, 2), 16);
+			const g = parseInt(hex.substr(2, 2), 16);
+			const b = parseInt(hex.substr(4, 2), 16);
+			// 使用相对亮度公式
+			const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+			return brightness < 128;
+		}
+		
+		return false;
+	};
+
 	// 渲染自定义抽屉内容
 	const renderCustomizeDrawer = () => {
 		return (
@@ -1000,34 +1018,21 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 									<button
 										key={color.value}
 										onClick={() => setStripColor(color.value)}
+										className={`color-button ${
+											stripColor === color.value ? 'selected' : ''
+										} ${
+											isDarkColor(color.value) ? 'dark-background' : 'light-background'
+										}`}
+										data-color={color.value}
 										style={{
-											backgroundColor: color.value,
-											color: color.value === "black" ? "white" : "black",
-											border: stripColor === color.value ? "3px solid #FF69B4" : "1px solid #ddd",
-											borderRadius: "5px",
-											padding: "16px 0",
-											fontSize: "14px",
-											fontWeight: "500"
+											'--button-bg-color': color.value
 										}}
 									>
 										{color.name}
 									</button>
 								))}
 
-								<label style={{
-									position: "relative",
-									display: "inline-block",
-									background: "linear-gradient(45deg, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF)",
-									color: "white",
-									border: "1px solid #ddd",
-									borderRadius: "5px",
-									padding: "16px 0",
-									fontWeight: "bold",
-									textShadow: "1px 1px 1px rgba(0,0,0,0.5)",
-									cursor: "pointer",
-									fontSize: "14px",
-									textAlign: "center"
-								}}>
+								<label className="color-button custom-color-button">
 									Custom
 									<input
 										type="color"
@@ -1035,15 +1040,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 										onChange={(e) => {
 											setCustomColor(e.target.value);
 											setStripColor(e.target.value);
-										}}
-										style={{
-											position: "absolute",
-											opacity: 0,
-											width: "100%",
-											height: "100%",
-											left: 0,
-											top: 0,
-											cursor: "pointer"
 										}}
 									/>
 								</label>
@@ -1063,36 +1059,21 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 									<button
 										key={color.value}
 										onClick={() => setStripColor(color.value)}
+										className={`color-button ${
+											stripColor === color.value ? 'selected' : ''
+										} ${
+											isDarkColor(color.value) ? 'dark-background' : 'light-background'
+										}`}
+										data-color={color.value}
 										style={{
-											backgroundColor: color.value,
-											color: color.value === "black" ? "white" : "black",
-											border: stripColor === color.value ? "3px solid #FF69B4" : "1px solid #ddd",
-											borderRadius: "5px",
-											padding: "12px 0",
-											fontSize: "12px",
-											fontWeight: stripColor === color.value ? "bold" : "500"
+											'--button-bg-color': color.value
 										}}
 									>
 										{color.name}
 									</button>
 								))}
 
-								<label style={{
-									position: "relative",
-									display: "flex",
-									alignItems: "center",
-									justifyContent: "center",
-									background: "linear-gradient(45deg, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF)",
-									color: "white",
-									border: "1px solid #ddd",
-									borderRadius: "5px",
-									padding: "12px 0",
-									fontWeight: "bold",
-									textShadow: "1px 1px 1px rgba(0,0,0,0.5)",
-									cursor: "pointer",
-									fontSize: "12px",
-									textAlign: "center"
-								}}>
+								<label className="color-button custom-color-button">
 									Custom
 									<input
 										type="color"
@@ -1100,15 +1081,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 										onChange={(e) => {
 											setCustomColor(e.target.value);
 											setStripColor(e.target.value);
-										}}
-										style={{
-											position: "absolute",
-											opacity: 0,
-											width: "100%",
-											height: "100%",
-											left: 0,
-											top: 0,
-											cursor: "pointer"
 										}}
 									/>
 								</label>
@@ -1528,309 +1500,6 @@ const PhotoPreview = ({ capturedImages: initialImages }) => {
 				description="Customize your Picapica photo strip with different colors, frames, and stickers. Download or share your photo strip with friends and family."
 				canonicalUrl="/preview"
 			/>
-
-			{/* CSS for drag and drop and mobile interactions */}<style>
-				{`
-    .photo-item {
-      transition: all 0.2s ease;
-    }
-    .photo-item.dragged {
-      opacity: 0.4;
-    }
-    .photo-item.drag-over {
-      background-color: rgba(0, 123, 255, 0.1);
-      border: 2px dashed #007bff !important;
-    }
-    .photo-item:hover .drag-handle {
-      opacity: 1;
-    }
-    .drag-handle {
-      opacity: 0;
-      transition: opacity 0.2s;
-      cursor: move;
-      background-color: rgba(0,0,0,0.1);
-    }
-    .photo-item.empty:hover {
-      background-color: #f0f8ff;
-      border-color: #89CFF0;
-    }
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #fff;
-      display: flex;
-      border-top: 1px solid #ddd;
-      box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-      z-index: 100;
-    }
-    .bottom-nav-btn {
-      flex: 1;
-      padding: 12px;
-      text-align: center;
-      font-weight: bold;
-      color: #666;
-      border: none;
-      background: none;
-      cursor: pointer;
-      position: relative;
-    }
-    .bottom-nav-btn.active {
-      color: #FF69B4;
-    }
-    .bottom-nav-btn.active:after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 25%;
-      right: 25%;
-      height: 3px;
-      background: #FF69B4;
-      border-radius: 3px 3px 0 0;
-    }
-    .drawer {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: white;
-      box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
-      border-top-left-radius: 15px;
-      border-top-right-radius: 15px;
-      z-index: 999;
-      transform: translateY(100%);
-      transition: transform 0.3s ease-in-out;
-      padding-bottom: 70px; /* 给底部导航留出空间 */
-      max-height: 210px; /* 限制移动端抽屉高度 */
-      overflow-y: auto;
-    }
-    .drawer.open {
-      transform: translateY(0);
-    }
-    .drawer-handle {
-      width: 40px;
-      height: 5px;
-      background: #ddd;
-      border-radius: 3px;
-      margin: 10px auto;
-    }
-    body {
-      padding-bottom: 60px; /* 给底部导航留出空间 */
-    }
-    /* 隐藏滚动条但保留功能 */
-    .mobile-frames-container::-webkit-scrollbar,
-    .mobile-colors-container::-webkit-scrollbar,
-    .mobile-border-container::-webkit-scrollbar {
-      display: none; /* Chrome, Safari, Opera */
-    }
-    .mobile-frames-container,
-    .mobile-colors-container,
-    .mobile-border-container {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
-    }
-    @media (min-width: 769px) {
-      .drawer {
-        position: static;
-        box-shadow: none;
-        border-radius: 0;
-        transform: none;
-        padding-bottom: 0;
-        max-height: none;
-        overflow: visible;
-      }
-      .drawer-handle {
-        display: none;
-      }
-      .bottom-nav {
-        display: none;
-      }
-      body {
-        padding-bottom: 0;
-      }
-    }
-    .action-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-    .action-button {
-      background-color: #f0f0f0;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 15px;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      min-width: 100px;
-      max-width: 180px;
-    }
-    .action-button.primary {
-      background-color: #FF69B4;
-      color: white;
-    }
-    .action-button.disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .preview-container {
-      padding: 10px;
-      margin-bottom: 20px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      /* 限制预览容器的最大高度，确保一屏内可以完整显示 */
-      max-height: 80vh;
-      min-height: 300px;
-    }
-    
-    /* 针对photostrip canvas的优化样式 */
-    .photo-strip {
-      /* 确保canvas可以自适应容器尺寸 */
-      max-width: 100% !important;
-      max-height: 75vh !important;
-      width: auto !important;
-      height: auto !important;
-      object-fit: contain;
-      /* 保持原有的阴影效果 */
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    /* 移动端优化 */
-    @media (max-width: 768px) {
-      .preview-container {
-        padding: 5px;
-        max-height: 70vh;
-        min-height: 250px;
-      }
-      
-      .photo-strip {
-        max-height: 65vh !important;
-      }
-    }
-    
-    /* 超小屏幕优化 */
-    @media (max-width: 480px) {
-      .preview-container {
-        max-height: 60vh;
-        min-height: 200px;
-      }
-      
-      .photo-strip {
-        max-height: 55vh !important;
-      }
-    }
-    .active-tab {
-      color: white;
-      font-weight: bold;
-      background-color: #FF69B4 !important;
-    }
-    
-    /* 新增的响应式布局样式 */
-    .main-content {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      position: relative;
-      justify-content: center;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    
-    @media (min-width: 992px) {
-      .main-content {
-        flex-direction: row;
-      }
-    }
-    
-    @media (max-width: 991px) {
-      .control-panel {
-        order: 2;
-      }
-    }
-    
-    /* 确保控制面板在小屏幕上响应式显示 */
-    .control-panel {
-      flex: 1;
-      width: 100%;
-    }
-    
-    .preview-panel {
-      flex: 1;
-      align-self: center;
-    }
-    
-    /* 随机按钮样式 */
-    .random-button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #8A2BE2;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 8px 15px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    
-    .random-button:hover {
-      background-color: #9932CC;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    }
-    
-    .random-button:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 3px rgba(0,0,0,0.3);
-    }
-    
-    .dice-icon {
-      margin-right: 8px;
-      font-size: 18px;
-      animation-duration: 0.5s;
-    }
-    
-    .spin-animation {
-      animation-name: spin;
-      animation-timing-function: ease-in-out;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .random-success {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: rgba(138, 43, 226, 0.9);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      z-index: 1000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      animation: fadeInOut 3s forwards;
-    }
-    
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, -20px); }
-      15% { opacity: 1; transform: translate(-50%, 0); }
-      85% { opacity: 1; transform: translate(-50%, 0); }
-      100% { opacity: 0; transform: translate(-50%, -20px); }
-    }
-  `}
-			</style>
 
 			<div className="photo-preview" style={{
 				maxWidth: "1000px",

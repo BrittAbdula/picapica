@@ -1193,40 +1193,63 @@ const PhotoBooth = ({ setCapturedImages }) => {
                         backdropFilter: "blur(10px)",
                         boxShadow: "0 4px 20px rgba(248, 187, 217, 0.15)",
                     }}>
-                        {/* Frame选择器 */}
-                        {frameType && frameType !== 'none' && (
-                            <div style={{ marginBottom: "20px" }}>
-                                <div style={{
-                                    fontSize: "16px",
-                                    fontWeight: "600",
-                                    color: "#5D4E75",
-                                    marginBottom: "12px",
-                                    textAlign: "center"
-                                }}>
-                                    🖼️ Current Frame: {frameType === 'generated' ? "Custom Frame" : frameType}
-                                </div>
-                                <div style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    gap: "10px"
-                                }}>
-                                    <button
-                                        onClick={() => navigateTo("/templates")}
-                                        style={{
-                                            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                            color: "white",
-                                            padding: "8px 16px",
-                                            borderRadius: "20px",
-                                            border: "none",
-                                            fontSize: "14px",
-                                            cursor: "pointer",
-                                            transition: "transform 0.2s ease"
-                                        }}
-                                        onMouseOver={(e) => e.target.style.transform = "scale(1.05)"}
-                                        onMouseOut={(e) => e.target.style.transform = "scale(1)"}
-                                    >
-                                        Change Frame
-                                    </button>
+                        {/* Frame选择器 - 始终可见 */}
+                        <div style={{ marginBottom: "20px" }}>
+                            <div style={{
+                                fontSize: "16px",
+                                fontWeight: "600",
+                                color: "#5D4E75",
+                                marginBottom: "12px",
+                                textAlign: "center"
+                            }}>
+                                🖼️ {frameType && frameType !== 'none' 
+                                    ? `Current Frame: ${frameType === 'generated' ? 'Custom Frame' : frameType}`
+                                    : 'No Frame Selected'
+                                }
+                            </div>
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "center",
+                                flexWrap: "wrap",
+                                gap: "10px"
+                            }}>
+                                <button
+                                    onClick={() => navigateTo("/templates")}
+                                    style={{
+                                        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                                        color: "white",
+                                        padding: "8px 16px",
+                                        borderRadius: "20px",
+                                        border: "none",
+                                        fontSize: "14px",
+                                        cursor: "pointer",
+                                        transition: "transform 0.2s ease"
+                                    }}
+                                    onMouseOver={(e) => e.target.style.transform = "scale(1.05)"}
+                                    onMouseOut={(e) => e.target.style.transform = "scale(1)"}
+                                >
+                                    {frameType && frameType !== 'none' ? 'Change Frame' : 'Select Frame'}
+                                </button>
+                                
+                                <button
+                                    onClick={() => navigateTo("/frame-maker")}
+                                    style={{
+                                        background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+                                        color: "white",
+                                        padding: "8px 16px",
+                                        borderRadius: "20px",
+                                        border: "none",
+                                        fontSize: "14px",
+                                        cursor: "pointer",
+                                        transition: "transform 0.2s ease"
+                                    }}
+                                    onMouseOver={(e) => e.target.style.transform = "scale(1.05)"}
+                                    onMouseOut={(e) => e.target.style.transform = "scale(1)"}
+                                >
+                                    Make a Frame
+                                </button>
+                                
+                                {frameType && frameType !== 'none' && (
                                     <button
                                         onClick={() => {
                                             setFrameType("none");
@@ -1253,9 +1276,9 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                     >
                                         Remove Frame
                                     </button>
-                                </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                         
                         <FilterSelector
                             activeFilter={filter}
