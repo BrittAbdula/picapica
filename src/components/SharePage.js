@@ -274,6 +274,17 @@ const SharePage = () => {
         marginTop: '40px'
       }}>
         
+        {/* 添加 h1 标题 */}
+        <h1 style={{ 
+          textAlign: 'center', 
+          color: '#333', 
+          marginBottom: '20px',
+          fontSize: '24px',
+          fontWeight: 'bold'
+        }}>
+          Shared Photo Strip
+        </h1>
+        
         <div className="image-container" style={{ 
           display: 'flex',
           justifyContent: 'center',

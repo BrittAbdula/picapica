@@ -111,7 +111,7 @@ function App() {
 					<Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
 					<Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
 					<Link to="/frames" onClick={() => setMenuOpen(false)}>Frames</Link>
-					<Link to="/frame-maker" onClick={() => setMenuOpen(false)}>AI Frame Maker</Link>
+					{/* <Link to="/frame-maker" onClick={() => setMenuOpen(false)}>AI Frame Maker</Link> */}
 					<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
 					<Link to="/my-frames" onClick={() => setMenuOpen(false)}>My Frames</Link>
 					{userAuthenticated ? (
