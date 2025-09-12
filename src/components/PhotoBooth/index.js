@@ -8,6 +8,9 @@ import AdvancedSettings from "./UI/AdvancedSettings";
 import { themeColors, animationStyles, navigationBarUtils } from "./styles";
 import FrameService from "../../services/frameService";
 
+// 导入新的UI组件
+import { Container, Button, Card } from "../ui";
+
 // 本地存储工具函数
 const STORAGE_KEYS = {
     COUNTDOWN_DURATION: 'photobooth_countdown_duration',

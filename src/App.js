@@ -1,7 +1,9 @@
-import "./App.css";
+import "./App.css"; // 保留少量兼容样式
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Link } from "react-router-dom";
 import { GoogleOAuthProvider } from '@react-oauth/google';
+
+// 组件导入
 import Home from "./components/Home";
 import Welcome from "./components/Welcome";
 import PhotoBooth from "./components/PhotoBooth";
@@ -24,11 +26,20 @@ import TemplateTest from "./components/TemplateTest";
 import FrameMaker from "./components/FrameMaker";
 import MyFrames from "./components/MyFrames";
 
+// 新的UI组件
+import { Navbar } from "./components/ui";
+
 function App() {
 	const [capturedImages, setCapturedImages] = useState([]);
-	const [menuOpen, setMenuOpen] = useState(false);
 	const [userAuthenticated, setUserAuthenticated] = useState(isAuthenticated());
 	const [username, setUsername] = useState(getUsername());
+
+	// 用户对象，用于新的Navbar组件
+	const user = userAuthenticated ? {
+		name: username,
+		email: null, // 如果有邮箱信息可以在这里添加
+		avatar: null // 如果有头像信息可以在这里添加
+	} : null;
 
 	// 在组件挂载后初始化 Clarity
 	useEffect(() => {
@@ -65,9 +76,16 @@ function App() {
 		setUsername(authData.username);
 	};
 
+	// 处理登录 - 用于新的Navbar
+	const handleLogin = () => {
+		// 这里可以触发Google登录流程
+		// 暂时保持空实现，具体逻辑在GoogleLogin组件中
+		console.log('Login requested');
+	};
+
 	// 处理登出
 	const handleLogout = () => {
-		if (window.confirm("Are you sure you want to log out?")) {
+		if (window.confirm("确定要退出登录吗？")) {
 			logout();
 			setUserAuthenticated(false);
 			setUsername(null);
@@ -77,64 +95,20 @@ function App() {
 	// 定义使用摄像头的路由
 	const cameraRoutes = ["/photobooth"];
 
-	const toggleMenu = () => {
-		setMenuOpen(!menuOpen);
-	};
-
 	return (
 		<GoogleOAuthProvider clientId="462051871205-4hqqnifmm7ckp8cjn37ca0ussfa1j7g9.apps.googleusercontent.com">
-			<div className="App">
-				{/* 添加分析工具 */}
+			<div className="App bg-picapica-50 min-h-screen">
+				{/* 分析和工具组件 */}
 				<GoogleAnalytics />
 				<AnalyticsTracker />
 				<ScrollToTop />
-			<nav className="navbar">
-				<Link to="/" className="logo-link">
-					<img src="/images/picapica-icon.svg" alt="Pica Pica" className="navbar-logo" />
-					<span className="site-name">Picapica.app</span>
-				</Link>
-
-				<div className="hamburger-menu" onClick={toggleMenu}>
-					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
-					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
-					<div className={`hamburger-line ${menuOpen ? "open" : ""}`}></div>
-				</div>
-
-				{/* 添加独立的遮罩元素 */}
-				<div
-					className={`nav-backdrop ${menuOpen ? 'open' : ''}`}
-					onClick={() => setMenuOpen(false)}
-				></div>
-
-				<div className={`nav-links ${menuOpen ? 'open' : ''}`}>
-					<Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
-					<Link to="/photobooth" onClick={() => setMenuOpen(false)}>Photobooth</Link>
-					<Link to="/preview" onClick={() => setMenuOpen(false)}>Photo Preview</Link>
-					<Link to="/frames" onClick={() => setMenuOpen(false)}>Frames</Link>
-					{/* <Link to="/frame-maker" onClick={() => setMenuOpen(false)}>AI Frame Maker</Link> */}
-					<Link to="/my-photos" onClick={() => setMenuOpen(false)}>My Photos</Link>
-					<Link to="/my-frames" onClick={() => setMenuOpen(false)}>My Frames</Link>
-					{userAuthenticated ? (
-						<>
-							<div className="nav-user-avatar" onClick={() => {
-								handleLogout();
-								setMenuOpen(false);
-							}}>
-								<div className="user-avatar">
-									<span className="avatar-text">{username ? username.charAt(0).toUpperCase() : 'U'}</span>
-								</div>
-							</div>
-						</>
-					) : (
-						<div className="nav-login">
-							<GoogleLogin 
-								onLoginSuccess={handleLoginSuccess}
-								onLoginError={(error) => console.error('Login error:', error)}
-							/>
-						</div>
-					)}
-				</div>
-			</nav>
+				
+				{/* 新的Navbar组件 */}
+				<Navbar 
+					user={user}
+					onLogin={handleLogin}
+					onLogout={handleLogout}
+				/>
 
 			{/* 使用RouteGuard包裹Routes，实现路由层面的摄像头管理 */}
 			<RouteGuard cameraRoutes={cameraRoutes}>
@@ -162,15 +136,28 @@ function App() {
 				</Routes>
 			</RouteGuard>
 
-			<footer className="text-sm text-gray-600">
-				<p>© 2025 picapica.app - The Web Photo Booth App</p>
-				<Link to="/privacy-policy" onClick={() => setMenuOpen(false)}>
-					Privacy Policy
-				</Link>
-				<Link to="/terms-of-service" onClick={() => setMenuOpen(false)} style={{ marginLeft: "10px" }}>
-					Terms of Service
-				</Link>
-			</footer>
+				{/* 页脚 */}
+				<footer className="bg-picapica-100 border-t border-picapica-200 py-8 mt-16">
+					<div className="container-main text-center">
+						<p className="text-picapica-700 mb-4">
+							© 2025 Picapica.app - The Web Photo Booth App
+						</p>
+						<div className="flex justify-center space-x-6">
+							<Link 
+								to="/privacy-policy" 
+								className="text-picapica-600 hover:text-picapica-300 transition-colors duration-200"
+							>
+								隐私政策
+							</Link>
+							<Link 
+								to="/terms-of-service"
+								className="text-picapica-600 hover:text-picapica-300 transition-colors duration-200"
+							>
+								服务条款
+							</Link>
+						</div>
+					</div>
+				</footer>
 
 			{/* 添加 VConsole 组件 */}
 			<VConsoleComponent />

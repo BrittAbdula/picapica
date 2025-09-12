@@ -1,7 +1,29 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import "../App.css";
 import Meta from "./Meta";
+import { Container, Button, Card } from "./ui";
+
+// 步骤卡片组件
+const StepCard = ({ number, title, icon, description }) => (
+  <Card className="text-center hover:scale-105 transition-transform duration-300">
+    <div className="w-16 h-16 bg-picapica-200 rounded-full flex items-center justify-center text-2xl mb-4 mx-auto">
+      {icon}
+    </div>
+    <div className="w-12 h-12 bg-picapica-300 rounded-full flex items-center justify-center text-white font-bold mb-4 mx-auto">
+      {number}
+    </div>
+    <h3 className="font-bold text-picapica-900 text-xl mb-3">{title}</h3>
+    <p className="text-picapica-700 leading-relaxed">{description}</p>
+  </Card>
+);
+
+// FAQ卡片组件
+const FAQCard = ({ question, answer }) => (
+  <Card className="text-left">
+    <h3 className="font-bold text-picapica-900 text-xl mb-3">{question}</h3>
+    <p className="text-picapica-700 leading-relaxed">{answer}</p>
+  </Card>
+);
 
 const Home = () => {
   const navigate = useNavigate();
@@ -29,7 +51,7 @@ const Home = () => {
         description="Picapica Photo Booth - Create beautiful photo strips online, add fun stickers, and share your memories with friends and family. Free web-based photo booth app."
         canonicalUrl="/"
       />
-      <div className="home-container bg-white bg-opacity-60">
+      <Container className="text-center bg-white bg-opacity-60">
         <h1 className="text-3xl font-bold text-pink-600 mb-4">Picapica, Your Life in Strips</h1>
         <p className="text-lg text-gray-700 mb-6">
         💖 Online Photo Booth.
@@ -57,6 +79,7 @@ const Home = () => {
             Select a Frame
           </button>
         </div>
+      </Container>
 
         {/* Survey Section */}
         <section className="py-12 px-4 sm:px-6 lg:px-8">
@@ -143,7 +166,6 @@ const Home = () => {
             </div>
           </div>
         </section>
-      </div>
     </>
     );
   };

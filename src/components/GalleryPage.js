@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import Meta from './Meta';
-import '../styles/GalleryPage.css';
+
+// 导入新的UI组件
+import { Container, MasonryGrid, MasonryItem, LoadingSpinner, Alert, Button } from './ui';
 
 const GalleryPage = () => {
   const [photos, setPhotos] = useState([]);
@@ -69,7 +71,7 @@ const GalleryPage = () => {
   }, [page, fetchPhotos]);
   
   return (
-    <div className="gallery-container">
+    <>
       <Meta 
         title="Photo Gallery | Pica Pica"
         description="Browse all photos taken with Pica Pica photo booth app"
@@ -77,80 +79,108 @@ const GalleryPage = () => {
         keywords="photo gallery, photo booth, pica pica, image gallery, photo collection"
       />
       
-      <h1 className="gallery-title">Photo Gallery</h1>
-      
-      {initialLoad ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading photos...</p>
-        </div>
-      ) : error ? (
-        <div className="error-message">
-          <p>{error}</p>
-          <button 
-            onClick={() => {
-              setError(null);
-              fetchPhotos(0);
-            }}
-            className="retry-button"
-          >
-            Try Again
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="masonry-grid">
-            {photos.map((photo, index) => {
-              const isLastElement = index === photos.length - 1;
-              return (
-                <div 
-                  key={photo.id} 
-                  className={`masonry-item ${photo.filter}`}
-                  ref={isLastElement ? lastPhotoElementRef : null}
-                >
-                  <Link to={`/share?imageurl=${encodeURIComponent(photo.imageUrl)}`}>
-                    <img 
-                      src={photo.imageUrl} 
-                      alt={`Photo ${photo.id}`} 
-                      className="gallery-image"
-                      loading="lazy"
-                    />
-                    <div className="photo-overlay">
-                      <span className="photo-date">
-                        {new Date(photo.timestamp).toLocaleDateString()}
-                      </span>
-                      {photo.filter !== 'none' && (
-                        <span className="photo-filter">{photo.filter}</span>
-                      )}
-                    </div>
-                  </Link>
-                </div>
-              );
-            })}
+      <div className="min-h-screen bg-picapica-50 py-8">
+        <Container>
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold text-gradient-picapica mb-4">
+              照片画廊
+            </h1>
+            <p className="text-lg text-picapica-700 max-w-2xl mx-auto">
+              浏览来自全世界用户创建的精美照片条，为您的下一次Picapica拍照获得灵感。
+            </p>
           </div>
-          
-          {loading && (
-            <div className="loading-more">
-              <div className="loading-spinner"></div>
-              <p>Loading more photos...</p>
+      
+          {initialLoad ? (
+            <div className="flex flex-col items-center justify-center py-20">
+              <LoadingSpinner size="lg" />
+              <p className="mt-4 text-picapica-700">正在加载照片...</p>
             </div>
+          ) : error ? (
+            <Alert type="error" className="max-w-md mx-auto text-center">
+              <p className="mb-4">{error}</p>
+              <Button 
+                variant="secondary"
+                onClick={() => {
+                  setError(null);
+                  fetchPhotos(0);
+                }}
+              >
+                重试
+              </Button>
+            </Alert>
+          ) : (
+            <>
+              <MasonryGrid>
+                {photos.map((photo, index) => {
+                  const isLastElement = index === photos.length - 1;
+                  return (
+                    <MasonryItem 
+                      key={photo.id}
+                      className={`group cursor-pointer ${photo.filter}`}
+                      ref={isLastElement ? lastPhotoElementRef : null}
+                    >
+                      <Link to={`/share?imageurl=${encodeURIComponent(photo.imageUrl)}`}>
+                        <div className="relative overflow-hidden">
+                          <img 
+                            src={photo.imageUrl} 
+                            alt={`照片 ${photo.id}`} 
+                            className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                          />
+                          
+                          {/* 悬浮信息层 */}
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                            <div className="p-4 text-white w-full">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm">
+                                  {new Date(photo.timestamp).toLocaleDateString()}
+                                </span>
+                                {photo.filter !== 'none' && (
+                                  <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
+                                    {photo.filter}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    </MasonryItem>
+                  );
+                })}
+              </MasonryGrid>
+              
+              {loading && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <LoadingSpinner />
+                  <p className="mt-4 text-picapica-700">正在加载更多照片...</p>
+                </div>
+              )}
+              
+              {!hasMore && photos.length > 0 && (
+                <p className="text-center text-picapica-600 py-8 italic">
+                  没有更多照片了
+                </p>
+              )}
+              
+              {photos.length === 0 && !loading && (
+                <div className="text-center py-20">
+                  <div className="text-6xl mb-6">📷</div>
+                  <p className="text-xl text-picapica-700 mb-6">还没有照片</p>
+                  <Button 
+                    variant="primary" 
+                    size="lg"
+                    onClick={() => window.location.href = '/photobooth'}
+                  >
+                    开始拍照
+                  </Button>
+                </div>
+              )}
+            </>
           )}
-          
-          {!hasMore && photos.length > 0 && (
-            <p className="no-more-photos">No more photos to load</p>
-          )}
-          
-          {photos.length === 0 && !loading && (
-            <div className="no-photos">
-              <p>No photos found</p>
-              <Link to="/photobooth" className="take-photo-button">
-                Take a Photo
-              </Link>
-            </div>
-          )}
-        </>
-      )}
-    </div>
+        </Container>
+      </div>
+    </>
   );
 };
 

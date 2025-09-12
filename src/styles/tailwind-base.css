@@ -1,0 +1,289 @@
+/* Picapica Tailwind CSS 基础样式 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 基础样式层 */
+@layer base {
+  /* 全局重置和优化 */
+  * {
+    box-sizing: border-box;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-picapica-50 text-picapica-900 font-sans antialiased;
+    @apply overflow-x-hidden;
+    line-height: 1.6;
+  }
+  
+  /* 标题层级优化 */
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold;
+    @apply bg-picapica-primary bg-clip-text text-transparent;
+    @apply leading-tight tracking-tight;
+  }
+  
+  h2 {
+    @apply text-2xl md:text-3xl font-semibold text-picapica-900;
+    @apply mb-4;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl font-medium text-picapica-800;
+    @apply mb-3;
+  }
+  
+  p {
+    @apply text-picapica-800 leading-relaxed;
+    @apply mb-4;
+  }
+  
+  /* 链接样式优化 */
+  a {
+    @apply text-picapica-600 hover:text-picapica-300;
+    @apply transition-colors duration-200;
+  }
+}
+
+/* 组件样式层 - 通用组件样式 */
+@layer components {
+  /* 导航链接样式 */
+  .nav-link {
+    @apply px-4 py-2 rounded-lg text-picapica-800 hover:text-picapica-900;
+    @apply hover:bg-picapica-100 transition-all duration-200;
+    @apply relative overflow-hidden;
+  }
+  
+  .nav-link::before {
+    @apply absolute inset-0 bg-picapica-200 opacity-0;
+    @apply transition-opacity duration-200;
+    content: '';
+    z-index: -1;
+  }
+  
+  .nav-link:hover::before {
+    @apply opacity-10;
+  }
+  
+  /* 优雅卡片样式 */
+  .elegant-card {
+    @apply bg-white/90 backdrop-blur-md rounded-2xl;
+    @apply shadow-picapica-soft border border-picapica-200/20;
+    @apply p-6 transition-all duration-300;
+    @apply hover:shadow-picapica-medium hover:-translate-y-1;
+  }
+  
+  /* 主要按钮样式 */
+  .btn-primary {
+    @apply bg-picapica-primary hover:shadow-picapica-medium;
+    @apply text-picapica-900 font-medium px-6 py-3 rounded-xl;
+    @apply transition-all duration-300 shadow-picapica-soft;
+    @apply hover:-translate-y-0.5 active:translate-y-0;
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-primary::before {
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    @apply translate-x-[-100%] transition-transform duration-500;
+    content: '';
+  }
+  
+  .btn-primary:hover::before {
+    @apply translate-x-full;
+  }
+  
+  /* 次要按钮样式 */
+  .btn-secondary {
+    @apply bg-picapica-400 hover:bg-picapica-500 text-white;
+    @apply font-medium px-6 py-3 rounded-xl;
+    @apply transition-all duration-300 shadow-picapica-soft;
+    @apply hover:-translate-y-0.5 hover:shadow-picapica-medium;
+  }
+  
+  /* 滤镜按钮样式 */
+  .btn-filter {
+    @apply bg-picapica-50 border border-picapica-200 text-picapica-700;
+    @apply px-4 py-2 rounded-lg font-medium text-sm;
+    @apply transition-all duration-200;
+    @apply hover:bg-picapica-100 hover:border-picapica-300;
+    @apply focus:bg-picapica-200 focus:border-picapica-400;
+  }
+  
+  .btn-filter.active {
+    @apply bg-picapica-300 border-picapica-400 text-white;
+    @apply shadow-picapica-soft;
+  }
+  
+  /* 容器样式 */
+  .container-main {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .container-centered {
+    @apply min-h-screen flex flex-col items-center justify-center;
+    @apply bg-picapica-soft relative overflow-hidden;
+  }
+  
+  .container-centered::before {
+    @apply absolute inset-0 bg-picapica-hero;
+    content: '';
+    z-index: -1;
+  }
+  
+  /* 相机容器样式 */
+  .camera-container {
+    @apply relative flex flex-col items-center gap-6;
+    @apply max-w-4xl mx-auto p-6 rounded-2xl;
+    @apply bg-white/80 backdrop-blur-md shadow-picapica-medium;
+    @apply border border-picapica-200/30;
+  }
+  
+  /* 视频样式 */
+  .video-feed {
+    @apply w-full max-w-2xl aspect-video object-cover;
+    @apply border-2 border-picapica-200 rounded-xl shadow-picapica-soft;
+    @apply transition-shadow duration-300;
+    @apply hover:shadow-picapica-medium;
+    transform: scaleX(-1); /* 镜像效果 */
+  }
+  
+  /* 照片预览网格 */
+  .photo-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4;
+    @apply p-4 bg-picapica-50 rounded-xl;
+    @apply border border-picapica-200/30;
+  }
+  
+  .photo-item {
+    @apply aspect-square object-cover rounded-lg;
+    @apply border-2 border-picapica-200 shadow-picapica-soft;
+    @apply transition-all duration-300;
+    @apply hover:scale-105 hover:shadow-picapica-medium;
+  }
+  
+  /* Gallery 瀑布流样式 */
+  .masonry-grid {
+    @apply grid gap-4;
+    @apply grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4;
+  }
+  
+  .masonry-item {
+    @apply relative overflow-hidden rounded-xl;
+    @apply shadow-picapica-soft transition-all duration-300;
+    @apply hover:-translate-y-1 hover:shadow-picapica-medium;
+  }
+  
+  .masonry-item img {
+    @apply w-full h-auto object-cover;
+  }
+  
+  /* 加载状态 */
+  .loading-spinner {
+    @apply w-10 h-10 border-4 border-picapica-200 border-t-picapica-300;
+    @apply rounded-full animate-spin;
+  }
+  
+  /* 倒计时显示 */
+  .countdown-overlay {
+    @apply absolute inset-0 flex items-center justify-center;
+    @apply bg-black/50 backdrop-blur-sm;
+    @apply text-6xl md:text-8xl font-bold text-white;
+    @apply animate-countdown-pulse;
+    z-index: 50;
+  }
+  
+  /* 表单样式 */
+  .form-input {
+    @apply w-full px-4 py-3 rounded-xl;
+    @apply bg-white border border-picapica-200;
+    @apply focus:border-picapica-300 focus:ring-2 focus:ring-picapica-100;
+    @apply transition-all duration-200;
+    @apply text-picapica-900 placeholder-picapica-600;
+  }
+  
+  /* 错误和成功状态 */
+  .alert-error {
+    @apply bg-red-50 border border-red-200 text-red-800;
+    @apply px-4 py-3 rounded-lg;
+  }
+  
+  .alert-success {
+    @apply bg-green-50 border border-green-200 text-green-800;
+    @apply px-4 py-3 rounded-lg;
+  }
+  
+  .alert-info {
+    @apply bg-blue-50 border border-blue-200 text-blue-800;
+    @apply px-4 py-3 rounded-lg;
+  }
+}
+
+/* 工具样式层 - 特殊用途样式 */
+@layer utilities {
+  /* 自定义滚动条 */
+  .scrollbar-picapica {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(248, 187, 217, 0.5) transparent;
+  }
+  
+  .scrollbar-picapica::-webkit-scrollbar {
+    @apply h-1.5 w-1.5;
+  }
+  
+  .scrollbar-picapica::-webkit-scrollbar-track {
+    @apply bg-picapica-100 rounded;
+  }
+  
+  .scrollbar-picapica::-webkit-scrollbar-thumb {
+    @apply bg-picapica-300 rounded;
+    @apply hover:bg-picapica-400;
+  }
+  
+  /* 文本渐变效果 */
+  .text-gradient-picapica {
+    @apply bg-picapica-primary bg-clip-text text-transparent;
+  }
+  
+  /* 玻璃态效果 */
+  .glass-effect {
+    @apply bg-white/20 backdrop-blur-md;
+    @apply border border-white/30;
+  }
+  
+  /* 动画延迟工具类 */
+  .animate-delay-100 {
+    animation-delay: 0.1s;
+  }
+  
+  .animate-delay-200 {
+    animation-delay: 0.2s;
+  }
+  
+  .animate-delay-300 {
+    animation-delay: 0.3s;
+  }
+  
+  /* 响应式隐藏/显示 */
+  .mobile-only {
+    @apply block md:hidden;
+  }
+  
+  .desktop-only {
+    @apply hidden md:block;
+  }
+  
+  /* 特殊布局 */
+  .aspect-photobooth {
+    aspect-ratio: 4/3;
+  }
+  
+  .aspect-strip {
+    aspect-ratio: 1/4;
+  }
+}
