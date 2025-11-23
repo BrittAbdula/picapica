@@ -7,25 +7,25 @@
   --secondary: #E8B4CB;
   --accent: #D197B8;
   --highlight: #F48FB1;
-  
+
   /* 中性色系 */
   --background: #FEFEFF;
   --surface: rgba(248, 187, 217, 0.05);
   --text: #5D4E75;
   --text-light: #8E7A9B;
   --text-muted: #A699B5;
-  
+
   /* 阴影系统 */
   --shadow-soft: 0 4px 20px rgba(248, 187, 217, 0.15);
   --shadow-medium: 0 8px 30px rgba(248, 187, 217, 0.25);
   --shadow-strong: 0 12px 40px rgba(248, 187, 217, 0.35);
-  
+
   /* 圆角系统 */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 24px;
-  
+
   /* 间距系统 */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -33,12 +33,12 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
-  
+
   /* 渐变系统 */
   --gradient-primary: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
   --gradient-secondary: linear-gradient(45deg, var(--secondary) 0%, var(--primary) 50%, var(--primary-light) 100%);
   --gradient-soft: linear-gradient(180deg, rgba(248, 187, 217, 0.1) 0%, rgba(252, 228, 236, 0.05) 100%);
-  
+
   /* 动画时间 */
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -206,7 +206,7 @@
 .contact-form {
   width: 400px;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.9); 
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -269,9 +269,17 @@
 
 
 @keyframes pulse {
-  0% { background-size: 100% 100%; }
-  50% { background-size: 130% 130%; }
-  100% { background-size: 100% 100%; }
+  0% {
+    background-size: 100% 100%;
+  }
+
+  50% {
+    background-size: 130% 130%;
+  }
+
+  100% {
+    background-size: 100% 100%;
+  }
 }
 
 .background-gradient {
@@ -290,69 +298,69 @@
 
 
 .photobooth-strip {
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-	transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .photobooth-strip:hover {
-	transform: scale(1.05);
-	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* Countdown Timer */
 .countdown {
-	position: relative;
-	text-align: center;
-	font-size: 50px;
-	font-weight: bold;
-	color: red;
-	margin: 20px 0;
-	background: rgba(255, 255, 255, 0.8);
-	padding: 10px 20px;
-	border-radius: 10px;
-	animation: countdown-animation 0.5s ease-in-out alternate infinite;
+  position: relative;
+  text-align: center;
+  font-size: 50px;
+  font-weight: bold;
+  color: red;
+  margin: 20px 0;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px 20px;
+  border-radius: 10px;
+  animation: countdown-animation 0.5s ease-in-out alternate infinite;
 }
 
 /* Photobooth Strip */
 .photobooth-strip {
-	width: 150px;
-	max-width: 300px;
-	height: auto;
-	display: block;
-	margin: 10px auto;
+  width: 150px;
+  max-width: 300px;
+  height: auto;
+  display: block;
+  margin: 10px auto;
 }
 
 /* Photobooth Layout */
 .photo-booth {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	min-height: 100vh;
-	text-align: center;
-	padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  padding: 10px;
 }
 
 /* Camera Container - 4:3 aspect ratio */
 .camera-container {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	width: 100%;
-	max-width: 640px;
-	aspect-ratio: 4/3;
-	position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4/3;
+  position: relative;
 }
 
 /* live cam - 4:3 aspect ratio */
 .video-feed {
-	width: 100%;
-	max-width: 640px;
-	aspect-ratio: 4/3;
-	object-fit: cover;
-	transform: scaleX(-1);
-	border: 3px solid black;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  transform: scaleX(-1);
+  border: 3px solid black;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* 全局重置和基础样式 */
@@ -378,59 +386,59 @@ body {
 }
 
 .camera-container {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
 }
 
 button {
-	margin: 10px;
-	padding: 12px 20px;
+  margin: 10px;
+  padding: 12px 20px;
 }
 
 /* Animation */
 .animate {
-	animation: pop 0.5s ease-in-out alternate infinite;
+  animation: pop 0.5s ease-in-out alternate infinite;
 }
 
 /* Photo Strip Preview - 4:3 aspect ratio support */
 .photo-preview {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	width: 100%;
-	margin-top: 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+  margin-top: 0px;
 }
 
 .photo-preview canvas {
-	max-width: 320px;
-	width: 100%;
-	height: auto;
-	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-	margin-top: 20px;
+  max-width: 320px;
+  width: 100%;
+  height: auto;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  margin-top: 20px;
 }
 
 .photo-preview img {
-	width: 100%;
-	height: auto;
-	max-width: 300px;
-	aspect-ratio: 4/3;
-	object-fit: cover;
-	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  height: auto;
+  max-width: 300px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Fix Photo Strip Squishing */
 .photo-strip {
-	display: block;
-	max-width: 400px;
-	width: 100%;
-	height: auto;
-	margin-top: -10px;
-	margin-bottom: 5px;
-	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  display: block;
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  margin-top: -10px;
+  margin-bottom: 5px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Welcome页面优化 */
@@ -454,7 +462,7 @@ button {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at 40% 60%, rgba(248, 187, 217, 0.12) 0%, transparent 60%),
-              radial-gradient(circle at 70% 30%, rgba(232, 180, 203, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 70% 30%, rgba(232, 180, 203, 0.08) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -510,14 +518,14 @@ button {
 
 /* Fix Capture Button Placement */
 .controls {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	margin-top: 30px;
-	gap: 10px;
-	position: relative;
-	z-index: 10;
-	width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  gap: 10px;
+  position: relative;
+  z-index: 10;
+  width: 100%;
 }
 
 /* 优雅按钮系统 */
@@ -574,11 +582,11 @@ button:disabled:hover {
 
 /* Color Picker Options */
 .color-options {
-	display: flex;
-	justify-content: center;
-	gap: 10px;
-	margin-top: 15px;
-	flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
 }
 
 /* Logo样式优化 */
@@ -612,105 +620,105 @@ button:disabled:hover {
 
 /* Film Style Options */
 .film-style-options {
-	display: flex;
-	justify-content: center;
-	gap: 10px;
-	margin-top: 15px;
-	flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
 }
 
 /* Fix Layout Between Camera and Photo Strip */
 .photo-container {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	align-items: flex-start;
-	gap: 30px;
-	width: 100%;
-	max-width: 1200px;
-	margin: 20px auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 20px auto;
 }
 
 /* Fix Photo Strip Thumbnails - 4:3 aspect ratio with horizontal scroll */
 .preview-container {
-	position: relative;
-	margin: 15px auto 0;
-	padding: 10px;
-	background: rgba(248, 187, 217, 0.05);
-	border-radius: 12px;
-	border: 1px solid rgba(248, 187, 217, 0.1);
-	display: flex;
-	justify-content: center;
-	align-items: center;
+  position: relative;
+  margin: 15px auto 0;
+  padding: 10px;
+  background: rgba(248, 187, 217, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(248, 187, 217, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .preview-side {
-	display: flex;
-	flex-direction: row;
-	gap: 10px;
-	padding: 5px 0;
-	overflow-x: auto;
-	overflow-y: hidden;
-	scroll-behavior: smooth;
-	-webkit-overflow-scrolling: touch;
-	scrollbar-width: thin;
-	scrollbar-color: rgba(248, 187, 217, 0.5) transparent;
-	min-height: 100px;
-	justify-content: center;
-	align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  padding: 5px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(248, 187, 217, 0.5) transparent;
+  min-height: 100px;
+  justify-content: center;
+  align-items: center;
 }
 
 /* 自定义滚动条样式 */
 .preview-side::-webkit-scrollbar {
-	height: 6px;
+  height: 6px;
 }
 
 .preview-side::-webkit-scrollbar-track {
-	background: rgba(248, 187, 217, 0.1);
-	border-radius: 3px;
+  background: rgba(248, 187, 217, 0.1);
+  border-radius: 3px;
 }
 
 .preview-side::-webkit-scrollbar-thumb {
-	background: rgba(248, 187, 217, 0.5);
-	border-radius: 3px;
-	transition: background 0.3s ease;
+  background: rgba(248, 187, 217, 0.5);
+  border-radius: 3px;
+  transition: background 0.3s ease;
 }
 
 .preview-side::-webkit-scrollbar-thumb:hover {
-	background: rgba(248, 187, 217, 0.7);
+  background: rgba(248, 187, 217, 0.7);
 }
 
 .side-preview {
-	width: 120px;
-	height: 90px;
-	min-width: 120px;
-	aspect-ratio: 4/3;
-	object-fit: cover;
-	border: 2px solid rgba(248, 187, 217, 0.4);
-	border-radius: 8px;
-	box-shadow: 0px 4px 10px rgba(248, 187, 217, 0.3);
-	flex-shrink: 0;
-	transition: all 0.3s ease;
+  width: 120px;
+  height: 90px;
+  min-width: 120px;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  border: 2px solid rgba(248, 187, 217, 0.4);
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(248, 187, 217, 0.3);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
 }
 
 .side-preview:hover {
-	transform: scale(1.05);
-	box-shadow: 0px 6px 15px rgba(248, 187, 217, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0px 6px 15px rgba(248, 187, 217, 0.4);
 }
 
 .side-preview-placeholder {
-	opacity: 0.7;
-	transition: all 0.3s ease;
+  opacity: 0.7;
+  transition: all 0.3s ease;
 }
 
 .side-preview-placeholder:hover {
-	opacity: 1;
-	background-color: rgba(248, 187, 217, 0.2) !important;
+  opacity: 1;
+  background-color: rgba(248, 187, 217, 0.2) !important;
 }
 
 /* Hide Captured Image Under Camera */
 .hidden {
-	display: none !important;
+  display: none !important;
 }
 
 /* 页脚样式优化 */
@@ -766,7 +774,7 @@ footer a:hover {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at 30% 70%, rgba(248, 187, 217, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(232, 180, 203, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 80% 20%, rgba(232, 180, 203, 0.1) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -807,177 +815,193 @@ footer a:hover {
 /* Fix Horizontal Scrolling Issue */
 html,
 body {
-	overflow-x: hidden;
-	max-width: 100%;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 /* Mobile Responsiveness - 4:3 aspect ratio */
 @media (max-width: 768px) {
-	.camera-container {
-		width: 100%;
-		max-width: 480px;
-		aspect-ratio: 4/3;
-		padding: 10px;
-		margin: 0 auto;
-	}
+  .camera-container {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 4/3;
+    padding: 10px;
+    margin: 0 auto;
+  }
 
-	.video-feed {
-		width: 100%;
-		aspect-ratio: 4/3;
-		object-fit: cover;
-		transform: scaleX(-1); /* Mirror effect */
-		border: 3px solid black;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-	}
+  .video-feed {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    transform: scaleX(-1);
+    /* Mirror effect */
+    border: 3px solid black;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
 
-	.controls,
-	.filters {
-		flex-wrap: wrap;
-		justify-content: center;
-	}
+  .controls,
+  .filters {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 
-	.controls button {
-		width: 90%;
-		padding: 12px;
-		font-size: 16px;
-		border-radius: 20px;
-		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-	}
+  .controls button {
+    width: 90%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
 
-	.side-preview {
-		width: 80px;
-		height: 60px;
-		min-width: 80px;
-		aspect-ratio: 4/3;
-	}
+  .side-preview {
+    width: 80px;
+    height: 60px;
+    min-width: 80px;
+    aspect-ratio: 4/3;
+  }
 
-	.side-preview-placeholder {
-		width: 80px !important;
-		height: 60px !important;
-		min-width: 80px !important;
-		font-size: 10px !important;
-	}
+  .side-preview-placeholder {
+    width: 80px !important;
+    height: 60px !important;
+    min-width: 80px !important;
+    font-size: 10px !important;
+  }
 
-	.preview-container {
-		margin: 10px auto 0;
-		padding: 8px;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-	}
+  .preview-container {
+    margin: 10px auto 0;
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-	.preview-side {
-		gap: 5px;
-		padding: 3px 0;
-		min-height: 70px;
-		justify-content: center;
-		align-items: center;
-	}
+  .preview-side {
+    gap: 5px;
+    padding: 3px 0;
+    min-height: 70px;
+    justify-content: center;
+    align-items: center;
+  }
 
-	.preview-side::-webkit-scrollbar {
-		height: 4px;
-	}
+  .preview-side::-webkit-scrollbar {
+    height: 4px;
+  }
 
-	.privacy-container {
-		width: 95%;
-		padding: 1.5rem;
-		max-height: 85vh;
-	}
+  .privacy-container {
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 85vh;
+  }
 
-	.privacy-container h1 {
-		font-size: 1.8rem;
-	}
+  .privacy-container h1 {
+    font-size: 1.8rem;
+  }
 
-	.privacy-container h2 {
-		font-size: 1.3rem;
-	}
+  .privacy-container h2 {
+    font-size: 1.3rem;
+  }
 
-	.privacy-container p, 
-	.privacy-container li {
-		font-size: 0.95rem;
-	}
+  .privacy-container p,
+  .privacy-container li {
+    font-size: 0.95rem;
+  }
 
-	.privacy-section {
-		margin-bottom: 1.5rem;
-		padding-bottom: 0.8rem;
-	}
+  .privacy-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+  }
 
-	.navbar {
-		flex-wrap: wrap;
-		gap: 20px;
-	}
+  .navbar {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
 
-	.navbar a {
-		padding: 10px;
-		font-size: 1rem;
-	}
+  .navbar a {
+    padding: 10px;
+    font-size: 1rem;
+  }
 
-	.contact-form {
-		width: 90%;
-		padding: 15px;
-	}
+  .contact-form {
+    width: 90%;
+    padding: 15px;
+  }
 }
 
 /* Animations */
 @keyframes pop {
-	0% {
-		transform: scale(1);
-		opacity: 1;
-	}
-	100% {
-		transform: scale(1.2);
-		opacity: 0.8;
-	}
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
 }
 
 @keyframes countdown-animation {
-	from {
-		opacity: 1;
-	}
-	to {
-		opacity: 0.5;
-	}
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.5;
+  }
 }
 
 @keyframes flash {
-	0% { opacity: 0; }
-	50% { opacity: 0.8; }
-	100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 /* 透明倒计时动画 */
 @keyframes countdownEnter {
-	0% { 
-		opacity: 0; 
-		transform: translate(-50%, -50%) scale(0.5);
-	}
-	100% { 
-		opacity: 1; 
-		transform: translate(-50%, -50%) scale(1);
-	}
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 @keyframes pulseGentle {
-	0%, 100% { 
-		transform: translate(-50%, -50%) scale(1); 
-		text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4);
-	}
-	50% { 
-		transform: translate(-50%, -50%) scale(1.1); 
-		text-shadow: 0 0 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 0, 0, 0.5);
-	}
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 0, 0, 0.4);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.1);
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.9), 0 0 25px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 0, 0, 0.5);
+  }
 }
 
 /* 照片从右侧滑入动画 */
 @keyframes slideInFromRight {
-	0% {
-		transform: translateX(100px);
-		opacity: 0;
-	}
-	100% {
-		transform: translateX(0);
-		opacity: 1;
-	}
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* 添加网站名称样式 */
@@ -1025,55 +1049,56 @@ body {
     padding: 12px 15px;
     position: relative;
   }
-  
+
   .hamburger-menu {
     display: flex;
   }
-  
+
   .nav-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999; /* 略低于导航栏的z-index */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    /* 略低于导航栏的z-index */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
 
-.nav-backdrop.open {
-  opacity: 1;
-  visibility: visible;
-}
+  .nav-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+  }
 
-.nav-links {
-  position: fixed;
-  top: 0;
-  right: -100%;
-  width: 70%;
-  max-width: 300px;
-  height: 100vh;
-  background-color: white;
-  flex-direction: column;
-  padding: 80px 20px 30px;
-  transition: right 0.3s ease;
-  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
-  
-.nav-links.open {
-  right: 0;
-}
-  
-.nav-links a {
-  margin: 10px 0;
-  padding: 12px 15px;
-  width: 100%;
-  text-align: left;
-  border-radius: 8px;
-}
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 70%;
+    max-width: 300px;
+    height: 100vh;
+    background-color: white;
+    flex-direction: column;
+    padding: 80px 20px 30px;
+    transition: right 0.3s ease;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .nav-links.open {
+    right: 0;
+  }
+
+  .nav-links a {
+    margin: 10px 0;
+    padding: 12px 15px;
+    width: 100%;
+    text-align: left;
+    border-radius: 8px;
+  }
 }
 
 /* 用户认证样式 - 头像设计 */
@@ -1149,6 +1174,7 @@ body {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1156,8 +1182,15 @@ body {
 }
 
 @keyframes pulseGentle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* 响应式设计优化 */
@@ -1166,11 +1199,11 @@ body {
     padding: var(--space-md) var(--space-lg);
     position: relative;
   }
-  
+
   .hamburger-menu {
     display: flex;
   }
-  
+
   .nav-backdrop {
     position: fixed;
     top: 0;
@@ -1208,11 +1241,11 @@ body {
     align-items: stretch;
     gap: var(--space-md);
   }
-  
+
   .nav-links.open {
     right: 0;
   }
-  
+
   .nav-links a {
     padding: var(--space-md) var(--space-lg);
     text-align: left;
@@ -1234,7 +1267,7 @@ body {
     justify-content: center;
     padding: var(--space-sm) var(--space-md);
   }
-  
+
   .nav-login {
     width: 100%;
     display: flex;
@@ -1278,6 +1311,7 @@ body {
 
 /* 动画优化 */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

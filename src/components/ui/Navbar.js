@@ -21,7 +21,7 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      setScrolled(offset > 50);
+      setScrolled(offset > 20);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -31,14 +31,14 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
   // 关闭移动端菜单
   const closeMenu = () => setIsMenuOpen(false);
 
-  // 导航链接数据
+  // Navigation Links
   const navLinks = [
-    { path: '/', label: '首页', exact: true },
-    { path: '/photobooth', label: '拍照亭' },
-    { path: '/gallery', label: '相册' },
-    { path: '/frames', label: '相框' },
-    { path: '/my-frames', label: '我的相框' },
-    { path: '/my-photos', label: '我的照片' }
+    { path: '/', label: 'Home', exact: true },
+    { path: '/photobooth', label: 'Photobooth' },
+    { path: '/preview', label: 'Photo Preview' },
+    { path: '/frames', label: 'Frames' },
+    { path: '/my-photos', label: 'My Photos' },
+    { path: '/my-frames', label: 'My Frames' }
   ];
 
   // 判断当前页面是否激活
@@ -52,126 +52,111 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
   return (
     <>
       {/* 主导航栏 */}
-      <nav 
+      <nav
         className={`
-          sticky top-0 z-50 w-full transition-all duration-300
-          ${scrolled 
-            ? 'bg-white/95 backdrop-blur-md shadow-picapica-soft border-b border-picapica-200/20' 
-            : 'bg-picapica-navbar backdrop-blur-md border-b border-picapica-200/20'
+          fixed top-0 left-0 right-0 z-50 transition-all duration-300
+          ${scrolled
+            ? 'bg-white/80 backdrop-blur-md shadow-sm py-3'
+            : 'bg-transparent py-5'
           }
         `}
       >
         <div className="container-main">
-          <div className="flex items-center justify-between h-16 px-4">
+          <div className="flex items-center justify-between px-4 md:px-6">
             {/* Logo区域 */}
-            <Link 
-              to="/" 
-              className="flex items-center space-x-3 group"
+            <Link
+              to="/"
+              className="flex items-center space-x-2 group z-50 relative"
               onClick={closeMenu}
             >
-              <img 
-                src="/images/picapica-logo.svg" 
-                alt="Picapica Logo" 
-                className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+              <img
+                src="/images/picapica-logo.svg"
+                alt="Picapica Logo"
+                className="h-8 w-auto"
               />
-              <span className="hidden sm:block font-bold text-xl text-picapica-900 group-hover:text-picapica-300 transition-colors duration-300">
-                Picapica
+              <span className="font-serif font-bold text-xl text-picapica-900 tracking-tight">
+                Picapica.app
               </span>
             </Link>
 
             {/* 桌面端导航链接 */}
-            <div className="hidden lg:flex items-center space-x-1">
+            <div className="hidden lg:flex items-center space-x-8">
               {navLinks.map(link => (
-                <NavLink
+                <Link
                   key={link.path}
                   to={link.path}
-                  label={link.label}
-                  active={isActiveLink(link.path, link.exact)}
-                  onClick={closeMenu}
-                />
+                  className={`
+                    text-sm font-medium transition-colors duration-200
+                    ${isActiveLink(link.path, link.exact)
+                      ? 'text-picapica-900'
+                      : 'text-picapica-600 hover:text-picapica-900'
+                    }
+                  `}
+                >
+                  {link.label}
+                </Link>
               ))}
             </div>
 
             {/* 用户区域和移动端菜单按钮 */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               {/* 桌面端用户信息 */}
               <div className="hidden lg:block">
                 <UserSection user={user} onLogin={onLogin} onLogout={onLogout} />
               </div>
 
               {/* 移动端汉堡菜单按钮 */}
-              <IconButton
-                variant="ghost"
-                className="lg:hidden"
-                icon={<HamburgerIcon isOpen={isMenuOpen} />}
-                label={isMenuOpen ? '关闭菜单' : '打开菜单'}
+              <button
+                className="lg:hidden z-50 relative p-2 text-picapica-900 focus:outline-none"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-              />
+                aria-label="Toggle Menu"
+              >
+                <div className="w-6 h-5 flex flex-col justify-between">
+                  <span className={`block h-0.5 w-full bg-current transform transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                  <span className={`block h-0.5 w-full bg-current transition-opacity duration-300 ${isMenuOpen ? 'opacity-0' : ''}`} />
+                  <span className={`block h-0.5 w-full bg-current transform transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-2.5' : ''}`} />
+                </div>
+              </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* 移动端菜单遮罩 */}
-      {isMenuOpen && (
-        <div 
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
-          onClick={closeMenu}
-        />
-      )}
-
-      {/* 移动端侧边菜单 */}
-      <div 
+      {/* 全屏移动端菜单 */}
+      <div
         className={`
-          fixed top-0 right-0 z-50 h-full w-80 max-w-[90vw]
-          bg-white/95 backdrop-blur-md shadow-picapica-strong
-          border-l border-picapica-200/30 lg:hidden
-          transform transition-transform duration-300 ease-out
-          ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+          fixed inset-0 z-40 bg-picapica-50/95 backdrop-blur-xl lg:hidden
+          flex flex-col justify-center items-center
+          transition-all duration-500 ease-in-out
+          ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
         `}
       >
-        <div className="flex flex-col h-full">
-          {/* 移动端菜单头部 */}
-          <div className="flex items-center justify-between p-6 border-b border-picapica-200/30">
-            <div className="flex items-center space-x-3">
-              <img 
-                src="/images/picapica-logo.svg" 
-                alt="Picapica" 
-                className="h-8 w-auto"
-              />
-              <span className="font-bold text-lg text-picapica-900">Picapica</span>
-            </div>
-            
-            <IconButton
-              variant="ghost"
-              size="sm"
-              icon={<CloseIcon />}
-              label="关闭菜单"
+        <div className="flex flex-col items-center space-y-6 w-full max-w-sm px-6">
+          {navLinks.map((link, index) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`
+                text-3xl font-serif font-medium text-picapica-900
+                hover:text-picapica-600 transition-colors duration-300
+                transform transition-transform duration-500
+                ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
+              `}
+              style={{ transitionDelay: `${index * 50}ms` }}
               onClick={closeMenu}
-            />
-          </div>
+            >
+              {link.label}
+            </Link>
+          ))}
 
-          {/* 移动端导航链接 */}
-          <div className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
-            {navLinks.map(link => (
-              <MobileNavLink
-                key={link.path}
-                to={link.path}
-                label={link.label}
-                active={isActiveLink(link.path, link.exact)}
-                onClick={closeMenu}
-              />
-            ))}
-          </div>
-
-          {/* 移动端用户区域 */}
-          <div className="p-6 border-t border-picapica-200/30">
-            <UserSection 
-              user={user} 
-              onLogin={onLogin} 
-              onLogout={onLogout} 
-              mobile 
-            />
+          <div
+            className={`
+              pt-8 w-full flex justify-center
+              transform transition-all duration-500 delay-300
+              ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
+            `}
+          >
+            <UserSection user={user} onLogin={onLogin} onLogout={onLogout} mobile />
           </div>
         </div>
       </div>
@@ -180,153 +165,42 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
 };
 
 /**
- * 桌面端导航链接组件
- */
-const NavLink = ({ to, label, active, onClick }) => (
-  <Link
-    to={to}
-    className={`
-      nav-link px-4 py-2 rounded-lg font-medium text-sm
-      transition-all duration-200 relative group
-      ${active 
-        ? 'text-picapica-300 bg-picapica-100' 
-        : 'text-picapica-800 hover:text-picapica-900 hover:bg-picapica-100'
-      }
-    `}
-    onClick={onClick}
-  >
-    {label}
-    {active && (
-      <span 
-        className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1 
-                   w-1 h-1 bg-picapica-300 rounded-full" 
-      />
-    )}
-  </Link>
-);
-
-/**
- * 移动端导航链接组件
- */
-const MobileNavLink = ({ to, label, active, onClick }) => (
-  <Link
-    to={to}
-    className={`
-      block w-full px-4 py-3 rounded-xl font-medium
-      transition-all duration-200 text-left border
-      ${active 
-        ? 'text-picapica-300 bg-picapica-100 border-picapica-200 shadow-sm' 
-        : 'text-picapica-800 hover:text-picapica-900 hover:bg-picapica-50 border-transparent hover:border-picapica-200'
-      }
-    `}
-    onClick={onClick}
-  >
-    {label}
-  </Link>
-);
-
-/**
  * 用户信息区域组件
  */
 const UserSection = ({ user, onLogin, onLogout, mobile = false }) => {
   if (user) {
     return (
-      <div className={`flex items-center gap-3 ${mobile ? 'flex-col' : ''}`}>
-        {/* 用户头像和信息 */}
-        <div className={`flex items-center gap-3 ${mobile ? 'w-full justify-center' : ''}`}>
-          <div className="w-10 h-10 bg-picapica-primary rounded-full flex items-center justify-center shadow-picapica-soft">
+      <div className={`flex items-center gap-4 ${mobile ? 'flex-col' : ''}`}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-picapica-200 rounded-full flex items-center justify-center text-picapica-800 font-medium text-sm">
             {user.avatar ? (
-              <img 
-                src={user.avatar} 
-                alt={user.name} 
-                className="w-full h-full rounded-full object-cover"
-              />
+              <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
             ) : (
-              <span className="text-picapica-900 font-semibold text-sm">
-                {user.name?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
+              user.name?.charAt(0)?.toUpperCase() || 'U'
             )}
           </div>
-          
-          {mobile && (
-            <div className="text-center">
-              <p className="font-medium text-picapica-900">{user.name}</p>
-              <p className="text-sm text-picapica-700">{user.email}</p>
-            </div>
-          )}
+          {mobile && <span className="font-medium text-picapica-900">{user.name}</span>}
         </div>
-
-        {/* 登出按钮 */}
-        <Button
-          variant="outline"
-          size={mobile ? "md" : "sm"}
+        <button
           onClick={onLogout}
-          className={mobile ? "w-full" : ""}
+          className="text-sm font-medium text-picapica-600 hover:text-picapica-900 transition-colors"
         >
-          退出登录
-        </Button>
+          Logout
+        </button>
       </div>
     );
   }
 
-  // 未登录状态
   return (
-    <div className={mobile ? "w-full" : ""}>
-      <Button
-        variant="primary"
-        size={mobile ? "md" : "sm"}
-        onClick={onLogin}
-        className={mobile ? "w-full" : ""}
-      >
-        登录
-      </Button>
-    </div>
+    <Button
+      variant={mobile ? "primary" : "primary"}
+      size={mobile ? "lg" : "sm"}
+      onClick={onLogin}
+      className={mobile ? "w-full min-w-[200px]" : ""}
+    >
+      Log in
+    </Button>
   );
 };
-
-/**
- * 汉堡菜单图标组件
- */
-const HamburgerIcon = ({ isOpen }) => (
-  <div className="w-6 h-6 flex flex-col justify-center items-center space-y-1">
-    <span 
-      className={`
-        block h-0.5 w-6 bg-picapica-700 transform transition-all duration-300
-        ${isOpen ? 'rotate-45 translate-y-1.5' : ''}
-      `} 
-    />
-    <span 
-      className={`
-        block h-0.5 w-6 bg-picapica-700 transition-all duration-300
-        ${isOpen ? 'opacity-0' : ''}
-      `} 
-    />
-    <span 
-      className={`
-        block h-0.5 w-6 bg-picapica-700 transform transition-all duration-300
-        ${isOpen ? '-rotate-45 -translate-y-1.5' : ''}
-      `} 
-    />
-  </div>
-);
-
-/**
- * 关闭图标组件
- */
-const CloseIcon = () => (
-  <svg 
-    className="w-5 h-5" 
-    fill="none" 
-    stroke="currentColor" 
-    viewBox="0 0 24 24"
-  >
-    <path 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      strokeWidth={2} 
-      d="M6 18L18 6M6 6l12 12" 
-    />
-  </svg>
-);
 
 export default Navbar;

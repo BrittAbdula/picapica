@@ -14,15 +14,15 @@ import React from 'react';
  * @param {string} props.className - 额外的CSS类名
  * @param {Function} props.onClick - 点击事件处理器
  */
-export const Button = ({ 
-  variant = 'primary', 
-  size = 'md', 
+export const Button = ({
+  variant = 'primary',
+  size = 'md',
   disabled = false,
   loading = false,
-  children, 
+  children,
   className = '',
   onClick,
-  ...props 
+  ...props
 }) => {
   // 基础样式
   const baseClasses = `
@@ -36,7 +36,7 @@ export const Button = ({
   // 尺寸样式
   const sizeClasses = {
     sm: 'px-3 py-1.5 text-sm rounded-lg',
-    md: 'px-6 py-3 text-base rounded-xl', 
+    md: 'px-6 py-3 text-base rounded-xl',
     lg: 'px-8 py-4 text-lg rounded-xl',
     xl: 'px-10 py-5 text-xl rounded-2xl'
   };
@@ -94,35 +94,35 @@ export const Button = ({
     >
       {/* 光影效果 - 仅对primary和secondary按钮 */}
       {(variant === 'primary' || variant === 'secondary') && !disabled && (
-        <span 
+        <span
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
                    -translate-x-full group-hover:translate-x-full transition-transform duration-500"
           aria-hidden="true"
         />
       )}
-      
+
       {/* 加载状态 */}
       {loading && (
-        <svg 
-          className="animate-spin -ml-1 mr-2 h-4 w-4" 
-          xmlns="http://www.w3.org/2000/svg" 
-          fill="none" 
+        <svg
+          className="animate-spin -ml-1 mr-2 h-4 w-4"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
           viewBox="0 0 24 24"
         >
-          <circle 
-            className="opacity-25" 
-            cx="12" cy="12" r="10" 
-            stroke="currentColor" 
+          <circle
+            className="opacity-25"
+            cx="12" cy="12" r="10"
+            stroke="currentColor"
             strokeWidth="4"
           />
-          <path 
-            className="opacity-75" 
-            fill="currentColor" 
+          <path
+            className="opacity-75"
+            fill="currentColor"
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
       )}
-      
+
       {children}
     </button>
   );
@@ -135,21 +135,21 @@ export const Button = ({
  * @param {boolean} props.active - 是否为当前选中状态
  * @param {React.ReactNode} props.children - 按钮内容
  */
-export const LightingButton = ({ 
-  color, 
-  active = false, 
-  children, 
-  className = '', 
+export const LightingButton = ({
+  color,
+  active = false,
+  children,
+  className = '',
   onClick,
-  ...props 
+  ...props
 }) => {
   const buttonClasses = `
     relative m-1 px-3 py-2 rounded-lg cursor-pointer
     font-medium text-sm transition-all duration-300
     border-2 hover:scale-105 focus:outline-none
     focus:ring-2 focus:ring-offset-2 focus:ring-white/50
-    ${active 
-      ? 'border-white shadow-lg scale-105' 
+    ${active
+      ? 'border-white shadow-lg scale-105'
       : 'border-transparent hover:border-white/30'
     }
     ${className}
@@ -172,11 +172,11 @@ export const LightingButton = ({
  * @param {Object} props
  * @param {React.ReactNode} props.children - 按钮内容
  */
-export const CustomColorButton = ({ 
-  children, 
-  className = '', 
+export const CustomColorButton = ({
+  children,
+  className = '',
   onClick,
-  ...props 
+  ...props
 }) => {
   const buttonClasses = `
     m-1 px-3 py-2 rounded border border-picapica-300
@@ -204,11 +204,11 @@ export const CustomColorButton = ({
  * @param {Object} props
  * @param {React.ReactNode} props.children - 按钮内容
  */
-export const FloatingActionButton = ({ 
-  children, 
+export const FloatingActionButton = ({
+  children,
   className = '',
   onClick,
-  ...props 
+  ...props
 }) => {
   const buttonClasses = `
     fixed bottom-6 right-6 z-50
@@ -239,14 +239,14 @@ export const FloatingActionButton = ({
  * @param {React.ReactNode} props.icon - 图标组件
  * @param {string} props.label - 无障碍标签
  */
-export const IconButton = ({ 
-  icon, 
+export const IconButton = ({
+  icon,
   label,
   variant = 'ghost',
   size = 'md',
   className = '',
   onClick,
-  ...props 
+  ...props
 }) => {
   const sizeClasses = {
     sm: 'w-8 h-8 text-sm',
@@ -286,7 +286,7 @@ export const IconButton = ({
 // 导出所有按钮组件
 export default {
   Button,
-  LightingButton, 
+  LightingButton,
   CustomColorButton,
   FloatingActionButton,
   IconButton

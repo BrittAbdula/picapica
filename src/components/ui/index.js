@@ -2,18 +2,27 @@
 // 使用Tailwind CSS构建的设计系统组件库
 
 // 基础UI组件
-export { 
-  Button, 
-  LightingButton, 
-  CustomColorButton, 
-  FloatingActionButton, 
-  IconButton 
+import {
+  Button,
+  LightingButton,
+  CustomColorButton,
+  FloatingActionButton,
+  IconButton
 } from './Button';
 
-export { Navbar } from './Navbar';
+export {
+  Button,
+  LightingButton,
+  CustomColorButton,
+  FloatingActionButton,
+  IconButton
+};
+
+import { Navbar } from './Navbar';
+export { Navbar };
 
 // PhotoBooth相关组件
-export {
+import {
   PhotoBoothContainer,
   CameraSection,
   CountdownOverlay,
@@ -24,6 +33,18 @@ export {
   AdvancedSettingsSection,
   PhotoPreviewSection
 } from './PhotoBooth';
+
+export {
+  PhotoBoothContainer,
+  CameraSection,
+  CountdownOverlay,
+  CameraStatusIndicator,
+  ControlPanel,
+  FilterSection,
+  BackgroundLightingSection,
+  AdvancedSettingsSection,
+  PhotoPreviewSection
+};
 
 // 通用布局组件
 export const Container = ({ children, className = '' }) => (
@@ -48,10 +69,10 @@ export const Card = ({ children, className = '' }) => (
 export const LoadingSpinner = ({ size = 'md', className = '' }) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
-    md: 'w-8 h-8', 
+    md: 'w-8 h-8',
     lg: 'w-12 h-12'
   };
-  
+
   return (
     <div className={`loading-spinner ${sizeClasses[size]} ${className}`} />
   );
@@ -64,7 +85,7 @@ export const Alert = ({ type = 'info', children, className = '' }) => {
     success: 'alert-success',
     info: 'alert-info'
   };
-  
+
   return (
     <div className={`${typeClasses[type]} ${className}`}>
       {children}

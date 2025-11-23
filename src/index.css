@@ -99,8 +99,13 @@
 
 /* 加载动画 */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .spinner {
@@ -135,21 +140,21 @@
     max-width: 100%;
     aspect-ratio: 4 / 3;
   }
-  
+
   .image-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     gap: var(--space-sm);
     padding: var(--space-sm);
   }
-  
+
   .captured-photo {
     height: 100px;
   }
-  
+
   .filters {
     gap: var(--space-xs);
   }
-  
+
   .filters button {
     padding: var(--space-xs) var(--space-sm);
     font-size: 0.8rem;
@@ -160,15 +165,15 @@
   .video-feed {
     border-width: 1px;
   }
-  
+
   .image-grid {
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   }
-  
+
   .captured-photo {
     height: 80px;
   }
-  
+
   button {
     padding: var(--space-xs) var(--space-md);
     font-size: 0.925rem;
@@ -189,6 +194,7 @@
 
 /* 动画优化 */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

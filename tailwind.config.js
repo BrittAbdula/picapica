@@ -23,11 +23,11 @@ module.exports = {
         },
         // 功能色彩
         success: '#81C784',
-        warning: '#FFB74D', 
+        warning: '#FFB74D',
         error: '#E57373',
         info: '#64B5F6',
       },
-      
+
       // 自定义渐变背景
       backgroundImage: {
         'picapica-primary': 'linear-gradient(135deg, #F8BBD9 0%, #FCE4EC 100%)',
@@ -36,7 +36,7 @@ module.exports = {
         'picapica-hero': 'radial-gradient(circle at 40% 60%, rgba(248, 187, 217, 0.12) 0%, transparent 60%), radial-gradient(circle at 70% 30%, rgba(232, 180, 203, 0.08) 0%, transparent 50%)',
         'picapica-navbar': 'linear-gradient(135deg, rgba(248, 187, 217, 0.15) 0%, rgba(252, 228, 236, 0.1) 100%)',
       },
-      
+
       // 自定义阴影系统
       boxShadow: {
         'picapica-soft': '0 4px 20px rgba(248, 187, 217, 0.15)',
@@ -44,21 +44,21 @@ module.exports = {
         'picapica-strong': '0 12px 40px rgba(248, 187, 217, 0.35)',
         'picapica-hover': '0 12px 40px rgba(248, 187, 217, 0.4)',
       },
-      
+
       // 扩展边框圆角
       borderRadius: {
         'xl': '16px',
         '2xl': '24px',
         '3xl': '32px',
       },
-      
+
       // 自定义间距
       spacing: {
         '18': '4.5rem',
         '88': '22rem',
         '120': '30rem',
       },
-      
+
       // 自定义动画
       animation: {
         'pulse-gentle': 'pulse-gentle 2s ease-in-out infinite',
@@ -70,46 +70,46 @@ module.exports = {
         'shimmer': 'shimmer 2s ease-in-out infinite',
         'bounce-gentle': 'bounce-gentle 1s ease-in-out infinite',
       },
-      
+
       keyframes: {
         'pulse-gentle': {
-          '0%, 100%': { 
-            transform: 'scale(1)', 
-            opacity: '1' 
+          '0%, 100%': {
+            transform: 'scale(1)',
+            opacity: '1'
           },
-          '50%': { 
-            transform: 'scale(1.05)', 
-            opacity: '0.95' 
+          '50%': {
+            transform: 'scale(1.05)',
+            opacity: '0.95'
           }
         },
         'fade-in-up': {
-          'from': { 
-            opacity: '0', 
-            transform: 'translateY(30px)' 
+          'from': {
+            opacity: '0',
+            transform: 'translateY(30px)'
           },
-          'to': { 
-            opacity: '1', 
-            transform: 'translateY(0)' 
+          'to': {
+            opacity: '1',
+            transform: 'translateY(0)'
           }
         },
         'countdown-pulse': {
-          'from': { 
+          'from': {
             opacity: '1',
-            transform: 'scale(1)' 
+            transform: 'scale(1)'
           },
-          'to': { 
+          'to': {
             opacity: '0.5',
-            transform: 'scale(1.05)' 
+            transform: 'scale(1.05)'
           }
         },
         'slide-in-right': {
-          'from': { 
-            transform: 'translateX(100px)', 
-            opacity: '0' 
+          'from': {
+            transform: 'translateX(100px)',
+            opacity: '0'
           },
-          'to': { 
-            transform: 'translateX(0)', 
-            opacity: '1' 
+          'to': {
+            transform: 'translateX(0)',
+            opacity: '1'
           }
         },
         'shimmer': {
@@ -117,33 +117,33 @@ module.exports = {
           '100%': { backgroundPosition: '200% 0' }
         },
         'bounce-gentle': {
-          '0%, 100%': { 
-            transform: 'translateY(0)' 
+          '0%, 100%': {
+            transform: 'translateY(0)'
           },
-          '50%': { 
-            transform: 'translateY(-10px)' 
+          '50%': {
+            transform: 'translateY(-10px)'
           }
         }
       },
-      
+
       // 自定义断点
       screens: {
         'xs': '480px',
         '3xl': '1600px',
       },
-      
+
       // 自定义字体
       fontFamily: {
         'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
-      
+
       // 自定义透明度
       opacity: {
         '15': '0.15',
         '35': '0.35',
         '85': '0.85',
       },
-      
+
       // 自定义背景透明度
       backdropBlur: {
         'xs': '2px',
