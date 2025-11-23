@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Test - Picapica</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 40px;
+            background: #faf5f2;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #7c3aed;
+            margin-bottom: 20px;
+        }
+        .avatar-test {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #fbbcde;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(251, 188, 222, 0.3);
+        }
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🖼️ Avatar Display Test</h1>
+        
+        <div class="avatar-test">
+            <h3>Test 1: With referrerPolicy="no-referrer"</h3>
+            <div class="avatar">
+                <img 
+                    id="img1"
+                    src="https://lh3.googleusercontent.com/a/ACg8ocL_nRAVMEf8MJ6SL-MUaD9N3qXOpusUDvAaJ3ZIapCaELGMMWc=s96-c" 
+                    alt="Avatar"
+                    referrerpolicy="no-referrer"
+                />
+            </div>
+            <div id="status1" class="status"></div>
+        </div>
+
+        <div class="avatar-test">
+            <h3>Test 2: Without referrerPolicy (Should fail)</h3>
+            <div class="avatar">
+                <img 
+                    id="img2"
+                    src="https://lh3.googleusercontent.com/a/ACg8ocL_nRAVMEf8MJ6SL-MUaD9N3qXOpusUDvAaJ3ZIapCaELGMMWc=s96-c" 
+                    alt="Avatar"
+                />
+            </div>
+            <div id="status2" class="status"></div>
+        </div>
+
+        <div class="avatar-test">
+            <h3>Test 3: With crossOrigin="anonymous" (May fail)</h3>
+            <div class="avatar">
+                <img 
+                    id="img3"
+                    src="https://lh3.googleusercontent.com/a/ACg8ocL_nRAVMEf8MJ6SL-MUaD9N3qXOpusUDvAaJ3ZIapCaELGMMWc=s96-c" 
+                    alt="Avatar"
+                    crossorigin="anonymous"
+                />
+            </div>
+            <div id="status3" class="status"></div>
+        </div>
+
+        <h2>如何修复头像显示问题</h2>
+        <ul>
+            <li>✅ 使用 <code>referrerPolicy="no-referrer"</code></li>
+            <li>❌ 不要使用 <code>crossOrigin="anonymous"</code></li>
+            <li>✅ 使用 <code>&lt;div&gt;</code> 而不是 <code>&lt;button&gt;</code> 包裹图片</li>
+            <li>✅ 确保有图片加载失败的回退方案</li>
+        </ul>
+    </div>
+
+    <script>
+        function setupImageTest(imgId, statusId) {
+            const img = document.getElementById(imgId);
+            const status = document.getElementById(statusId);
+            
+            img.onload = function() {
+                status.className = 'status success';
+                status.textContent = '✅ 图片加载成功！';
+            };
+            
+            img.onerror = function() {
+                status.className = 'status error';
+                status.textContent = '❌ 图片加载失败 - 可能是 referrer policy 或 CORS 问题';
+            };
+        }
+
+        setupImageTest('img1', 'status1');
+        setupImageTest('img2', 'status2');
+        setupImageTest('img3', 'status3');
+    </script>
+</body>
+</html>
+

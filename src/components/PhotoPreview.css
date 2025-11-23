@@ -3,22 +3,27 @@
 .photo-item {
   transition: all 0.2s ease;
 }
+
 .photo-item.dragged {
   opacity: 0.4;
 }
+
 .photo-item.drag-over {
   background-color: rgba(0, 123, 255, 0.1);
   border: 2px dashed #007bff !important;
 }
+
 .photo-item:hover .drag-handle {
   opacity: 1;
 }
+
 .drag-handle {
   opacity: 0;
   transition: opacity 0.2s;
   cursor: move;
-  background-color: rgba(0,0,0,0.1);
+  background-color: rgba(0, 0, 0, 0.1);
 }
+
 .photo-item.empty:hover {
   background-color: #f0f8ff;
   border-color: #89CFF0;
@@ -33,9 +38,10 @@
   background: #fff;
   display: flex;
   border-top: 1px solid #ddd;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
 }
+
 .bottom-nav-btn {
   flex: 1;
   padding: 12px;
@@ -47,9 +53,11 @@
   cursor: pointer;
   position: relative;
 }
+
 .bottom-nav-btn.active {
   color: #FF69B4;
 }
+
 .bottom-nav-btn.active:after {
   content: "";
   position: absolute;
@@ -68,19 +76,23 @@
   right: 0;
   bottom: 0;
   background: white;
-  box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.1);
   border-top-left-radius: 15px;
   border-top-right-radius: 15px;
   z-index: 999;
   transform: translateY(100%);
   transition: transform 0.3s ease-in-out;
-  padding-bottom: 70px; /* 给底部导航留出空间 */
-  max-height: 210px; /* 限制移动端抽屉高度 */
+  padding-bottom: 70px;
+  /* 给底部导航留出空间 */
+  max-height: 210px;
+  /* 限制移动端抽屉高度 */
   overflow-y: auto;
 }
+
 .drawer.open {
   transform: translateY(0);
 }
+
 .drawer-handle {
   width: 40px;
   height: 5px;
@@ -91,20 +103,25 @@
 
 /* 全局 body padding 适配 */
 body {
-  padding-bottom: 60px; /* 给底部导航留出空间 */
+  padding-bottom: 60px;
+  /* 给底部导航留出空间 */
 }
 
 /* 隐藏滚动条但保留功能 */
 .mobile-frames-container::-webkit-scrollbar,
 .mobile-colors-container::-webkit-scrollbar,
 .mobile-border-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
+
 .mobile-frames-container,
 .mobile-colors-container,
 .mobile-border-container {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 
 @media (min-width: 769px) {
@@ -117,12 +134,15 @@ body {
     max-height: none;
     overflow: visible;
   }
+
   .drawer-handle {
     display: none;
   }
+
   .bottom-nav {
     display: none;
   }
+
   body {
     padding-bottom: 0;
   }
@@ -135,10 +155,11 @@ body {
   gap: 10px;
   justify-content: center;
 }
+
 .action-button {
   background-color: #f0f0f0;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   padding: 10px 15px;
   font-weight: bold;
   cursor: pointer;
@@ -149,10 +170,12 @@ body {
   min-width: 100px;
   max-width: 180px;
 }
+
 .action-button.primary {
   background-color: #FF69B4;
   color: white;
 }
+
 .action-button.disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -168,13 +191,14 @@ body {
   max-height: 80vh;
   min-height: 300px;
 }
+
 .photo-strip {
   max-width: 100% !important;
   max-height: 75vh !important;
   width: auto !important;
   height: auto !important;
   object-fit: contain;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 移动端优化 */
@@ -184,6 +208,7 @@ body {
     max-height: 70vh;
     min-height: 250px;
   }
+
   .photo-strip {
     max-height: 65vh !important;
   }
@@ -195,6 +220,7 @@ body {
     max-height: 60vh;
     min-height: 200px;
   }
+
   .photo-strip {
     max-height: 55vh !important;
   }
@@ -217,20 +243,24 @@ body {
   max-width: 1000px;
   margin: 0 auto;
 }
+
 @media (min-width: 992px) {
   .main-content {
     flex-direction: row;
   }
 }
+
 @media (max-width: 991px) {
   .control-panel {
     order: 2;
   }
 }
+
 .control-panel {
   flex: 1;
   width: 100%;
 }
+
 .preview-panel {
   flex: 1;
   align-self: center;
@@ -244,35 +274,45 @@ body {
   background-color: #8A2BE2;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   padding: 8px 15px;
   margin-bottom: 10px;
   cursor: pointer;
   font-weight: bold;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
+
 .random-button:hover {
   background-color: #9932CC;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
+
 .random-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 3px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
 }
+
 .dice-icon {
   margin-right: 8px;
   font-size: 18px;
   animation-duration: 0.5s;
 }
+
 .spin-animation {
   animation-name: spin;
   animation-timing-function: ease-in-out;
 }
+
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .random-success {
@@ -283,16 +323,32 @@ body {
   background-color: rgba(138, 43, 226, 0.9);
   color: white;
   padding: 10px 20px;
-  border-radius: 5px;
+  border-radius: 8px;
   z-index: 1000;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   animation: fadeInOut 3s forwards;
 }
+
 @keyframes fadeInOut {
-  0% { opacity: 0; transform: translate(-50%, -20px); }
-  15% { opacity: 1; transform: translate(-50%, 0); }
-  85% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, -20px); }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
 }
 
 /* -------------------------------------------------- */
@@ -304,16 +360,15 @@ body {
   /* 使用CSS变量设置背景色，优先级高于默认样式 */
   background: var(--button-bg-color) !important;
   background-image: none !important;
-  
+
   /* 基础样式 */
   border: 1px solid #ddd !important;
-  border-radius: 5px !important;
+  border-radius: 8px !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
   position: relative !important;
   overflow: hidden !important;
   box-shadow: none !important;
-  transform: none !important;
 }
 
 /* 移除默认按钮的伪元素效果 */
@@ -324,7 +379,7 @@ body {
 /* 颜色按钮悬停效果 */
 .color-button:hover {
   transform: scale(1.05) !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
   border-color: #999 !important;
 }
 
@@ -372,7 +427,7 @@ body {
   background: linear-gradient(45deg, #FF0000, #FFFF00, #00FF00, #00FFFF, #0000FF, #FF00FF) !important;
   color: white !important;
   font-weight: bold !important;
-  text-shadow: 1px 1px 1px rgba(0,0,0,0.5) !important;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5) !important;
 }
 
 .custom-color-button input[type="color"] {
@@ -384,4 +439,4 @@ body {
   top: 0;
   cursor: pointer;
   border: none;
-} 
+}

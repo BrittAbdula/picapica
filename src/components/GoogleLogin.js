@@ -8,7 +8,7 @@ const GoogleLogin = ({ onLoginSuccess, onLoginError }) => {
     // 处理Google登录成功
     const handleGoogleSuccess = async (credentialResponse) => {
         setIsLoading(true);
-        
+
         try {
             // 发送ID token到后端验证
             const apiResponse = await axios.post('https://api.picapica.app/api/auth/google/token', {
@@ -20,13 +20,15 @@ const GoogleLogin = ({ onLoginSuccess, onLoginError }) => {
                 localStorage.setItem('authToken', apiResponse.data.token);
                 localStorage.setItem('userId', apiResponse.data.userId);
                 localStorage.setItem('username', apiResponse.data.username);
-                
+
                 // 调用成功回调
                 if (onLoginSuccess) {
                     onLoginSuccess({
                         token: apiResponse.data.token,
                         userId: apiResponse.data.userId,
-                        username: apiResponse.data.username
+                        username: apiResponse.data.username,
+                        email: apiResponse.data.email || null,
+                        avatar: apiResponse.data.avatar || apiResponse.data.picture || null
                     });
                 }
             }
@@ -65,7 +67,7 @@ const GoogleLogin = ({ onLoginSuccess, onLoginError }) => {
                     minWidth: '200px'
                 }}>
                     <div style={{ marginRight: '8px' }}>
-                        <div 
+                        <div
                             style={{
                                 width: '18px',
                                 height: '18px',
@@ -90,7 +92,7 @@ const GoogleLogin = ({ onLoginSuccess, onLoginError }) => {
                     locale="en-US"
                 />
             )}
-            
+
             <style jsx>{`
                 @keyframes spin {
                     0% { transform: rotate(0deg); }

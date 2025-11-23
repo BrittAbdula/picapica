@@ -298,7 +298,7 @@ const Templates = () => {
         </p>
 
         {/* AI Frame Maker Banner */}
-        <div style={{
+        {/* <div style={{
           backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           padding: "30px",
@@ -348,7 +348,7 @@ const Templates = () => {
           >
             🎨 Try AI Frame Maker
           </button>
-        </div>
+        </div> */}
 
         {isLoading ? (
           <div style={{

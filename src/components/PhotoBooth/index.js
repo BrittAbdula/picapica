@@ -55,7 +55,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
         loadFromLocalStorage(STORAGE_KEYS.BACKGROUND_COLOR, "#FFFFFF")
     );
     const [spotlightColor, setSpotlightColor] = useState(
-        loadFromLocalStorage('photobooth_spotlight_color', "rgba(248, 187, 217, 0.3)")
+        loadFromLocalStorage('photobooth_spotlight_color', "rgba(255, 255, 255, 0.3)")
     );
     const [soundEnabled, setSoundEnabled] = useState(
         loadFromLocalStorage(STORAGE_KEYS.SOUND_ENABLED, true)
@@ -64,7 +64,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
         location.state?.frameType || localStorage.getItem("selectedFrame") || "none"
     );
     const [showAllFilters, setShowAllFilters] = useState(false);
-    
+
     // Frame预览相关状态 - 独立于拍摄和合成流程
     const [previewFrameDrawFunction, setPreviewFrameDrawFunction] = useState(null);
     const [isLoadingPreviewFrame, setIsLoadingPreviewFrame] = useState(false);
@@ -164,59 +164,59 @@ const PhotoBooth = ({ setCapturedImages }) => {
     // 绘制 frame 预览叠加层的函数 - 仅用于预览，不影响拍摄
     const drawPreviewFrameOverlay = async () => {
         if (!frameOverlayCanvasRef.current || !previewFrameDrawFunction || !videoRef.current) return;
-        
+
         const canvas = frameOverlayCanvasRef.current;
         const video = videoRef.current;
         const ctx = canvas.getContext('2d');
-        
+
         // 确保视频完全加载且尺寸稳定
         if (video.videoWidth === 0 || video.videoHeight === 0) {
             console.log('Video not ready, skipping frame render');
             return;
         }
-        
+
         // 等待一帧以确保CSS样式完全生效
         await new Promise(resolve => requestAnimationFrame(resolve));
-        
+
         // 获取视频的实际显示尺寸
         const videoRect = video.getBoundingClientRect();
-        
+
         // 检查显示尺寸是否有效
         if (videoRect.width === 0 || videoRect.height === 0) {
             console.log('Video display size not ready, skipping frame render');
             return;
         }
-        
+
         // 使用设备像素比获得高清canvas
         const devicePixelRatio = window.devicePixelRatio || 1;
         const canvasWidth = Math.round(videoRect.width * devicePixelRatio);
         const canvasHeight = Math.round(videoRect.height * devicePixelRatio);
-        
+
         // 设置画布的内部尺寸（实际像素）
         canvas.width = canvasWidth;
         canvas.height = canvasHeight;
-        
+
         // 设置画布的显示尺寸
         canvas.style.width = `${videoRect.width}px`;
         canvas.style.height = `${videoRect.height}px`;
-        
+
         // 清除画布
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // 缩放context以适应设备像素比
         ctx.scale(devicePixelRatio, devicePixelRatio);
-        
+
         // 绘制预览frame - 使用显示尺寸而不是canvas内部尺寸
         try {
             // 由于canvas本身已经通过CSS镜像了，需要在绘制前再次镜像context以抵消效果
             ctx.save();
             ctx.scale(-1, 1);
             ctx.translate(-videoRect.width, 0);
-            
+
             await previewFrameDrawFunction(ctx, 0, 0, videoRect.width, videoRect.height);
-            
+
             ctx.restore();
-            
+
             // 绘制成功后添加ready类名，触发显示动画
             canvas.classList.add('ready');
             console.log('Frame overlay rendered successfully');
@@ -230,30 +230,30 @@ const PhotoBooth = ({ setCapturedImages }) => {
     // 调整Frame叠加层位置以精确匹配视频
     const adjustFrameOverlayPosition = () => {
         if (!frameOverlayCanvasRef.current || !videoRef.current) return;
-        
+
         const canvas = frameOverlayCanvasRef.current;
         const video = videoRef.current;
-        
+
         // 确保视频已准备好
         if (video.videoWidth === 0 || video.videoHeight === 0) {
             console.log('Video not ready for positioning');
             return;
         }
-        
+
         // 获取视频和容器的实际位置
         const videoRect = video.getBoundingClientRect();
         const containerRect = video.parentElement.getBoundingClientRect();
-        
+
         // 检查尺寸是否有效
         if (videoRect.width === 0 || videoRect.height === 0) {
             console.log('Video display rect not ready');
             return;
         }
-        
+
         // 直接使用视频的实际显示位置和尺寸，无需复杂计算
         const offsetX = videoRect.left - containerRect.left;
         const offsetY = videoRect.top - containerRect.top;
-        
+
         // 设置Canvas样式以精确匹配视频显示区域
         Object.assign(canvas.style, {
             position: "absolute",
@@ -264,7 +264,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
             transform: "scaleX(-1)", // 保持镜像效果
             transformOrigin: "center center"
         });
-        
+
         console.log('Frame overlay positioned:', {
             offset: { x: offsetX, y: offsetY },
             size: { width: videoRect.width, height: videoRect.height }
@@ -275,7 +275,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
     useEffect(() => {
         if (videoRef.current && previewFrameDrawFunction) {
             const video = videoRef.current;
-            
+
             // 防抖处理函数
             let renderTimeout;
             const debouncedRender = async () => {
@@ -287,14 +287,14 @@ const PhotoBooth = ({ setCapturedImages }) => {
                     }
                 }, 100); // 100ms防抖
             };
-            
+
             // 视频完全就绪的处理函数
             const handleVideoReady = async () => {
                 // 等待多个条件同时满足
-                if (video.videoWidth > 0 && 
-                    video.videoHeight > 0 && 
+                if (video.videoWidth > 0 &&
+                    video.videoHeight > 0 &&
                     video.readyState >= 2) {
-                    
+
                     console.log('Video fully ready, rendering frame overlay');
                     // 额外延迟确保CSS样式完全生效
                     setTimeout(async () => {
@@ -303,19 +303,19 @@ const PhotoBooth = ({ setCapturedImages }) => {
                     }, 200);
                 }
             };
-            
+
             const handleResize = async () => {
                 console.log('Window resize detected');
                 await debouncedRender();
             };
-            
+
             const handleTimeUpdate = async () => {
                 // 减少频率，每5秒更新一次
                 if (Math.floor(video.currentTime) % 3 === 0) {
                     await debouncedRender();
                 }
             };
-            
+
             // 使用 ResizeObserver 来监视视频元素的尺寸变化，增加防抖
             let resizeObserver;
             if (window.ResizeObserver) {
@@ -329,14 +329,14 @@ const PhotoBooth = ({ setCapturedImages }) => {
                 });
                 resizeObserver.observe(video);
             }
-            
+
             // 监听多个事件确保时机正确
             video.addEventListener('loadedmetadata', handleVideoReady);
             video.addEventListener('loadeddata', handleVideoReady);
             video.addEventListener('canplay', handleVideoReady);
             video.addEventListener('timeupdate', handleTimeUpdate);
             window.addEventListener('resize', handleResize);
-            
+
             // 初始化尝试 - 分阶段进行
             const initialSetup = async () => {
                 console.log('Initial setup attempt, video ready state:', video.readyState);
@@ -347,13 +347,13 @@ const PhotoBooth = ({ setCapturedImages }) => {
                     console.log('Video not ready in initial setup');
                 }
             };
-            
+
             // 分阶段初始化，给视频更多时间加载
             setTimeout(initialSetup, 100);
             setTimeout(initialSetup, 300);
             setTimeout(initialSetup, 500);
             setTimeout(initialSetup, 1000); // 额外的延迟尝试
-            
+
             return () => {
                 clearTimeout(renderTimeout);
                 video.removeEventListener('loadedmetadata', handleVideoReady);
@@ -802,16 +802,15 @@ const PhotoBooth = ({ setCapturedImages }) => {
                  @keyframes pulseGentle {
                      0% { 
                          transform: scale(1); 
-                         box-shadow: 0 8px 24px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1);
+                         text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
                      }
                      50% { 
-                         transform: scale(1.05); 
-                         box-shadow: 0 12px 32px rgba(248, 187, 217, 0.5), 0 0 30px rgba(255, 255, 255, 0.2);
-                         background: linear-gradient(135deg, #E8B4CB 0%, #F8BBD9 100%);
+                         transform: scale(1.1); 
+                         text-shadow: 0 4px 30px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
                      }
                      100% { 
                          transform: scale(1); 
-                         box-shadow: 0 8px 24px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1);
+                         text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
                      }
                  }
                  
@@ -856,6 +855,11 @@ const PhotoBooth = ({ setCapturedImages }) => {
                          will-change: transform;
                          backface-visibility: hidden;
                      }
+
+                     .photo-booth {
+                         padding-top: 110px !important;
+                         padding-bottom: 50px !important;
+                     }
                  }
                  
                  @media (min-width: 769px) {
@@ -871,11 +875,15 @@ const PhotoBooth = ({ setCapturedImages }) => {
                          max-height: 70vh;
                      }
                  }
+
+                 .photo-booth {
+                     padding-top: 140px;
+                     padding-bottom: 60px;
+                 }
                 `}
             </style>
             <div className={`photo-booth ${capturing ? 'capturing' : ''}`} style={{
                 background: backgroundColor,
-                paddingTop: "24px",
                 overflow: "hidden",
                 width: "100%",
                 maxWidth: "100vw",
@@ -883,57 +891,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                 minHeight: "100vh",
                 transition: "background 0.5s ease"
             }}>
-                {/* 标题区域 - 拍照时显示倒计时，平时显示标题 */}
-                <div style={{ 
-                    textAlign: 'center', 
-                    marginBottom: '32px',
-                    minHeight: '60px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    {countdown !== null ? (
-                        /* 倒计时显示 - 替代H1位置 */
-                        <div className="countdown-display-header" style={{
-                            fontSize: typeof countdown === "string" ? "32px" : "64px",
-                            fontWeight: "700",
-                            color: "#5D4E75",
-                            textShadow: "0 2px 8px rgba(248, 187, 217, 0.4)",
-                            animation: `countdownEnter 0.3s ease-out, pulseGentle 1s infinite`,
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            height: "80px",
-                            pointerEvents: "none",
-                            letterSpacing: "4px",
-                            background: "linear-gradient(135deg, #F8BBD9 0%, #E8B4CB 100%)",
-                            borderRadius: "20px",
-                            padding: "20px 40px",
-                            boxShadow: "0 8px 24px rgba(248, 187, 217, 0.3), 0 0 20px rgba(255, 255, 255, 0.1)",
-                            border: "2px solid rgba(248, 187, 217, 0.4)",
-                            minWidth: "150px",
-                            backdropFilter: "blur(10px)"
-                        }}>
-                            {countdown}
-                        </div>
-                    ) : (
-                        /* 正常标题显示 */
-                        <h1 style={{ 
-                            fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
-                            fontWeight: '700',
-                            color: '#5D4E75',
-                            letterSpacing: '-0.02em',
-                            background: 'linear-gradient(135deg, #F8BBD9 0%, #E8B4CB 100%)',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
-                            animation: 'fadeInUp 0.8s ease-out',
-                            margin: 0
-                        }}>
-                            ✨ Online Photo Booth
-                        </h1>
-                    )}
-                </div>
+                {/* 标题区域已移除 */}
                 <div className="photo-container" style={{
                     display: "flex",
                     flexDirection: "column",
@@ -954,7 +912,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                         isolation: "isolate"
                     }}>
                         {/* 背景聚光灯效果 */}
-                        <div 
+                        <div
                             className="spotlight-background"
                             style={{
                                 '--spotlight-color': spotlightColor,
@@ -999,7 +957,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                             <div className="spotlight-simple"></div>
 
                         </div>
-                        
+
                         <video
                             ref={videoRef}
                             autoPlay
@@ -1007,10 +965,10 @@ const PhotoBooth = ({ setCapturedImages }) => {
                             muted
                             className="video-feed"
                             style={{
-                                filter: filterObject?.type === 'css' 
-                                    ? filter 
-                                    : filterObject?.type === 'glfx' && filterObject?.cssPreview 
-                                        ? filterObject.cssPreview 
+                                filter: filterObject?.type === 'css'
+                                    ? filter
+                                    : filterObject?.type === 'glfx' && filterObject?.cssPreview
+                                        ? filterObject.cssPreview
                                         : 'none',
                                 border: "2px solid rgba(248, 187, 217, 0.3)",
                                 borderRadius: "12px",
@@ -1027,7 +985,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 transform: "scaleX(-1)" // 镜像效果
                             }}
                         />
-                        
+
                         {/* Frame 预览叠加层 - 仅用于视觉预览，不影响实际拍摄和合成 */}
                         {frameType && frameType !== 'none' && (
                             <canvas
@@ -1043,7 +1001,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 }}
                             />
                         )}
-                        
+
                         {/* Frame 预览加载指示器 */}
                         {isLoadingPreviewFrame && (
                             <div style={{
@@ -1061,10 +1019,37 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 🎨 Loading frame preview...
                             </div>
                         )}
-                        
+
                         <canvas ref={canvasRef} className="hidden" style={{ display: 'none' }} />
 
-                        {/* 倒计时显示 - 移至底部控制区域 */}
+                        {/* 倒计时覆盖层 - 居中显示在视频上方 */}
+                        {countdown !== null && (
+                            <div style={{
+                                position: "absolute",
+                                top: "50%",
+                                left: "50%",
+                                transform: "translate(-50%, -50%)",
+                                zIndex: 10,
+                                pointerEvents: "none"
+                            }}>
+                                <div style={{
+                                    fontSize: typeof countdown === "string" ? "32px" : "120px",
+                                    fontWeight: "700",
+                                    color: "white",
+                                    textShadow: "0 4px 20px rgba(0, 0, 0, 0.5)",
+                                    animation: `countdownEnter 0.3s ease-out, pulseGentle 1s infinite`,
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    height: "auto",
+                                    letterSpacing: "4px",
+                                    background: "transparent",
+                                    boxShadow: "none"
+                                }}>
+                                    {countdown}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
 
@@ -1079,9 +1064,9 @@ const PhotoBooth = ({ setCapturedImages }) => {
                             position: "relative",
                             animation: "fadeInUp 0.5s ease-out"
                         }}>
-                            <div 
+                            <div
                                 ref={previewSideRef}
-                                className="preview-side" 
+                                className="preview-side"
                                 style={{
                                     display: "flex",
                                     flexDirection: "row",
@@ -1205,7 +1190,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 marginBottom: "12px",
                                 textAlign: "center"
                             }}>
-                                🖼️ {frameType && frameType !== 'none' 
+                                🖼️ {frameType && frameType !== 'none'
                                     ? `Current Frame: ${frameType === 'generated' ? 'Custom Frame' : frameType}`
                                     : 'No Frame Selected'
                                 }
@@ -1233,7 +1218,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 >
                                     {frameType && frameType !== 'none' ? 'Change Frame' : 'Select Frame'}
                                 </button>
-                                
+
                                 <button
                                     onClick={() => navigateTo("/frame-maker")}
                                     style={{
@@ -1251,7 +1236,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 >
                                     Make a Frame
                                 </button>
-                                
+
                                 {frameType && frameType !== 'none' && (
                                     <button
                                         onClick={() => {
@@ -1282,7 +1267,7 @@ const PhotoBooth = ({ setCapturedImages }) => {
                                 )}
                             </div>
                         </div>
-                        
+
                         <FilterSelector
                             activeFilter={filter}
                             onFilterChange={handleSetFilter}

@@ -36,14 +36,14 @@ export const logout = () => {
 export const getAuthHeaders = (includeContentType = true) => {
     const token = getAuthToken();
     const headers = {};
-    
+
     if (token) {
         headers.Authorization = `Bearer ${token}`;
     }
-    
+
     if (includeContentType) {
         headers['Content-Type'] = 'application/json';
     }
-    
+
     return headers;
 };

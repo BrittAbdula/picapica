@@ -37,8 +37,7 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
     { path: '/photobooth', label: 'Photobooth' },
     { path: '/preview', label: 'Photo Preview' },
     { path: '/frames', label: 'Frames' },
-    { path: '/my-photos', label: 'My Photos' },
-    { path: '/my-frames', label: 'My Frames' }
+    { path: '/my-photos', label: 'My Photos' }
   ];
 
   // 判断当前页面是否激活
@@ -79,35 +78,44 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
               </span>
             </Link>
 
-            {/* 桌面端导航链接 */}
-            <div className="hidden lg:flex items-center space-x-8">
-              {navLinks.map(link => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`
-                    text-sm font-medium transition-colors duration-200
-                    ${isActiveLink(link.path, link.exact)
-                      ? 'text-picapica-900'
-                      : 'text-picapica-600 hover:text-picapica-900'
-                    }
-                  `}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            {/* 桌面端导航链接 - 默认显示，仅手机隐藏 */}
+            <div className="flex items-center space-x-6 max-sm:hidden">
+              {navLinks
+                .filter(link => {
+                  // 只有登录用户才能看到 My Photos 和 My Frames
+                  if (link.path === '/my-photos' || link.path === '/my-frames') {
+                    return !!user;
+                  }
+                  return true;
+                })
+                .map(link => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`
+                      text-sm font-medium transition-colors duration-200
+                      ${isActiveLink(link.path, link.exact)
+                        ? 'text-picapica-900'
+                        : 'text-picapica-600 hover:text-picapica-900'
+                      }
+                    `}
+                  >
+                    {link.label}
+                  </Link>
+                ))
+              }
             </div>
 
             {/* 用户区域和移动端菜单按钮 */}
             <div className="flex items-center space-x-4">
-              {/* 桌面端用户信息 */}
-              <div className="hidden lg:block">
+              {/* 桌面端用户信息 - 默认显示，仅手机隐藏 */}
+              <div className="max-sm:hidden">
                 <UserSection user={user} onLogin={onLogin} onLogout={onLogout} />
               </div>
 
-              {/* 移动端汉堡菜单按钮 */}
+              {/* 移动端汉堡菜单按钮 - 仅小屏显示 */}
               <button
-                className="lg:hidden z-50 relative p-2 text-picapica-900 focus:outline-none"
+                className="sm:hidden z-50 relative p-2 text-picapica-900 focus:outline-none"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="Toggle Menu"
               >
@@ -125,29 +133,38 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
       {/* 全屏移动端菜单 */}
       <div
         className={`
-          fixed inset-0 z-40 bg-picapica-50/95 backdrop-blur-xl lg:hidden
+          fixed inset-0 z-40 bg-picapica-50/95 backdrop-blur-xl sm:hidden
           flex flex-col justify-center items-center
           transition-all duration-500 ease-in-out
           ${isMenuOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}
         `}
       >
         <div className="flex flex-col items-center space-y-6 w-full max-w-sm px-6">
-          {navLinks.map((link, index) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`
-                text-3xl font-serif font-medium text-picapica-900
-                hover:text-picapica-600 transition-colors duration-300
-                transform transition-transform duration-500
-                ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
-              `}
-              style={{ transitionDelay: `${index * 50}ms` }}
-              onClick={closeMenu}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks
+            .filter(link => {
+              // 只有登录用户才能看到 My Photos 和 My Frames
+              if (link.path === '/my-photos' || link.path === '/my-frames') {
+                return !!user;
+              }
+              return true;
+            })
+            .map((link, index) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`
+                  text-3xl font-serif font-medium text-picapica-900
+                  hover:text-picapica-600 transition-colors duration-300
+                  transform transition-transform duration-500
+                  ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
+                `}
+                style={{ transitionDelay: `${index * 50}ms` }}
+                onClick={closeMenu}
+              >
+                {link.label}
+              </Link>
+            ))
+          }
 
           <div
             className={`
@@ -168,33 +185,81 @@ export const Navbar = ({ user, onLogin, onLogout }) => {
  * 用户信息区域组件
  */
 const UserSection = ({ user, onLogin, onLogout, mobile = false }) => {
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const handleAvatarClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const handleLogout = () => {
+    setShowLogoutDialog(false);
+    onLogout();
+  };
+
+  const handleCancel = () => {
+    setShowLogoutDialog(false);
+  };
+
   if (user) {
     return (
-      <div className={`flex items-center gap-4 ${mobile ? 'flex-col' : ''}`}>
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-picapica-200 rounded-full flex items-center justify-center text-picapica-800 font-medium text-sm">
-            {user.avatar ? (
-              <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-            ) : (
-              user.name?.charAt(0)?.toUpperCase() || 'U'
-            )}
-          </div>
-          {mobile && <span className="font-medium text-picapica-900">{user.name}</span>}
-        </div>
-        <button
-          onClick={onLogout}
-          className="text-sm font-medium text-picapica-600 hover:text-picapica-900 transition-colors"
+      <>
+        {/* 用户头像 - 点击弹出确认对话框 */}
+        <div
+          onClick={handleAvatarClick}
+          className="w-9 h-9 aspect-square bg-picapica-200 rounded-full flex items-center justify-center text-picapica-800 font-medium text-sm shadow-sm border border-picapica-300/30 flex-shrink-0 hover:scale-110 transition-transform duration-200 cursor-pointer overflow-hidden"
+          title="Click to logout"
         >
-          Logout
-        </button>
-      </div>
+          {user.avatar && !imageError ? (
+            <img
+              src={user.avatar}
+              alt={user.name}
+              className="w-full h-full object-cover rounded-full"
+              referrerPolicy="no-referrer"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <span className="select-none">
+              {user.name?.charAt(0)?.toUpperCase() || 'U'}
+            </span>
+          )}
+        </div>
+
+        {/* 退出登录确认对话框 */}
+        {showLogoutDialog && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 transform transition-all">
+              <h3 className="text-xl font-semibold text-picapica-900 mb-2">
+                Confirm Logout
+              </h3>
+              <p className="text-picapica-600 mb-6">
+                Are you sure you want to logout?
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={handleCancel}
+                  className="px-4 py-2 rounded-lg text-picapica-700 hover:bg-picapica-100 transition-colors duration-200 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-lg bg-picapica-600 text-white hover:bg-picapica-700 transition-colors duration-200 font-medium"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
   return (
     <Button
-      variant={mobile ? "primary" : "primary"}
-      size={mobile ? "lg" : "sm"}
+      variant="secondary"
+      size={mobile ? "lg" : "md"}
       onClick={onLogin}
       className={mobile ? "w-full min-w-[200px]" : ""}
     >
